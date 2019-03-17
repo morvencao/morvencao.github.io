@@ -114,6 +114,16 @@
     <loc>https://morvencao.github.io/posts/</loc>
     <lastmod>2017-12-22T00:00:00+00:00</lastmod>
     <priority>0</priority>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://morvencao.github.io/en/posts/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="cn"
+                href="https://morvencao.github.io/posts/"
+                />
   </url>
   
   <url>
