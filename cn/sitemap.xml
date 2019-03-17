@@ -3,13 +3,68 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://morvencao.github.io/posts/unix-philosophy/</loc>
-    <lastmod>2013-10-06T00:00:00+00:00</lastmod>
+    <loc>https://morvencao.github.io/posts/thoughts_in_winter_solstice/</loc>
+    <lastmod>2017-12-22T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/ten-years-for-naruto/</loc>
+    <lastmod>2017-10-10T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/the-two-years/</loc>
+    <lastmod>2017-06-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/farewell-2016/</loc>
+    <lastmod>2016-12-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/notes/webpack_summary/</loc>
+    <lastmod>2016-11-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/notes/developing-modular-javascript/</loc>
+    <lastmod>2016-11-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/post_at_the_end_of_2015/</loc>
+    <lastmod>2015-12-29T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/notes/the_basic_of_cryptology/</loc>
+    <lastmod>2015-11-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/ban-pick_in_dota_and_jury/</loc>
+    <lastmod>2015-10-09T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/a_backward_glance_of_2014/</loc>
+    <lastmod>2014-12-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/the_story_of_big_and_little_endian/</loc>
+    <lastmod>2014-03-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/internship-at-ibm/</loc>
+    <lastmod>2013-04-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://morvencao.github.io/common/about/</loc>
-    <lastmod>2013-10-01T00:00:00+00:00</lastmod>
+    <lastmod>2013-03-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -29,13 +84,13 @@
   
   <url>
     <loc>https://morvencao.github.io/common/</loc>
-    <lastmod>2013-10-01T00:00:00+00:00</lastmod>
+    <lastmod>2013-03-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://morvencao.github.io/</loc>
-    <lastmod>2013-10-06T00:00:00+00:00</lastmod>
+    <lastmod>2017-12-22T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
@@ -50,19 +105,15 @@
   </url>
   
   <url>
-    <loc>https://morvencao.github.io/posts/</loc>
-    <lastmod>2013-10-06T00:00:00+00:00</lastmod>
+    <loc>https://morvencao.github.io/notes/</loc>
+    <lastmod>2016-11-20T00:00:00+00:00</lastmod>
     <priority>0</priority>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://morvencao.github.io/en/posts/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="cn"
-                href="https://morvencao.github.io/posts/"
-                />
+  </url>
+  
+  <url>
+    <loc>https://morvencao.github.io/posts/</loc>
+    <lastmod>2017-12-22T00:00:00+00:00</lastmod>
+    <priority>0</priority>
   </url>
   
   <url>

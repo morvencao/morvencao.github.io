@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Notes on Morven&#39;s Blog</title>
+    <link>https://morvencao.github.io/notes/</link>
+    <description>Recent content in Notes on Morven&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 20 Nov 2016 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://morvencao.github.io/notes/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>webpack使用小结</title>
+      <link>https://morvencao.github.io/notes/webpack_summary/</link>
+      <pubDate>Sun, 20 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://morvencao.github.io/notes/webpack_summary/</guid>
+      <description>分而治之是软件工程领域的重要思想，对于复杂度日益增加的前端也同样适用。一般前端团队选择合适的框架之后就要开始考虑开发维护的效率问题。而模块化是目前前端领域比较流行的分而治之手段。 Javascript模块化已经有很多规范和工具，例如CommonJS/AMD/requireJS/CMD/ES6 Module，在上篇文章中有详细的介绍。CSS模块化基本要依靠Less, Sass以及Stylus等于处理器的import/minxin特性实现。而HTML以及HTML模版和其他资源比如图片的模块化怎么去处理呢？ 这也正是webpack要解决的问题之一。严格来说，webpack是一个模块打包工具（module bundler），它既不像requireJS和seaJS这样的模块加载器，也不像grunt和gulp这样优化前端开发流程的构建工具，像是两类工具的集合却又远不止如此。
+Webpack是一个模块打包工具，它将JS、CSS、HTML以及图片等都视为模块资源，这些模块资源必然存在某种依赖关系，webpack就是通过静态分析各种模块文件之间的依赖关系，通过不同种类的Loader将所有模块打包成起来。
+webpack VS Gulp 严格来说，Gulp与webpack并没有可比性。Gulp应该和Grunt属于同一类工具，能够优化前端工作流程，比如压缩合并JS、CSS ，预编译Typescript、Sass等。也就是说，我们可以根据需要配置插件，就可以将之前需要手动完成的任务自动化。webpack作为模块打包工具，可以和browserify相提并论。两者都是预编译模块化解决方案。相比requireJS、seaJS这类‘在线’模块化方案更加智能。因为是‘预编译’，不需要在浏览器中加载解释器。另外，你可以直接在本地编写JS，不管是 AMD / CMD / ES6 风格的模块化，都编译成浏览器认识的JS。
+总之，Gulp只是一个流程构建工具，而webpack、browserify等是模块化解决方案。Gulp也可以配置seaJS、requireJS甚至webpack的插件。
+避免多个配置文件 刚开始接触webpack的时候，不管是去浏览GitHub上面star数较多的webpack项目，还是搜索stack overflow上面赞成数较多的回答，发现很多人提倡在一个项目中针对开发和产品发布提供不同的配置文件，比如webpack.dev.config.js和webpack.prod.config.js。看起来很清晰，也可以让新手迅速上手老项目，但仔细研究就会发现，不通环境的配置文件大部分配置项基本相同。这与工程领域一直提倡的DRY（Don&amp;rsquo;t Repeat Yourself）原则相悖，于是就产生了另外一种做法，先生成一个common的webpack.common.config.js，然后再针对不同的环境去继承（其实就是require）common的配置文件。但是不管怎样，其实都是生成多个不同的配置文件。如果换个角度想想，这些配置文件虽然不同，但都遵循着node的逻辑，所以完全可以只维护一个配置文件，然后针对不同的环境传入不同的参数。如果你使用npm，则完全可以在package.json文件中这样写：
+&amp;quot;scripts&amp;quot;: { &amp;quot;devs&amp;quot;: &amp;quot;cross-env DEV=1 webpack-dev-server --hot --inline&amp;quot;, &amp;quot;build&amp;quot;: &amp;quot;cross-env PROD=1 rm -rf ./build &amp;amp;&amp;amp; webpack --p&amp;quot; }  其中cross-env是个跨平台的环境变量设置工具，可以允许Unix风格环境变量设置通用在window平台。 这样只维护一个webpack.config.js配置文件，然后在配置文件中处理自定义的参数。怎么处理自定义参数呢？这里我们使用webpack自带插件definePlugin提供魔力变量（magic globals）来处理：
+plugins: [ new webpack.DefinePlugin ({ __DEV__: JSON.stringify(JSON.parse(process.env.DEV || &#39;false&#39;)), __PROD__: JSON.stringify(JSON.parse(process.env.PROD || &#39;false&#39;)) }) ]  然后在配置文件的其他地方就可以根据设定的环境变量更有针对性地配置不同插件等。甚至在业务逻辑中也可以这样针对不同环境做针对性地调试，比如在开发环境下可以AJAX可以调试本地mock数据，然后在发布的时候，可以正常访问服务端数据。
+if (__DEV__) { // code for dev //.</description>
+    </item>
+    
+    <item>
+      <title>Javascript模块化开发</title>
+      <link>https://morvencao.github.io/notes/developing-modular-javascript/</link>
+      <pubDate>Wed, 16 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://morvencao.github.io/notes/developing-modular-javascript/</guid>
+      <description>随着互联网时代的到来，前端技术更新速度越来越快。起初只要在script标签中嵌入几行代码就能实现一些基本的用户交互，到现在随着Ajax，jQuery，MVC以及MVVM的发展，Javascript代码量变得日益庞大复杂。 网页越来越像桌面程序，需要一个团队分工协作、进度管理、单元测试等等&amp;hellip;&amp;hellip;开发者不得不使用软件工程的方法，管理网页的业务逻辑。 Javascript模块化开发，已经成为一个迫切的需求。理想情况下，开发者只需要实现核心的业务逻辑，其他都可以加载别人已经写好的模块。 但是，Javascript不是一种模块化编程语言，它不支持&amp;rdquo;类&amp;rdquo;（class），更遑论&amp;rdquo;模块&amp;rdquo;（module）了。直到前不久ES6正式定稿，Javascript才开始正式支持&amp;rdquo;类&amp;rdquo;和&amp;rdquo;模块&amp;rdquo;，但还需要很长时间才能完全投入实用。
+什么是模块化 模块是任何大型应用程序架构中不可缺少的一部分，一个模块就是实现特定功能的代码区块或者文件。模块可以使我们清晰地分离和组织项目中的代码单元。在项目开发中，通过移除依赖，松耦合可以使应用程序的可维护性更强。有了模块，开发者就可以更方便地使用别人的代码，想要什么功能，就加载什么模块。模块开发需要遵循一定的规范，否则就会混乱不堪。
+Javascript社区做了很多努力，在现有的运行环境中，实现&amp;rdquo;模块&amp;rdquo;的效果。本文总结了当前＂Javascript模块化编程＂的最佳实践，说明如何投入实用。
+Javascript模块化基本写法 在第一部分，将讨论基于传统Javascript语法的模块化写法。
+原始写法 模块就是实现特定功能的一组方法。 只要把不同的函数（以及记录状态的变量）简单地放在一起，就算是一个模块。
+function func1(){ //... } function func2(){ //... }  上面的函数func1()和func2()，组成一个模块。使用的时候，直接调用就行了。 这种做法的缺点很明显：&amp;rdquo;污染&amp;rdquo;了全局变量，无法保证不与其他模块发生变量名冲突，而且模块成员之间看不出直接关系。
+对象写法 为了解决上面的缺点，可以把模块写成一个对象，所有的模块成员都放到这个对象里面。
+var moduleA = new Object({ _count : 0, func1 : function (){ //... }, func2 : function (){ //... } });  上面的函数func1()和func2(），都封装在moduleA对象里。使用的时候，就是调用这个对象的属性。
+moduleA.func1();  但是，这样的写法会暴露所有模块成员，内部状态可以被外部改写。比如，外部代码可以直接改变内部计数器的值。
+moduleA._count = 3;  立即执行函数写法 使用&amp;rdquo;立即执行函数&amp;rdquo;（Immediately-Invoked Function Expression，IIFE），可以达到不暴露私有成员的目的。
+var moduleA = (function(){ var _count = 0; var func1 = function(){ //.</description>
+    </item>
+    
+    <item>
+      <title>密码学基础</title>
+      <link>https://morvencao.github.io/notes/the_basic_of_cryptology/</link>
+      <pubDate>Mon, 16 Nov 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://morvencao.github.io/notes/the_basic_of_cryptology/</guid>
+      <description>密码学（Cryptography） 密码学是研究编制密码和破译密码的技术科学。研究密码变化的客观规律，应用于编制密码以保守通信秘密的，称为编码学；应用于破译密码以获取通信情报的，称为破译学，总称密码学。 密码是通信双方按约定的法则进行信息特殊变换的一种重要保密手段。依照这些法则，变明文为密文，称为加密变换；变密文为明文，称为脱密变换。密码在早期仅对文字或数码进行加、脱密变换，随着通信技术的发展，对语音、图像、数据等都可实施加、脱密变换。
+密码算法 什么是密码算法（Cryptography Algorithm），通常是指加、解密过程所使用的信息变换规则，是用于信息加密和解密的数学函数。对明文进行加密时所采用的规则称作加密算法，而对密文进行解密时所采用的规则称作解密算法。加密算法和解密算法的操作通常都是在一组密钥的控制下进行的。
+什么是密钥？密钥（Secret Key）是密码算法中的一个可变参数，通常是一组满足一定条件的随机序列。用于加密算法的叫做加密密钥，用于解密算法的叫做解密密钥，加密密钥和解密密钥可能相同，也可能不相同。
+加密算法根据根据密钥的不同分为两类，对称加密算法(Symmetric-key algorithm)和非对称加密算法(asymmetric key encryption algorithm)。
+对称加密 首先，让我们先从一个情景开始讲起。比如张三学习比李四好，李四就想在考试的时候让张三“帮助”一下自己，当然，他们俩不可能像我们平常对话一样说，第一题选A，第二题选B等等，为什么？因为监考老师明白他俩在谈论什么，也就是说这种沟通交流方式属于“明文”，所以李四就想：“我需要发明一种，只有我和张三明白的交流方式”，那李四做了什么呢？恩，李四去找张三说：“当我连续咳嗽三声的时候你看我，然后如果我摸了下左耳朵，说明你可以开始给我传答案了，如果没反应，那说明我真的是在咳嗽&amp;hellip;”， 然后，怎么传答案呢？很简单，“你摸左耳朵代表A, 摸右耳朵代表B，左手放下代表C，右手放下代表D”，好了，这就是他们的“算法(规则)”，将信息的一种形式(A,B,C,D)，这里我们称为“明文”，转换成了另一种形式(摸左耳朵，摸右耳朵，放左手，放右手)，这里称为“密文”，经过这种转换，很显然监考老师不会明白这些“密文”，这样，张三和李四就通过“密文”的形式实现了信息的交换。
+对称加密算法也叫单钥加密（private key cryptography），加密和解密过程都用同一套密钥。历史上，人类传统的加密方法都是前一种，比如二战期间德军用的Enigma电报密码。莫尔斯电码也可以看作是一种私钥加密方法。 结合前面的例子对应一下，密钥就是“将(A,B,C,D)转换成(摸左耳朵，摸右耳朵，放左手，放右手)”这么一个规则。“实务上，这组密钥成为在两个或多个成员间的共同秘密，以便维持专属的通讯联系。” 这句话很好理解了吧，密钥是张三和李四间共同的秘密！只有他俩事先知道。 所以，为什么叫对称加密呢，你可以这么理解，一方通过密钥将信息加密后，把密文传给另一方，另一方通过这个相同的密钥将密文解密，转换成可以理解的明文。他们之间的关系如下：
+明文 &amp;lt;-&amp;gt; 密钥 &amp;lt;-&amp;gt; 密文  目前常见的对称加密算法有：
+DES、3DES、AES、Blowfish、IDEA、RC5、RC6。  非对称加密 非对称加密算法也称为双钥加密（public key cryptography），加密和解密过程用的是两套密钥。非对称加密是一种比对称加密更加优秀的加密算法。对称加密的密钥只有一把，所以密钥的保存变得很重要。一旦密钥泄漏，密码也就被破解。 在非对称加密的情况下，密钥有两把，一把是公开的公钥，还有一把是不公开的私钥。 对称加密的原理如下： 1. 公钥和私钥是一一对应的关系，有一把公钥就必然有一把与之对应的、独一无二的私钥，反之亦成立。 2. 所有的（公钥, 私钥）对都是不同的。 3. 用公钥可以解开私钥加密的信息，反之亦成立。 4. 同时生成公钥和私钥应该相对比较容易，但是从公钥推算出私钥，应该是很困难或者是不可能的。
+在对称加密体系中，公钥用来加密信息，私钥用来数字签名。 比如，李四想给张三发送密文。于是李四开始给张三发消息：
+李四： “hi哥们，我想给你发个密文，把你的公钥给我发过来用用。” 张三： “没问题的，这是我的公钥： d#8yHE8eU#hb*!neb，用这个公钥加密你的信息后给我发过来吧” 李四： “这是我想对你说的话： *&amp;amp;#@uehuu(**#eehu&amp;amp;$##bfeu&amp;amp;&amp;amp;”  为什么公开问公钥？非对称解密算法的强大之处就在这里！公钥可以随意分发，所以即使第三方截取了，也只是知道该公钥而已，但是要是想解密使用该公钥加密的密文！只有一个人可以办得到！就是张三！ 为什么？李四使用张三的公钥加密的信息，只有张三的公钥所对应的私钥，这里就是“张三私钥”，该私钥才可以解密！所以，没有张三私钥的第三方即时截取了这些密文，也破解不了！或者更严格的说在有限时间内比如说几千年内是暴力破解不出的！
+非对称加密算法，首先要有一对key，一个被称为private key私钥，一个成为public key公钥，然后可以把public key分发给想给你传密文的用户，然后用户使用该public key加密过得密文，只有使用private key才能解密，也就是说，只要保存好你的private key，就能确保别人想给你发的密文不被破解。 正因为，这种加密是单向的，所以被称为非对称加密算法。 这种加密算法应用非常广泛，SSH, HTTPS, TLS，电子证书，电子签名，电子身份证等等。</description>
+    </item>
+    
+  </channel>
+</rss>

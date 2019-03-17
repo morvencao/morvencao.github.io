@@ -3,11 +3,6 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://morvencao.github.io/en/posts/coming/</loc>
-    <lastmod>2019-03-17T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://morvencao.github.io/en/categories/</loc>
     <priority>0</priority>
     <xhtml:link
@@ -24,7 +19,6 @@
   
   <url>
     <loc>https://morvencao.github.io/en/</loc>
-    <lastmod>2019-03-17T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
@@ -35,22 +29,6 @@
                 rel="alternate"
                 hreflang="en"
                 href="https://morvencao.github.io/en/"
-                />
-  </url>
-  
-  <url>
-    <loc>https://morvencao.github.io/en/posts/</loc>
-    <lastmod>2019-03-17T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-    <xhtml:link
-                rel="alternate"
-                hreflang="cn"
-                href="https://morvencao.github.io/posts/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://morvencao.github.io/en/posts/"
                 />
   </url>
   
