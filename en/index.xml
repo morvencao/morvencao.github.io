@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Morven&#39;s Blog</title>
+    <link>https://morvencao.github.io/en/</link>
+    <description>Recent content on Morven&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 17 Mar 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://morvencao.github.io/en/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Coming Soon</title>
+      <link>https://morvencao.github.io/en/posts/coming/</link>
+      <pubDate>Sun, 17 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://morvencao.github.io/en/posts/coming/</guid>
+      <description>&lt;p&gt;This is a post to help showing the &lt;em&gt;complete&lt;/em&gt; rules of this theme.&lt;/p&gt;
+
+&lt;p&gt;A &lt;strong&gt;summary&lt;/strong&gt; is set, the rest is below a &lt;code&gt;&amp;lt;!-- more --&amp;gt;;&lt;/code&gt; tag.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

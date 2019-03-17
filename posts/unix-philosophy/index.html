@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven Cao"><meta property="og:url" content="https://morvencao.github.io/posts/unix-philosophy/"><link rel="canonical" href="https://morvencao.github.io/posts/unix-philosophy/"><link rel="shortcut icon" href="https://morvencao.github.io/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https://morvencao.github.io/"
+      },
+      "articleSection" : "posts",
+      "name" : "Unix哲学",
+      "headline" : "Unix哲学",
+      "description" : "两个很老的小故事。 第一个故事。 有一家日本最大的化妆品公司，收到了用户的投诉。用户抱怨买来的肥皂盒是空的。这家公司为了防止再发生这样的事故，很辛苦地发明了一台X光检查器，能够透视每一个出货的肥皂盒。 同样的事故，发生在一家小公司。他们的解决方法是买一台强力的工业电扇，对着肥皂盒猛吹，被吹走的就是空肥皂盒。
+#####第二个故事。
+美国太空总署（NASA）发现在太空失重状态下，航天员无法用墨水笔写字。于是，他们花了大量经费，研发出了一种可以在失重状态下写字的太空笔。猜猜看，俄国人是怎么解决的？（答案在本文结尾处。）
+The Philosophy of Unix 很多人在谈&rdquo;Unix哲学&rdquo;，也就是开发Unix系统的指导思想。那么什么是Unix哲学
+ The Unix philosophy emphasizes building simple, short, clear, modular, and extensible code that can be easily maintained and repurposed by developers other than its creators. The Unix philosophy favors composability as opposed to monolithic design.
+ 其实还有其他不同的版本，也就是说不同的人有不同的理解。其中发明管道命令的Doug McIlroy总结了三条，而Eric S. Raymond则在The Art of Unix Programming一书中，一口气总结了17条（英文版，中文版）。 但其实，所有人的总结都离不开一个核心：“简单原则” &mdash;-尽量用简单的方法解决问题&mdash;-是“Unix哲学”的根本原则。这也就是著名的KISS（keep it simple, stupid），意思是&rdquo;保持简单和笨拙&rdquo;。 如果想最简单地完成一项编程任务，可以从四个方面入手：
+ 清晰原则。 代码要写得尽量清晰，避免晦涩难懂。清晰的代码不容易崩溃，而且容易理解和维护。重视注释。不为了性能的一丁点提升，而大幅增加技术的复杂性，因为复杂的技术会使得日后的阅读和维护更加艰难。
+ 模块原则。 每个程序只做一件事，不要试图在单个程序中完成多个任务。在程序的内部，面向用户的界面（前端）应该与运算机制（后端）分离，因为前端的变化往往快于后端。
+ 组合原则。 不同的程序之间通过接口相连。接口之间用文本格式进行通信，因为文本格式是最容易处理、最通用的格式。这就意味着尽量不要使用二进制数据进行通信，不要把二进制内容作为输出和输入。",
+      "inLanguage" : "en-US",
+      "author" : "Morven Cao",
+      "creator" : "Morven Cao",
+      "publisher": "Morven Cao",
+      "accountablePerson" : "Morven Cao",
+      "copyrightHolder" : "Morven Cao",
+      "copyrightYear" : "2013",
+      "datePublished": "2013-10-06 00:00:00 &#43;0000 UTC",
+      "dateModified" : "2013-10-06 00:00:00 &#43;0000 UTC",
+      "url" : "https://morvencao.github.io/posts/unix-philosophy/",
+      "keywords" : [  ]
+  }</script><title>Unix哲学 - Morven&#39;s Blog</title><meta property="og:title" content="Unix哲学 - Morven&#39;s Blog"><meta property="og:type" content="article"><meta name="description" content="两个很老的小故事。 第一个故事。 有一家日本最大的化妆品公司，收到了用户的投诉。用户抱怨买来的肥皂盒是空的。这家公司为了防止再发生这样的事故，很辛苦地发明了一台X光检查器，能够透视每一个出货的肥皂盒。 同样的事故，发生在一家小公司。他们的解决方法是买一台强力的工业电扇，对着肥皂盒猛吹，被吹走的就是空肥皂盒。
+#####第二个故事。
+美国太空总署（NASA）发现在太空失重状态下，航天员无法用墨水笔写字。于是，他们花了大量经费，研发出了一种可以在失重状态下写字的太空笔。猜猜看，俄国人是怎么解决的？（答案在本文结尾处。）
+The Philosophy of Unix 很多人在谈&rdquo;Unix哲学&rdquo;，也就是开发Unix系统的指导思想。那么什么是Unix哲学
+ The Unix philosophy emphasizes building simple, short, clear, modular, and extensible code that can be easily maintained and repurposed by developers other than its creators. The Unix philosophy favors composability as opposed to monolithic design.
+ 其实还有其他不同的版本，也就是说不同的人有不同的理解。其中发明管道命令的Doug McIlroy总结了三条，而Eric S. Raymond则在The Art of Unix Programming一书中，一口气总结了17条（英文版，中文版）。 但其实，所有人的总结都离不开一个核心：“简单原则” &mdash;-尽量用简单的方法解决问题&mdash;-是“Unix哲学”的根本原则。这也就是著名的KISS（keep it simple, stupid），意思是&rdquo;保持简单和笨拙&rdquo;。 如果想最简单地完成一项编程任务，可以从四个方面入手：
+ 清晰原则。 代码要写得尽量清晰，避免晦涩难懂。清晰的代码不容易崩溃，而且容易理解和维护。重视注释。不为了性能的一丁点提升，而大幅增加技术的复杂性，因为复杂的技术会使得日后的阅读和维护更加艰难。
+ 模块原则。 每个程序只做一件事，不要试图在单个程序中完成多个任务。在程序的内部，面向用户的界面（前端）应该与运算机制（后端）分离，因为前端的变化往往快于后端。
+ 组合原则。 不同的程序之间通过接口相连。接口之间用文本格式进行通信，因为文本格式是最容易处理、最通用的格式。这就意味着尽量不要使用二进制数据进行通信，不要把二进制内容作为输出和输入。"><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morvencao.github.io/css/index.css"><link href="https://morvencao.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Blog"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morvencao.github.io/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">Unix哲学</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2013-10-06 00:00:00 UTC">06 Oct 2013</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morvencao.github.io/">@Morven Cao</a></div></div></div></header><div class="post-content markdown-body"><h3 id="两个很老的小故事">两个很老的小故事。</h3><h5 id="第一个故事">第一个故事。</h5><p>有一家日本最大的化妆品公司，收到了用户的投诉。用户抱怨买来的肥皂盒是空的。这家公司为了防止再发生这样的事故，很辛苦地发明了一台X光检查器，能够透视每一个出货的肥皂盒。 同样的事故，发生在一家小公司。他们的解决方法是买一台强力的工业电扇，对着肥皂盒猛吹，被吹走的就是空肥皂盒。</p><p>#####第二个故事。</p><p>美国太空总署（NASA）发现在太空失重状态下，航天员无法用墨水笔写字。于是，他们花了大量经费，研发出了一种可以在失重状态下写字的太空笔。猜猜看，俄国人是怎么解决的？（答案在本文结尾处。）</p><h3 id="the-philosophy-of-unix">The Philosophy of Unix</h3><p>很多人在谈&rdquo;Unix哲学&rdquo;，也就是开发Unix系统的指导思想。那么什么是Unix哲学</p><blockquote><p>The Unix philosophy emphasizes building simple, short, clear, modular, and extensible code that can be easily maintained and repurposed by developers other than its creators. The Unix philosophy favors composability as opposed to monolithic design.</p></blockquote><p>其实还有其他不同的版本，也就是说不同的人有不同的理解。其中发明管道命令的Doug McIlroy总结了三条，而Eric S. Raymond则在The Art of Unix Programming一书中，一口气总结了17条（<a href="http://www.faqs.org/docs/artu/ch01s06.html">英文版</a>，<a href="http://book.csdn.net/bookfiles/34/10034992.shtml">中文版</a>）。 但其实，所有人的总结都离不开一个核心：“简单原则” &mdash;-尽量用简单的方法解决问题&mdash;-是“Unix哲学”的根本原则。这也就是著名的KISS（keep it simple, stupid），意思是&rdquo;保持简单和笨拙&rdquo;。 如果想最简单地完成一项编程任务，可以从四个方面入手：</p><ol><li><p>清晰原则。 代码要写得尽量清晰，避免晦涩难懂。清晰的代码不容易崩溃，而且容易理解和维护。重视注释。不为了性能的一丁点提升，而大幅增加技术的复杂性，因为复杂的技术会使得日后的阅读和维护更加艰难。</p></li><li><p>模块原则。 每个程序只做一件事，不要试图在单个程序中完成多个任务。在程序的内部，面向用户的界面（前端）应该与运算机制（后端）分离，因为前端的变化往往快于后端。</p></li><li><p>组合原则。 不同的程序之间通过接口相连。接口之间用文本格式进行通信，因为文本格式是最容易处理、最通用的格式。这就意味着尽量不要使用二进制数据进行通信，不要把二进制内容作为输出和输入。</p></li><li><p>优化原则。 在功能实现之前，不要考虑对它优化。最重要的是让一切先能够运行，其次才是效率。&rdquo;先求运行，再求正确，最后求快。&rdquo;（Make it run, then make it right, then make it fast.）90%的功能现在能实现，比100%的功能永远实现不了强。先做出原型，然后找出哪些功能不必实现，那些不用写的代码显然无需优化。目前，最强大的优化工具恐怕是Delete键。</p></li></ol><p>答案是，俄国人用铅笔。：）</p></div></div></div></article><script src="https://morvencao.github.io/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+    container: document.getElementById('article')
+  });</script><script>hljs.initHighlightingOnLoad();
+  
+  var posts = document.getElementById('posts-list');
+  posts && quicklink({
+    el: posts,
+    priority: true,
+  });</script></body></html>
