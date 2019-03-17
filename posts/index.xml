@@ -27,15 +27,5 @@ The Philosophy of Unix 很多人在谈&amp;rdquo;Unix哲学&amp;rdquo;，也就�
  组合原则。 不同的程序之间通过接口相连。接口之间用文本格式进行通信，因为文本格式是最容易处理、最通用的格式。这就意味着尽量不要使用二进制数据进行通信，不要把二进制内容作为输出和输入。</description>
     </item>
     
-    <item>
-      <title>About Me</title>
-      <link>https://morvencao.github.io/posts/about/</link>
-      <pubDate>Tue, 01 Oct 2013 00:00:00 +0000</pubDate>
-      
-      <guid>https://morvencao.github.io/posts/about/</guid>
-      <description>Hi, This is Morven Cao, graduated from Nanjing University with Bechalor and Master degree in 2015, now working as a software engineer at IBM. I generally use morvencao as my id on the Internet. I love reading, thinking, programming and everything challenging and interesting.
-Reach me: - Twitter - Instagram - Gmail - Github</description>
-    </item>
-    
   </channel>
 </rss>
