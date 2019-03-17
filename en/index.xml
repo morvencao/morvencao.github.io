@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Morven&#39;s Blog</title>
-    <link>https://morvencao.life/en/</link>
+    <link>https://morven.life/en/</link>
     <description>Recent content on Morven&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 10 Apr 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://morvencao.life/en/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://morven.life/en/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Diving into Kubernetes MutatingAdmissionWebhook</title>
-      <link>https://morvencao.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/</link>
+      <link>https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/</link>
       <pubDate>Tue, 10 Apr 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://morvencao.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/</guid>
+      <guid>https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/</guid>
       <description>Admission controllers are powerful tools for intercepting requests to the Kubernetes API server prior to persistence of the object. However, they are not very flexible due to the requirement that they are compiled as a binary in the kube-apiserver that is configured by the cluster administrator. Starting in Kubernetes 1.7, Initializers and External Admission Webhooks are introduced to address this limitation. In Kubernetes 1.9, Initializers stays in alpha phase while External Admission Webhooks are promoted to beta and split into MutatingAdmissionWebhook and ValidatingAdmissionWebhook.</description>
     </item>
     
