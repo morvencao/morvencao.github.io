@@ -30,7 +30,7 @@ if (__DEV__) { // code for dev //.</description>
     <item>
       <title>Javascript模块化开发</title>
       <link>https://morvencao.github.io/notes/developing-modular-javascript/</link>
-      <pubDate>Wed, 16 Nov 2016 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://morvencao.github.io/notes/developing-modular-javascript/</guid>
       <description>随着互联网时代的到来，前端技术更新速度越来越快。起初只要在script标签中嵌入几行代码就能实现一些基本的用户交互，到现在随着Ajax，jQuery，MVC以及MVVM的发展，Javascript代码量变得日益庞大复杂。 网页越来越像桌面程序，需要一个团队分工协作、进度管理、单元测试等等&amp;hellip;&amp;hellip;开发者不得不使用软件工程的方法，管理网页的业务逻辑。 Javascript模块化开发，已经成为一个迫切的需求。理想情况下，开发者只需要实现核心的业务逻辑，其他都可以加载别人已经写好的模块。 但是，Javascript不是一种模块化编程语言，它不支持&amp;rdquo;类&amp;rdquo;（class），更遑论&amp;rdquo;模块&amp;rdquo;（module）了。直到前不久ES6正式定稿，Javascript才开始正式支持&amp;rdquo;类&amp;rdquo;和&amp;rdquo;模块&amp;rdquo;，但还需要很长时间才能完全投入实用。
@@ -49,7 +49,7 @@ var moduleA = (function(){ var _count = 0; var func1 = function(){ //.</descript
     <item>
       <title>密码学基础</title>
       <link>https://morvencao.github.io/notes/the_basic_of_cryptology/</link>
-      <pubDate>Mon, 16 Nov 2015 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate>
       
       <guid>https://morvencao.github.io/notes/the_basic_of_cryptology/</guid>
       <description>密码学（Cryptography） 密码学是研究编制密码和破译密码的技术科学。研究密码变化的客观规律，应用于编制密码以保守通信秘密的，称为编码学；应用于破译密码以获取通信情报的，称为破译学，总称密码学。 密码是通信双方按约定的法则进行信息特殊变换的一种重要保密手段。依照这些法则，变明文为密文，称为加密变换；变密文为明文，称为脱密变换。密码在早期仅对文字或数码进行加、脱密变换，随着通信技术的发展，对语音、图像、数据等都可实施加、脱密变换。
