@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>Deploy an Istio mesh across multiple IBM Cloud Private clusters using Istio Gateway</title>
+      <title>Deploy Istio Multcluster in IBM Cloud Private clusters using Gateway</title>
       <link>https://morven.life/en/posts/istio_multicluster_with_gateway_in_icp/</link>
       <pubDate>Mon, 18 Mar 2019 00:00:00 +0000</pubDate>
       
