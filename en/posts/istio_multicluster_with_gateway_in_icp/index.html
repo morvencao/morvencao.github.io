@@ -1,0 +1,308 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/en/posts/istio_multicluster_with_gateway_in_icp/"><link rel="canonical" href="https://morven.life/en/posts/istio_multicluster_with_gateway_in_icp/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https://morven.life/"
+      },
+      "articleSection" : "posts",
+      "name" : "Deploy an Istio mesh across multiple IBM Cloud Private clusters using Istio Gateway",
+      "headline" : "Deploy an Istio mesh across multiple IBM Cloud Private clusters using Istio Gateway",
+      "description" : "Multicluster feature was introduced in the Istio 0.8 release, which allows the extension of the service mesh across multiple Kubernetes clusters. The primary goal of Istio multicluster is to manage a mesh composed of services running within more than one cluster but with all of the services running under a single administrative control. With Istio multicluster mesh, the location of the service deployment is transparent to the client and all services are the same.",
+      "inLanguage" : "en-US",
+      "author" : "Morven&#39;s Life",
+      "creator" : "Morven&#39;s Life",
+      "publisher": "Morven&#39;s Life",
+      "accountablePerson" : "Morven&#39;s Life",
+      "copyrightHolder" : "Morven&#39;s Life",
+      "copyrightYear" : "2019",
+      "datePublished": "2019-03-18 00:00:00 &#43;0000 UTC",
+      "dateModified" : "2019-03-18 00:00:00 &#43;0000 UTC",
+      "url" : "https://morven.life/en/posts/istio_multicluster_with_gateway_in_icp/",
+      "keywords" : [  ]
+  }</script><title>Deploy an Istio mesh across multiple IBM Cloud Private clusters using Istio Gateway - Morven&#39;s Blog</title><meta property="og:title" content="Deploy an Istio mesh across multiple IBM Cloud Private clusters using Istio Gateway - Morven&#39;s Blog"><meta property="og:type" content="article"><meta name="description" content="Multicluster feature was introduced in the Istio 0.8 release, which allows the extension of the service mesh across multiple Kubernetes clusters. The primary goal of Istio multicluster is to manage a mesh composed of services running within more than one cluster but with all of the services running under a single administrative control. With Istio multicluster mesh, the location of the service deployment is transparent to the client and all services are the same."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Blog"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post English" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/en/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">Deploy an Istio mesh across multiple IBM Cloud Private clusters using Istio Gateway</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2019-03-18 00:00:00 UTC">18 Mar 2019</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>Multicluster feature was introduced in the Istio 0.8 release, which allows the extension of the service mesh across multiple Kubernetes clusters. The primary goal of Istio multicluster is to manage a mesh composed of services running within more than one cluster but with all of the services running under a single administrative control. With Istio multicluster mesh, the location of the service deployment is transparent to the client and all services are the same.</p><p>There are <a href="https://istio.io/docs/setup/kubernetes/install/multicluster/">two possible deployment topology</a> available in <a href="https://istio.io/about/notes/1.1/">Istio 1.1</a> to achieve this goal:</p><ol><li>A single central Istio control plane that manages all the services in the mesh.</li><li>Multiple synchronized Istio control planes that have replicated service and Istio configurations.</li></ol><p>Istio multicluster started to support the first deployment topology since release 0.8. However, due to <a href="https://istio.io/docs/setup/kubernetes/install/multicluster/vpn/#prerequisites">limitations</a> of the underlying cloud deployment platform and performance bottleneck of pilot at scale, it hasn&rsquo;t been commonly adopted. See <a href="https://medium.com/ibm-cloud/multi-cluster-support-for-service-mesh-with-ibm-cloud-private-d7d791f9b778">Multi Cluster Support for Service Mesh with IBM Cloud Private</a> to learn how to setup Istio service mesh across multiple IBM Cloud Private clusters with one central Istio control plane.</p><p>In this article, I will demonstrate how to setup the multiple control plane deployment topology with two IBM Cloud Private clusters. More specifically, I will deploy an Istio mesh across multiple clusters using Istio Gateway to access remote services. I will also illustrate how to configure Istio route rules to call remote services in a multicluster service mesh by deploying the <a href="https://istio.io/docs/examples/bookinfo/">bookinfo sample</a>. View the Bookinfo Deployment Overview diagram for a description of the overall deployment topology.</p><p><img src="https://i.loli.net/2019/03/18/5c8f0170bbdd0.png" alt="Bookinfo Deployment Overview"></p><h2 id="the-multiple-control-plane-topology">The Multiple control plane topology</h2><p>In the multiple control plane deployment topology, each IBM Cloud Private cluster will install an identical Istio control plane and each control plane manages its own services. To achieve cross cluster communication by using mutation TLS (mTLS), I will configure a common root Certificate Authority (CA) and Istio multicluster gateways for the respective clusters. All clusters are within a shared administrative control for policy enforcement and security. There are no special networking restrictions for this topology, therefore it&rsquo;s generally considered the easiest approach to start with when there is no universal connectivity across clusters.</p><p><img src="https://i.loli.net/2019/03/18/5c8f01cb4fb03.png" alt="Istio Multicluster with Gateway Topology"></p><p>Service communication inside of the cluster use Kubernetes DNS suffix, e.g. <code>foo.ns1.svc.cluster.local</code>. For service discovery across clusters, Istio provides a CoreDNS plugin that can be configured in <code>kube-dns</code> to handle DNS resolutions for services in your remote cluster in the following format: <code>&lt;name&gt;.&lt;namespace&gt;.global</code>. For example, requests to any cluster to <code>bar.ns2.global</code> will resolve to the <code>bar</code> service in namespace <code>ns2</code> of the corresponding cluster.</p><h2 id="setting-up-the-istio-mesh-across-multiple-ibm-cloud-private-clusters">Setting up the Istio mesh across multiple IBM Cloud Private clusters</h2><h3 id="prepare-and-install-two-ibm-cloud-private-clusters">Prepare and install two IBM Cloud Private Clusters</h3><p>To prepare and install your two IBM Cloud Private clusters, see <a href="https://www.ibm.com/support/knowledgecenter/SSBS6K_3.1.1/installing/install_config.html">Installation and validation</a> from IBM Cloud Private Knowledge Center. For the sake of simplicity, I will leave out the cluster setup steps. The overall information of the two clusters are as follow:</p><ul><li>Cluster1</li></ul><pre><code>name: cluster1
+network_cidr: 10.1.0.0/16
+</code></pre><ul><li>cluster2</li></ul><pre><code>name: cluster2
+network_cidr: 10.1.0.0/16
+</code></pre><blockquote><p>Note: This multicluster deployment topology does not require unique Pod Classless Inter-domain Routing (CIDR) setting for each cluster, which is one of the main difference from the first deployment topology.</p></blockquote><p>After the two IBM Cloud Private cluster installations are complete, you can move on to the next step.</p><h3 id="deploy-the-istio-control-plane-in-each-cluster">Deploy the Istio control plane in each cluster</h3><ol><li>Download the Istio 1.1 release package from the Istio release site corresponding to your operating system (OS). For example, if your OS is Linux, run the following command:</li></ol><pre><code>$ curl -LO https://github.com/istio/istio/releases/download/1.1.0/istio-1.1.0-linux.tar.gz
+</code></pre><ol><li>Run the following commands to extract the Istio package. Enter the release directory and add the <code>istioctl</code> binary to your <code>PATH</code> environment variable:</li></ol><pre><code>$ tar -xzf istio-1.1.0-linux.tar.gz
+$ cd istio-1.1.0
+$ export PATH=$PWD/bin:$PATH
+</code></pre><ol><li>Prepare the root CA certificates for <code>Citadel</code> for all of your clusters. The shared root CA is used by cross cluster mTLS communication.</li></ol><blockquote><p>Note: The following instructions use the certificates from the Istio samples directory for both clusters. In your production environment, you should use the CA certificate signed by your organization&rsquo;s root CA.</p></blockquote><ol><li>Generate the Istio deployment manifest YAML file with multicluster gateways by using <code>Helm</code>, run the following command:</li></ol><pre><code>$ cat install/kubernetes/helm/istio-init/files/crd-* &gt; $HOME/istio-multicluster.yaml
+$ helm template install/kubernetes/helm/istio --name istio --namespace istio-system -f install/kubernetes/helm/istio/example-values/values-istio-multicluster-gateways.yaml &gt;&gt; $HOME/istio-multicluster.yaml
+</code></pre><ol><li>Create a Kubernetes <code>secret</code> that contains your generated <code>CA</code> certificates. Run the following commands in each cluster:</li></ol><pre><code>$ kubectl create namespace istio-system
+$ kubectl create secret generic cacerts -n istio-system \
+    --from-file=samples/certs/ca-cert.pem \
+    --from-file=samples/certs/ca-key.pem \
+    --from-file=samples/certs/root-cert.pem \
+    --from-file=samples/certs/cert-chain.pem
+</code></pre><ol><li>Run the following command to apply the Istio installation manifest YAML file that was generated in the previous step to install Istio in each cluster:</li></ol><pre><code>$ kubectl apply -f $HOME/istio-multicluster.yaml
+</code></pre><ol><li>Verify that the Istio service and pods are ready by running the following command:</li></ol><pre><code>$ kubectl -n istio-system get svc,pod
+NAME                             TYPE           CLUSTER-IP       EXTERNAL-IP                     PORT(S)                                                                                                                                      AGE
+service/istio-citadel            ClusterIP      172.30.31.4      &lt;none&gt;                          8060/TCP,15014/TCP                                                                                                                           1m
+service/istio-galley             ClusterIP      172.30.142.84    &lt;none&gt;                          443/TCP,15014/TCP,9901/TCP                                                                                                                   1m
+service/istio-ingressgateway     LoadBalancer   172.30.146.214   9.30.254.120                    80:31380/TCP,443:31390/TCP,31400:31400/TCP,15029:31940/TCP,15030:31013/TCP,15031:30557/TCP,15032:31641/TCP,15443:31972/TCP,15020:31881/TCP   1m
+service/istio-pilot              ClusterIP      172.30.168.177   &lt;none&gt;                          15010/TCP,15011/TCP,8080/TCP,15014/TCP                                                                                                       1m
+service/istio-policy             ClusterIP      172.30.16.185    &lt;none&gt;                          9091/TCP,15004/TCP,15014/TCP                                                                                                                 1m
+service/istio-sidecar-injector   ClusterIP      172.30.14.158    &lt;none&gt;                          443/TCP                                                                                                                                      1m
+service/istio-telemetry          ClusterIP      172.30.29.50     &lt;none&gt;                          9091/TCP,15004/TCP,15014/TCP,42422/TCP                                                                                                       1m
+service/istiocoredns             ClusterIP      172.30.155.122   &lt;none&gt;                          53/UDP,53/TCP                                                                                                                                1m
+service/prometheus               ClusterIP      172.30.122.178   &lt;none&gt;                          9090/TCP                                                                                                                                     1m
+NAME                                               READY     STATUS      RESTARTS   AGE
+pod/istio-citadel-69d57d7944-7qpj5                 1/1       Running     0          1m
+pod/istio-cleanup-secrets-1.1.0-k678m              1/1       Completed   0          1m
+pod/istio-galley-6986bf67cb-jhx8q                  1/1       Running     0          1m
+pod/istio-ingressgateway-56b8f56568-zr6v5          1/1       Running     0          1m
+pod/istio-pilot-56d455777d-w25cf                   1/2       Running     0          1m
+pod/istio-policy-64cdcd4d7f-kdpt4                  2/2       Running     0          1m
+pod/istio-security-post-install-1.1.0-rc.3-5hrg9   0/1       Completed   0          1m
+pod/istio-sidecar-injector-7bf6cbc9bb-dmstc        1/1       Running     0          1m
+pod/istio-telemetry-664f7d7789-lbs7q               2/2       Running     0          1m
+pod/istiocoredns-c87b95d6-d9549                    2/2       Running     0          1m
+pod/prometheus-89bc5668c-k97sf                     1/1       Running     0          1m
+</code></pre><p>As you verify the Istio service and pods from the output, you may notice that a extra service called <code>istiocoredns</code>, is deployed. <code>istiocoredns</code> is used to handle DNS resolution for remote services.</p><ol><li>Verify that the multicluster gateways are ready by running the following command:</li></ol><pre><code>$ kubectl -n istio-system get gateways
+NAME                                AGE
+istio-multicluster-egressgateway    5m
+istio-multicluster-ingressgateway   5m
+</code></pre><p>You have deployed two identical Istio control plane in the IBM Cloud Private clusters and are ready to move to the next step.</p><h2 id="configure-the-kube-dns-to-resolve-the-remote-services">Configure the kube-dns to resolve the remote services</h2><p>In the previous step, we found that the Istio control plane also provides a CoreDNS plugin to handle DNS resolution for services for services in your remote cluster in the following format <code>&lt;name&gt;.&lt;namespace&gt;.global</code>. In order to utilize this DNS plugin, the Kubernetes DNS needs to be configured to point to <code>istiocoredns</code> as the DNS server for the <code>.global</code> DNS domain.</p><p>For an IBM Cloud Private cluster, you need to update the existing Kubernetes DNS configMap named <code>kube-dns</code> for each cluster that will be calling services in your remote clusters. Run the following command to configure the Kubernetes DNS:</p><pre><code>$ cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-dns
+  labels:
+    app: kube-dns
+    release: kube-dns
+    heritage: Tiller
+    addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            upstream
+            fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        proxy global $(kubectl get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})
+        proxy . /etc/resolv.conf
+        cache 30
+        reload
+    }
+EOF
+</code></pre><h3 id="deploy-the-bookinfo-sample">Deploy the Bookinfo sample</h3><ol><li>Deploy the bookinfo application in <code>cluster1</code> and then delete the <code>reviews</code> deployment of versions <code>v2</code> and <code>v3</code>. Run the following commands:</li></ol><pre><code>$ kubectl label ns default istio-injection=enabled
+$ kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+$ kubectl delete deploy reviews-v2 reviews-v3
+</code></pre><ol><li>Deploy the <code>ratings</code> service and version <code>v2</code> and <code>v3</code> of the reviews services in <code>cluster2</code>. Run the following command:</li></ol><pre><code>$ kubectl label ns default istio-injection=enabled
+$ cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratings
+  labels:
+    app: ratings
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: ratings
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ratings-v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ratings
+        version: v1
+    spec:
+      containers:
+      - name: ratings
+        image: istio/examples-bookinfo-ratings-v1:1.10.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews
+  labels:
+    app: reviews
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: reviews
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: reviews-v2
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: reviews
+        version: v2
+    spec:
+      containers:
+      - name: reviews
+        image: istio/examples-bookinfo-reviews-v2:1.10.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: reviews-v3
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: reviews
+        version: v3
+    spec:
+      containers:
+      - name: reviews
+        image: istio/examples-bookinfo-reviews-v3:1.10.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+EOF
+</code></pre><ol><li>Create the bookinfo gateway in <code>cluster1</code> and then access the <code>bookinfo</code> application through the gateway by running the following commands:</li></ol><pre><code>$ kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+$ export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name==&quot;http2&quot;)].nodePort}')
+$ export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o 'jsonpath={.items[0].status.hostIP}')
+$ export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+</code></pre><p>Point your browser to <code>http://$GATEWAY_URL/productpage</code> to view the <code>bookinfo</code> web page. If you refresh the page several times, you might see the <code>productpage</code> with reviews and <code>details</code> services, but without the <code>ratings</code> service because only <code>v1</code> of the <code>reviews</code> service is running on <code>cluster1</code> and it does not call the <code>ratings</code> services. Continue to follow the steps to learn how to add <code>reviews</code> services of version <code>v1</code> and <code>v2</code> to the entire mesh.</p><ol><li>Get the <code>host IP</code> and the <code>NodePort</code> of Istio ingress gateway in <code>cluster2</code>. Run the following commands:</li></ol><pre><code>$ export CLUSTER2_GW_HOST=$(kubectl get pod -l app=istio-ingressgateway \
+    -n istio-system -o jsonpath='{.items..status.hostIP}')
+$ export CLUSTER2_GW_PORT=$(kubectl get svc -n istio-system istio-ingressgateway \
+    -o=jsonpath='{.spec.ports[?(@.port==15443)].nodePort}')
+</code></pre><blockquote><p>Note: Since IBM Cloud Private does not provide built-in support for the <code>LoadBalancer</code> service, you must use the <code>nodePort</code> to access the gateway. If you want enable <code>LoadBalancer</code> service type in IBM Cloud Private, see <a href="https://medium.com/ibm-cloud/working-with-loadbalancer-services-on-ibm-cloud-private-26b7f0d22b44">Working with LoadBalancer services on IBM Cloud Private</a> for more details.</p></blockquote><ol><li>Create ServiceEntry and DestinationRule for the reviews service in cluster2.</li></ol><blockquote><p><strong>Important</strong>: Every service that needs to be accessed from a remote cluster requires a <code>ServiceEntry</code> configuration in the remote cluster. The host used in the <code>ServiceEntry</code> should be of the form <code>&lt;name&gt;.&lt;namespace&gt;.global</code> where name and namespace correspond to the service&rsquo;s name and namespace respectively.</p></blockquote><p>For DNS resolution to services under the <code>*.global</code> domain, we need to assign these services an IP address and it must be in the <code>address</code> field of corresponding <code>ServiceEntry</code> configuration. It is recommended that the IPs are non-routable outside of a pod. For the <code>ServiceEntry</code> example, use the IPs in <code>127.255.0.0/16</code>. Application traffic for the IPs will be captured by the Istio sidecar and routed to the ingress gateway of the corresponding remote cluster.</p><ul><li>Create <code>ServiceEntry</code> and <code>DestinationRule</code> configurations. Run the following command:</li></ul><pre><code>$ cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: reviews-default
+spec:
+  hosts:
+  # must be of form name.namespace.global
+  - reviews.default.global
+  # Treat remote cluster services as part of the service mesh
+  # as all clusters in the service mesh share the same root of trust.
+  location: MESH_INTERNAL
+  ports:
+  - name: http1
+    number: 9080
+    protocol: http
+  resolution: DNS
+  addresses:
+  # the IP address to which reviews.default.global will resolve to
+  # must be unique for each remote service, within a given cluster.
+  # This address need not be routable. Traffic for this IP will be captured
+  # by the sidecar and routed appropriately.
+  - 127.255.0.2
+  endpoints:
+  # This is the routable address of the ingress gateway in cluster2 that
+  # sits in front of productpage service. Traffic from the sidecar will be
+  # routed to this address.
+  - address: ${CLUSTER2_GW_HOST}
+    ports:
+      http1: ${CLUSTER2_GW_PORT}
+    labels:
+      cluster: cluster2
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: reviews-global
+spec:
+  host: reviews.default.global
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+  subsets:
+  - name: v2
+    labels:
+      cluster: cluster2
+  - name: v3
+    labels:
+      cluster: cluster2
+EOF
+</code></pre><blockquote><p>Note: The labels of the subsets in the destination rule map to the <code>ServiceEntry</code> endpoint label, (<code>cluster: cluster2</code>) correspond to the <code>cluster2</code> gateway. Once the request reaches the destination cluster, the local <code>DestinationRule</code> configuration can be used to identify the actual pod labels (version: <code>v2</code> or version: <code>v3</code>).</p></blockquote><ol><li>Run the following command to define the subset v1 with DestinationRule in <code>cluster1</code>:</li></ol><pre><code>$ cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: reviews
+spec:
+  host: reviews.default.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+EOF
+</code></pre><ol><li>Define the subsets of <code>v2</code> and <code>v3</code> with <code>DestinationRule</code> in <code>cluster2</code> by running the following command:</li></ol><pre><code>$ cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: reviews
+spec:
+  host: reviews.default.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+  subsets:
+  - name: v2
+    labels:
+      version: v2
+  - name: v3
+    labels:
+      version: v3
+EOF
+</code></pre><ol><li>Create a <code>VirtualService</code> configuration on <code>cluster1</code> that route the <code>reviews</code> service traffic for the user <code>jason</code> to the <code>reviews</code> versions <code>v2</code> and <code>v3</code> (<sup>50</sup>&frasl;<sub>50</sub>) and traffic for any other user to the <code>reviews</code> version <code>v1</code>:</li></ol><pre><code>$ cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews
+spec:
+  hosts:
+    - reviews.default.svc.cluster.local
+  http:
+  - match:
+    - headers:
+        end-user:
+          exact: jason
+    route:
+    - destination:
+        host: reviews.default.global
+        subset: v2
+      weight: 50
+    - destination:
+        host: reviews.default.global
+        subset: v3
+      weight: 50
+  - route:
+    - destination:
+        host: reviews.default.svc.cluster.local
+        subset: v1
+EOF
+</code></pre><ol><li>Verify that the route rules across the entire mesh are working as expected:</li></ol><p>Return to the <code>/productpage</code> of the <code>bookinfo</code> application and log in as a user and refresh the browser. You should see the display alternating between <code>black</code> and <code>red</code> <code>ratings</code> stars (<code>v2</code> and <code>v3</code>). If you log out the user <code>jason</code> or log in as another user, the <code>reviews</code> service appears without <code>ratings</code> service (<code>v1</code>).</p><h2 id="summary">Summary</h2><p>In this article, I demonstrated how to setup an Istio mesh across multiple IBM Cloud Private clusters using Istio Gateway. To achieve cross clusters mTLS communication, a common root CA was configured. Since there are no special networking limitations for this topology, it is the easiest approach to get started with an Istio multicluster deployment.</p><p>In the <code>bookinfo</code> deployment example, you learned how to use Istio route rules to distribute the versions of a service across multiple clusters with multiple control plane topology. Services in each cluster can access other local services using their Kubernetes FQDN. For example, the <code>productpage</code> service calls the local details service via <code>details.default.svc.cluster.local</code>. For example, Istio provides a CoreDNS plugin that can be configured to handle service names to resolve remote services. The <code>&lt;namespace&gt;.global</code> parameter depends on the <code>ServiceEntry</code> configuration that you manually defined.</p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+    container: document.getElementById('article')
+  });</script><script>hljs.initHighlightingOnLoad();
+  
+  var posts = document.getElementById('posts-list');
+  posts && quicklink({
+    el: posts,
+    priority: true,
+  });</script></body></html>
