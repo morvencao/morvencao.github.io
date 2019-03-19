@@ -6,10 +6,26 @@
     <description>Recent content in Posts on Morven&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 22 Dec 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 02 Oct 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>创建尽可能最小的docker镜像</title>
+      <link>https://morven.life/posts/build_the_smallest_possible_docker_image/</link>
+      <pubDate>Tue, 02 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/posts/build_the_smallest_possible_docker_image/</guid>
+      <description>如果你熟悉docker，你可能知道docker镜像存储使用Union FS分层存储技术。在构建一个docker镜像时，会一层一层构建，前一层是后一层的基础，每一层构建完成之后就不会再改变。正是因为这一点，我们在构建docker镜像的时候，要特别小心，每一层尽量只包含需要的东西，构建应用额外的东西尽量在构建结束的时候删除。举例来说，比如你在构建一个go写的简单web应用程序的时候，原则上只需要一个go编译出来的binary，没有必要保留构建的工具以及环境。
+docker官方提供了一个特殊的空镜像scratch,使用这个镜像意味着我们不需要任何的已有镜像为基础，直接将我们自定义的指令作为镜像的第一层。
+FROM scratch ...  实际上，我们可以创建自己的scratch镜像：
+tar cv --files-from /dev/null | docker import - scratch  那么，问题来了，我们可以使用scratch镜像为基础制作哪些镜像呢？答案是所有不需要任何依赖库的可执行文件都可以放到以scratch为基础镜像来制作。具体来说，对于linux下静态编译的程序来说，并不需要操作系统提供的运行时支持，所有需要的一切都已经在可执行文件中包含了，比如使用go语言开发的很多应用会使用直接FROM scratch的方式制作镜像，这样最终的镜像体积非常小。
+下面是一个简单的go语言开发的web程序代码：
+package main import ( &amp;quot;fmt&amp;quot; &amp;quot;net/http&amp;quot; ) func main() { http.HandleFunc(&amp;quot;/&amp;quot;, func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, &amp;quot;Hello, you&#39;ve requested: %s\n&amp;quot;, r.URL.Path) }) http.ListenAndServe(&amp;quot;:80&amp;quot;, nil) }  我们可以使用go build来编译此程序，并以scratch为基础制作docker镜像，dockerfile如下：
+FROM scratch ADD helloworld / CMD [&amp;quot;/helloworld&amp;quot;]  接下来开始编译并构建docker镜像：
+mc@mcmbp:~/gocode/src/hello# go build -o helloworld mc@mcmbp:~/gocode/src/hello# docker build -t helloworld .</description>
+    </item>
     
     <item>
       <title>又是冬至日</title>
