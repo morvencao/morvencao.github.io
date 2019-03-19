@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>创建尽可能最小的docker镜像</title>
+      <title>创建最小的docker镜像</title>
       <link>https://morven.life/posts/build_the_smallest_possible_docker_image/</link>
       <pubDate>Tue, 02 Oct 2018 00:00:00 +0000</pubDate>
       
