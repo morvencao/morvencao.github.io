@@ -9,12 +9,11 @@
       "name" : "创建私有CA以及颁发SSL证书",
       "headline" : "创建私有CA以及颁发SSL证书",
       "description" : "在上一篇文章[深入理解PKI系统的与数字证书(/notes/the_pki_and_digital_certificate/)中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
-SSL证书生成工具 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
-有两种常见的工具来生成RSA公私密钥对：
- ssh-keygen openssl genrsa  其实ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。
+SSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:
+ Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
+  ssh-keygen openssl genrsa  实际上ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。
 ssh-keygen 举例来说，我们要生成2048位RSA密钥对：
-$ ssh-keygen -b 2048 -t rsa -f foo_rsa
-Generating public/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key&rsquo;s randomart image is: +&ndash;[ RSA 2048]&mdash;-+ | | | | | | | .",
+$ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key's randomart image is: +--[ RSA 2048]----+ | | | | | | | .",
       "inLanguage" : "en-US",
       "author" : "Morven&#39;s Life",
       "creator" : "Morven&#39;s Life",
@@ -27,12 +26,31 @@ Generating public/private rsa key pair. Enter passphrase (empty for no passphras
       "url" : "https://morven.life/notes/create_pki_with_openssl/",
       "keywords" : [  ]
   }</script><title>创建私有CA以及颁发SSL证书 - Morven&#39;s Life</title><meta property="og:title" content="创建私有CA以及颁发SSL证书 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="在上一篇文章[深入理解PKI系统的与数字证书(/notes/the_pki_and_digital_certificate/)中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
-SSL证书生成工具 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
-有两种常见的工具来生成RSA公私密钥对：
- ssh-keygen openssl genrsa  其实ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。
+SSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:
+ Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
+  ssh-keygen openssl genrsa  实际上ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。
 ssh-keygen 举例来说，我们要生成2048位RSA密钥对：
-$ ssh-keygen -b 2048 -t rsa -f foo_rsa
-Generating public/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key&rsquo;s randomart image is: &#43;&ndash;[ RSA 2048]&mdash;-&#43; | | | | | | | ."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">创建私有CA以及颁发SSL证书</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2014-11-24 00:00:00 UTC">24 Nov 2014</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>在上一篇文章[深入理解PKI系统的与数字证书(/notes/the_pki_and_digital_certificate/)中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。</p><h2 id="ssl证书生成工具">SSL证书生成工具</h2><p>有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的<code>SSH</code>服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。</p><p>有两种常见的工具来生成<code>RSA</code>公私密钥对：</p><ul><li><code>ssh-keygen</code></li><li><code>openssl genrsa</code></li></ul><p>其实<code>ssh-keygen</code>底层也是使用<code>OpenSSL</code>提供的库来生成密钥。</p><h3 id="ssh-keygen">ssh-keygen</h3><p>举例来说，我们要生成<code>2048</code>位RSA密钥对：</p><p>$ ssh-keygen -b 2048 -t rsa -f foo_rsa</p><p>Generating public/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key&rsquo;s randomart image is: +&ndash;[ RSA 2048]&mdash;-+ | | | | | | | . + | | * S . . ..| | o o + +. o o| | o o *.. oo| | . ..o o.oo| | .. . oE.| +&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p><p><code>-b</code>指定密钥位数 <code>-t</code>指定密钥类型：<code>rsa</code>，<code>dsa</code>, <code>ecdsa</code></p><p>如果密钥对用于<code>ssh</code>，那么习惯上私钥命名为<code>id_rsa</code>,对应的公钥就是<code>id_rsa.pub</code>，然后可以使用<code>ssh-copy-id</code>把密钥追加到远程主机的<code>.ssh/authorized_key</code>文件里：</p><pre><code>$ ssh-copy-id -i ~/.ssh/id_rsa.pub user@mc-lnx
+$ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key&#39;s randomart image is: &#43;--[ RSA 2048]----&#43; | | | | | | | ."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">创建私有CA以及颁发SSL证书</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2014-11-24 00:00:00 UTC">24 Nov 2014</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>在上一篇文章[深入理解PKI系统的与数字证书(/notes/the_pki_and_digital_certificate/)中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。</p><h2 id="ssl证书生成工具">SSL证书生成工具</h2><p>有以下两种常见的工具来生成<code>RSA</code>公私密钥对:</p><blockquote><p>Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的<code>SSH</code>服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。</p></blockquote><ul><li><code>ssh-keygen</code></li><li><code>openssl genrsa</code></li></ul><p>实际上<code>ssh-keygen</code>底层也是使用<code>OpenSSL</code>提供的库来生成密钥。</p><h3 id="ssh-keygen">ssh-keygen</h3><p>举例来说，我们要生成<code>2048</code>位RSA密钥对：</p><pre><code>$ ssh-keygen -b 2048 -t rsa -f foo_rsa
+Generating public/private rsa key pair.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in foo_rsa.
+Your public key has been saved in foo_rsa.pub.
+The key fingerprint is:
+b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis
+The key's randomart image is:
++--[ RSA 2048]----+
+|                 |
+|                 |
+|                 |
+|     . +         |
+|      * S .  . ..|
+|     o o + +. o o|
+|      o o *..  oo|
+|       . ..o o.oo|
+|         .. . oE.|
++-----------------+
+</code></pre><ul><li><code>-b</code>指定密钥位数</li><li><code>-t</code>指定密钥类型：<code>rsa</code>，<code>dsa</code>, <code>ecdsa</code></li></ul><blockquote><p>Note: 如果密钥对用于<code>ssh</code>，那么习惯上私钥命名为<code>id_rsa</code>,对应的公钥就是<code>id_rsa.pub</code>，然后可以使用<code>ssh-copy-id</code>把密钥追加到远程主机的<code>.ssh/authorized_key</code>文件里。</p></blockquote><pre><code>$ ssh-copy-id -i ~/.ssh/id_rsa.pub user@mc-lnx
 </code></pre><p>默认生成的密钥对是<code>RFC 4716/SSH2</code>格式，可以转到<code>PEM</code>格式公其他程序使用：</p><pre><code>$ ssh-keygen -f id_rsa.pub -e -m pem
 -----BEGIN RSA PUBLIC KEY-----
 ...
