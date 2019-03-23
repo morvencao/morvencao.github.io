@@ -178,6 +178,21 @@ Dota的设计者“IceFrog”最终采用了一套&amp;rdquo;Ban&amp;amp;Pick&am
     </item>
     
     <item>
+      <title>创建私有CA以及颁发SSL证书</title>
+      <link>https://morven.life/notes/create_pki_with_openssl/</link>
+      <pubDate>Mon, 24 Nov 2014 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/create_pki_with_openssl/</guid>
+      <description>在上一篇文章[深入理解PKI系统的与数字证书(/notes/the_pki_and_digital_certificate/)中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
+SSL证书生成工具 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
+有两种常见的工具来生成RSA公私密钥对：
+ ssh-keygen openssl genrsa  其实ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。
+ssh-keygen 举例来说，我们要生成2048位RSA密钥对：
+$ ssh-keygen -b 2048 -t rsa -f foo_rsa
+Generating public/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key&amp;rsquo;s randomart image is: +&amp;ndash;[ RSA 2048]&amp;mdash;-+ | | | | | | | .</description>
+    </item>
+    
+    <item>
       <title>深入理解PKI系统的与数字证书</title>
       <link>https://morven.life/notes/the_pki_and_digital_certificate/</link>
       <pubDate>Wed, 12 Nov 2014 00:00:00 +0000</pubDate>
