@@ -52,7 +52,7 @@ var moduleA = (function(){ var _count = 0; var func1 = function(){ //.</descript
       <pubDate>Mon, 24 Nov 2014 00:00:00 +0000</pubDate>
       
       <guid>https://blog.morven.life/notes/create_pki_with_openssl/</guid>
-      <description>在上一篇文章[深入理解PKI系统的与数字证书(/notes/the_pki_and_digital_certificate/)中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
+      <description>在上一篇文章深入理解PKI系统的与数字证书中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
 SSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:
  Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
   ssh-keygen openssl genrsa  实际上ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。
