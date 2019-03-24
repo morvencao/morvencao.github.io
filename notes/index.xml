@@ -61,7 +61,7 @@ $ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair. E
     </item>
     
     <item>
-      <title>深入理解PKI系统的与数字证书</title>
+      <title>深入理解PKI系统的与CA中心</title>
       <link>https://morven.life/notes/the_pki_and_digital_certificate/</link>
       <pubDate>Wed, 12 Nov 2014 00:00:00 +0000</pubDate>
       
