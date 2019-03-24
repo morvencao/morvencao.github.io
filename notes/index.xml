@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Notes on Morven&#39;s Life</title>
-    <link>https://morven.life/notes/</link>
+    <link>https://blog.morven.life/notes/</link>
     <description>Recent content in Notes on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 20 Nov 2016 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>webpack使用小结</title>
-      <link>https://morven.life/notes/webpack_summary/</link>
+      <link>https://blog.morven.life/notes/webpack_summary/</link>
       <pubDate>Sun, 20 Nov 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/webpack_summary/</guid>
+      <guid>https://blog.morven.life/notes/webpack_summary/</guid>
       <description>分而治之是软件工程领域的重要思想，对于复杂度日益增加的前端也同样适用。一般前端团队选择合适的框架之后就要开始考虑开发维护的效率问题。而模块化是目前前端领域比较流行的分而治之手段。 Javascript模块化已经有很多规范和工具，例如CommonJS/AMD/requireJS/CMD/ES6 Module，在上篇文章中有详细的介绍。CSS模块化基本要依靠Less, Sass以及Stylus等于处理器的import/minxin特性实现。而HTML以及HTML模版和其他资源比如图片的模块化怎么去处理呢？ 这也正是webpack要解决的问题之一。严格来说，webpack是一个模块打包工具（module bundler），它既不像requireJS和seaJS这样的模块加载器，也不像grunt和gulp这样优化前端开发流程的构建工具，像是两类工具的集合却又远不止如此。
 Webpack是一个模块打包工具，它将JS、CSS、HTML以及图片等都视为模块资源，这些模块资源必然存在某种依赖关系，webpack就是通过静态分析各种模块文件之间的依赖关系，通过不同种类的Loader将所有模块打包成起来。
 webpack VS Gulp 严格来说，Gulp与webpack并没有可比性。Gulp应该和Grunt属于同一类工具，能够优化前端工作流程，比如压缩合并JS、CSS ，预编译Typescript、Sass等。也就是说，我们可以根据需要配置插件，就可以将之前需要手动完成的任务自动化。webpack作为模块打包工具，可以和browserify相提并论。两者都是预编译模块化解决方案。相比requireJS、seaJS这类‘在线’模块化方案更加智能。因为是‘预编译’，不需要在浏览器中加载解释器。另外，你可以直接在本地编写JS，不管是 AMD / CMD / ES6 风格的模块化，都编译成浏览器认识的JS。
@@ -29,10 +29,10 @@ if (__DEV__) { // code for dev //.</description>
     
     <item>
       <title>Javascript模块化开发</title>
-      <link>https://morven.life/notes/developing-modular-javascript/</link>
+      <link>https://blog.morven.life/notes/developing-modular-javascript/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/developing-modular-javascript/</guid>
+      <guid>https://blog.morven.life/notes/developing-modular-javascript/</guid>
       <description>随着互联网时代的到来，前端技术更新速度越来越快。起初只要在script标签中嵌入几行代码就能实现一些基本的用户交互，到现在随着Ajax，jQuery，MVC以及MVVM的发展，Javascript代码量变得日益庞大复杂。 网页越来越像桌面程序，需要一个团队分工协作、进度管理、单元测试等等&amp;hellip;&amp;hellip;开发者不得不使用软件工程的方法，管理网页的业务逻辑。 Javascript模块化开发，已经成为一个迫切的需求。理想情况下，开发者只需要实现核心的业务逻辑，其他都可以加载别人已经写好的模块。 但是，Javascript不是一种模块化编程语言，它不支持&amp;rdquo;类&amp;rdquo;（class），更遑论&amp;rdquo;模块&amp;rdquo;（module）了。直到前不久ES6正式定稿，Javascript才开始正式支持&amp;rdquo;类&amp;rdquo;和&amp;rdquo;模块&amp;rdquo;，但还需要很长时间才能完全投入实用。
 什么是模块化 模块是任何大型应用程序架构中不可缺少的一部分，一个模块就是实现特定功能的代码区块或者文件。模块可以使我们清晰地分离和组织项目中的代码单元。在项目开发中，通过移除依赖，松耦合可以使应用程序的可维护性更强。有了模块，开发者就可以更方便地使用别人的代码，想要什么功能，就加载什么模块。模块开发需要遵循一定的规范，否则就会混乱不堪。
 Javascript社区做了很多努力，在现有的运行环境中，实现&amp;rdquo;模块&amp;rdquo;的效果。本文总结了当前＂Javascript模块化编程＂的最佳实践，说明如何投入实用。
@@ -48,10 +48,10 @@ var moduleA = (function(){ var _count = 0; var func1 = function(){ //.</descript
     
     <item>
       <title>创建私有CA以及颁发SSL证书</title>
-      <link>https://morven.life/notes/create_pki_with_openssl/</link>
+      <link>https://blog.morven.life/notes/create_pki_with_openssl/</link>
       <pubDate>Mon, 24 Nov 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/create_pki_with_openssl/</guid>
+      <guid>https://blog.morven.life/notes/create_pki_with_openssl/</guid>
       <description>在上一篇文章[深入理解PKI系统的与数字证书(/notes/the_pki_and_digital_certificate/)中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
 SSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:
  Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
@@ -62,10 +62,10 @@ $ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair. E
     
     <item>
       <title>深入理解PKI系统的与CA中心</title>
-      <link>https://morven.life/notes/the_pki_and_digital_certificate/</link>
+      <link>https://blog.morven.life/notes/the_pki_and_digital_certificate/</link>
       <pubDate>Wed, 12 Nov 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/the_pki_and_digital_certificate/</guid>
+      <guid>https://blog.morven.life/notes/the_pki_and_digital_certificate/</guid>
       <description>在上一篇文章数字签名与数字证书中介绍了数字签名以及数字证书的一些基础知识以及数字证书的作用，但是并没有提到数字证书的管理，比如数字证书的申请，数字证书的文件格式等知识。这篇文章将继续探讨数字证书的管理知识。
 说到数字证书的管理，不得不提到一个词，PKI(Publick Key Infrastructure)，即公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的供私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。
  PKI既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为PKI
@@ -84,10 +84,10 @@ X.509是定义了公钥证书结构的基本标准，是目前非常通用的证
     
     <item>
       <title>数字签名与数字证书</title>
-      <link>https://morven.life/notes/the_digital_signature_and_digital_certificate/</link>
+      <link>https://blog.morven.life/notes/the_digital_signature_and_digital_certificate/</link>
       <pubDate>Mon, 06 Oct 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/the_digital_signature_and_digital_certificate/</guid>
+      <guid>https://blog.morven.life/notes/the_digital_signature_and_digital_certificate/</guid>
       <description>在之前的密码学笔记主要是介绍密码学的基础知识，包括两种加密算法的原理，引入在非对称加密算法中数字证书（Digital Certificate）的概念。这篇笔记将继续探讨什么是数字证书，不过在了解它之前，先得知道什么是数字签名（Digital Signature）。
 关于数字签名和数字证书的概念，有一篇非常经典的文章，本文的大部分内容来自于那篇文章，喜欢读英文原版的请移步至：http://www.youdzone.com/signature.html
 Bob生成了自己的（公钥，私钥）对：
@@ -105,10 +105,10 @@ Susan收到信件之后，首先使用用CA的公钥（一般都是公开的）�
     
     <item>
       <title>密码学基础</title>
-      <link>https://morven.life/notes/the_basic_of_cryptology/</link>
+      <link>https://blog.morven.life/notes/the_basic_of_cryptology/</link>
       <pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/the_basic_of_cryptology/</guid>
+      <guid>https://blog.morven.life/notes/the_basic_of_cryptology/</guid>
       <description>密码学（Cryptography） 密码学是研究编制密码和破译密码的技术科学。研究密码变化的客观规律，应用于编制密码以保守通信秘密的，称为编码学；应用于破译密码以获取通信情报的，称为破译学，总称密码学。 密码是通信双方按约定的法则进行信息特殊变换的一种重要保密手段。依照这些法则，变明文为密文，称为加密变换；变密文为明文，称为脱密变换。密码在早期仅对文字或数码进行加、脱密变换，随着通信技术的发展，对语音、图像、数据等都可实施加、脱密变换。
 密码算法 什么是密码算法（Cryptography Algorithm），通常是指加、解密过程所使用的信息变换规则，是用于信息加密和解密的数学函数。对明文进行加密时所采用的规则称作加密算法，而对密文进行解密时所采用的规则称作解密算法。加密算法和解密算法的操作通常都是在一组密钥的控制下进行的。
 什么是密钥？密钥（Secret Key）是密码算法中的一个可变参数，通常是一组满足一定条件的随机序列。用于加密算法的叫做加密密钥，用于解密算法的叫做解密密钥，加密密钥和解密密钥可能相同，也可能不相同。

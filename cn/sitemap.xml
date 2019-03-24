@@ -3,161 +3,161 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://morven.life/posts/build_the_smallest_possible_docker_image/</loc>
+    <loc>https://blog.morven.life/posts/build_the_smallest_possible_docker_image/</loc>
     <lastmod>2018-10-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/thoughts_in_winter_solstice/</loc>
+    <loc>https://blog.morven.life/posts/thoughts_in_winter_solstice/</loc>
     <lastmod>2017-12-22T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/ten-years-for-naruto/</loc>
+    <loc>https://blog.morven.life/posts/ten-years-for-naruto/</loc>
     <lastmod>2017-10-10T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/the-two-years/</loc>
+    <loc>https://blog.morven.life/posts/the-two-years/</loc>
     <lastmod>2017-06-20T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/farewell-2016/</loc>
+    <loc>https://blog.morven.life/posts/farewell-2016/</loc>
     <lastmod>2016-12-18T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/notes/webpack_summary/</loc>
+    <loc>https://blog.morven.life/notes/webpack_summary/</loc>
     <lastmod>2016-11-20T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/notes/developing-modular-javascript/</loc>
+    <loc>https://blog.morven.life/notes/developing-modular-javascript/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/post_at_the_end_of_2015/</loc>
+    <loc>https://blog.morven.life/posts/post_at_the_end_of_2015/</loc>
     <lastmod>2015-12-29T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/ban-pick_in_dota_and_jury/</loc>
+    <loc>https://blog.morven.life/posts/ban-pick_in_dota_and_jury/</loc>
     <lastmod>2015-10-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/a_backward_glance_of_2014/</loc>
+    <loc>https://blog.morven.life/posts/a_backward_glance_of_2014/</loc>
     <lastmod>2014-12-26T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/notes/create_pki_with_openssl/</loc>
+    <loc>https://blog.morven.life/notes/create_pki_with_openssl/</loc>
     <lastmod>2014-11-24T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/notes/the_pki_and_digital_certificate/</loc>
+    <loc>https://blog.morven.life/notes/the_pki_and_digital_certificate/</loc>
     <lastmod>2014-11-12T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/notes/the_digital_signature_and_digital_certificate/</loc>
+    <loc>https://blog.morven.life/notes/the_digital_signature_and_digital_certificate/</loc>
     <lastmod>2014-10-06T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/notes/the_basic_of_cryptology/</loc>
+    <loc>https://blog.morven.life/notes/the_basic_of_cryptology/</loc>
     <lastmod>2014-09-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/internship-at-ibm/</loc>
+    <loc>https://blog.morven.life/posts/internship-at-ibm/</loc>
     <lastmod>2013-04-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/the_story_of_big_and_little_endian/</loc>
+    <loc>https://blog.morven.life/posts/the_story_of_big_and_little_endian/</loc>
     <lastmod>2013-03-26T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/common/about/</loc>
+    <loc>https://blog.morven.life/common/about/</loc>
     <lastmod>2013-03-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://morven.life/categories/</loc>
+    <loc>https://blog.morven.life/categories/</loc>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://morven.life/en/categories/"
+                href="https://blog.morven.life/en/categories/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
-                href="https://morven.life/categories/"
+                href="https://blog.morven.life/categories/"
                 />
   </url>
   
   <url>
-    <loc>https://morven.life/common/</loc>
+    <loc>https://blog.morven.life/common/</loc>
     <lastmod>2013-03-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://morven.life/</loc>
+    <loc>https://blog.morven.life/</loc>
     <lastmod>2018-10-02T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://morven.life/en/"
+                href="https://blog.morven.life/en/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
-                href="https://morven.life/"
+                href="https://blog.morven.life/"
                 />
   </url>
   
   <url>
-    <loc>https://morven.life/notes/</loc>
+    <loc>https://blog.morven.life/notes/</loc>
     <lastmod>2016-11-20T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://morven.life/posts/</loc>
+    <loc>https://blog.morven.life/posts/</loc>
     <lastmod>2018-10-02T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://morven.life/en/posts/"
+                href="https://blog.morven.life/en/posts/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
-                href="https://morven.life/posts/"
+                href="https://blog.morven.life/posts/"
                 />
   </url>
   
   <url>
-    <loc>https://morven.life/tags/</loc>
+    <loc>https://blog.morven.life/tags/</loc>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://morven.life/en/tags/"
+                href="https://blog.morven.life/en/tags/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
-                href="https://morven.life/tags/"
+                href="https://blog.morven.life/tags/"
                 />
   </url>
   

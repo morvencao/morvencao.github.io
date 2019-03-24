@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Commons on Morven&#39;s Life</title>
-    <link>https://morven.life/common/</link>
+    <link>https://blog.morven.life/common/</link>
     <description>Recent content in Commons on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 16 Mar 2013 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://morven.life/common/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.morven.life/common/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>About Me</title>
-      <link>https://morven.life/common/about/</link>
+      <link>https://blog.morven.life/common/about/</link>
       <pubDate>Sat, 16 Mar 2013 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/common/about/</guid>
+      <guid>https://blog.morven.life/common/about/</guid>
       <description>Hi, This is Morven, graduated from Nanjing University with Bechalor and Master degree in 2015, now working as a software engineer at IBM focusing on cloud technology. I generally use morvencao as my id on the Internet. I am a strong advocate and believer of Open Source Software and love reading, thinking, programming and everything challenging and interesting.
 Reach me:
  Gmail Github Twitter Medium Instagram  </description>
