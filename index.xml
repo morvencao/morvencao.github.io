@@ -164,6 +164,25 @@ Dota的设计者“IceFrog”最终采用了一套&amp;rdquo;Ban&amp;amp;Pick&am
     </item>
     
     <item>
+      <title>SSH协议以及端口转发</title>
+      <link>https://blog.morven.life/notes/the_knowledge_of_ssh/</link>
+      <pubDate>Tue, 10 Feb 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.morven.life/notes/the_knowledge_of_ssh/</guid>
+      <description>SSH估计是每台Linux机器的标配了。日程工作中程序员在本机写完Code之后，很少在本机上直接部署测试，经常需要通过SSH协议登录到实验室的Linux主机上验证。实际上SSH具备多种功能，不仅仅是远程登录这么简单，今天我们就详细探讨一下SSH协议以及它的高级功能-端口转发。
+SSH的原理 SSH是一种网络协议，用于计算机之间的加密登录，也就是说这种登陆是安全的。SSH协议之所以安全，是因为它基于非对称加密。基本的过程可以描述为：
+ 客户端通过SSH user@remote-host发起登录远程主机的请求 远程主机收到请求之后，将自己的公钥发给客户端 客户端使用这个公钥加密登录密码之后发给远程主机 远程主机使用自己的私钥，解密登陆请求，获得登录密码，如果正确，则建立SSH通道，之后所有客户端和远程主机的数据传输都要加密发送  看似很完美是吗？其实有个问题，如果有人中途拦截了登录请求，将自己伪造的公钥发送给客户端，客户端其实并不能识别这个公钥的可靠性，因为SSH协议并不像HTTPS协议那样，公钥是包含在证书中心CA来颁发的证书之中。所以有攻击者（中间人攻击-Man-in-the-middle-attack）拦截客户端到远程主机的登陆请求，伪造公钥来获取远程主机的登录密码，SSH协议的安全机制就荡然无存了。
+说实话，SSH协议本身确实无法阻止这种攻击形式，最终还是依靠终端用户自身来识别并规避风险。
+比如，我们在第一次登录某一台远程主机的时候，会得到如下提示：
+$ ssh user@remote-host The authenticity of host &#39;10.30.110.230 (10.30.110.230)&#39; can&#39;t be established. ECDSA key fingerprint is SHA256:RIXlybA1rgf4mbnWvLuOMAxGRQQFgfnM2+YbYLT7aQA. Are you sure you want to continue connecting (yes/no)?  这个提示的意思是说无法确定远程主机的真实性，只能得到它的指纹(fingerprint)，需要你确认是否信任这个返回的公钥。这里所说的&amp;rdquo;指纹&amp;rdquo;是RSA公钥的MD5哈希结果。我们知道为了保证RSA私钥的安全性，一般RSA公钥设置基本都不小于1024位，很难直接让终端用户去确认完整的RSA公钥，于是通过MD5哈希函数将之转化为128位的指纹，就很容易识别了。实际上，有很多网络应用程序都是用RSA公钥指纹来让终端用户识别公钥的可靠性。
+具体怎么决定是依赖于终端用户了，所以推荐的做法是将远程主机的公钥保存在合适的地方方便核对。这是，如果用户决定接受这个返回的公钥，系统会继续提示：
+Warning: Permanently added &#39;10.30.110.230&#39; (RSA) to the list of known hosts.  紧接着就是用户输入密码来登录远程主机。同时远程主机的公钥会被保存在$HOME/.ssh/known_hosts这个文件中，下次登录的时候就不需要用户再次核对指纹了。每个SSH用户都有自己的known_hosts文件，此外系统也有一个这样的文件，通常是/etc/ssh/ssh_known_hosts，保存一些对所有用户都可信赖的远程主机的公钥。
+除了使用密码登录，SSH协议还支持公钥登录。这里的公钥不再是远程主机的公钥，而是客户端的RSA公钥。原理很简单：
+ 用户将客户端的RSA公钥保存在远程主机上 客户端向远程主机发起登录请求 远程主机会向客户端发送一段随机字符串 客户端用自己的RSA私钥加密后再发送给远程主机 远程主机使用保存的的RSA公钥进行解密，如果解密成功则代表客户端是可信的，不需要密码就能确认身份  在客户端生成RSA公私钥对，一般使用ssh-keygen。举例来说，我们要生成2048位RSA密钥对：
+$ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair.</description>
+    </item>
+    
+    <item>
       <title>回首2014</title>
       <link>https://blog.morven.life/posts/a_backward_glance_of_2014/</link>
       <pubDate>Fri, 26 Dec 2014 00:00:00 +0000</pubDate>
