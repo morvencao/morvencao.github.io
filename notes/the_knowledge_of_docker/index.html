@@ -102,90 +102,58 @@ f186f20e1afc        About a minute ago   nginx -g daemon off;                   
 &lt;missing&gt;           13 hours ago         /bin/sh -c #(nop)  LABEL maintainer=NGINX Do…   0B
 &lt;missing&gt;           14 hours ago         /bin/sh -c #(nop)  CMD [&quot;bash&quot;]                 0B
 &lt;missing&gt;           14 hours ago         /bin/sh -c #(nop) ADD file:4fc310c0cb879c876…   55.3MB
-</code></pre><p>测试我们的新镜像：</p><p>$ docker run -d -p 81:80 nginx:v2 14951d3027633d59b86458211d7fd234949a04c878c508fc904a96e5d79c42bb $ curl <a href="http://localhost:81">http://localhost:81</a></p><h1>Hello, Docker!</h1><p></p><pre><code>
-确实，`docker commit`可以帮助我们保存容器运行现场，实验docker镜像的分层存储，但是仔细观察之前`docker diff mynginx`的结果，可以看到除了我们自己的修改之外，还有很多文件也被改动了，仅仅是简单的一个文件就如此，当遇到安装更新软件包等复杂操作的时候，会有大量我们无法控制的改动，可能会是镜像变得无比臃肿。所以要慎用`docker commit`，尤其是生产环境。
+</code></pre><p>测试我们的新镜像：</p><pre><code>$ docker run -d -p 81:80 nginx:v2
+14951d3027633d59b86458211d7fd234949a04c878c508fc904a96e5d79c42bb
+$ curl http://localhost:81
+&lt;h1&gt;Hello, Docker!&lt;/h1&gt;
+</code></pre><p>确实，<code>docker commit</code>可以帮助我们保存容器运行现场，实验docker镜像的分层存储，但是仔细观察之前<code>docker diff mynginx</code>的结果，可以看到除了我们自己的修改之外，还有很多文件也被改动了，仅仅是简单的一个文件就如此，当遇到安装更新软件包等复杂操作的时候，会有大量我们无法控制的改动，可能会是镜像变得无比臃肿。所以要慎用<code>docker commit</code>，尤其是生产环境。</p><p>此外，使用<code>docker commit</code>意味着所有对镜像的操作都是黑箱操作，生成的镜像也被称为<strong>黑箱镜像</strong>，这就是说就是除了制作镜像人知道新镜像是怎么生成的，别人根本无从得知。虽然<code>docker diff</code>或许可以告诉得到一些线索，但是远远不到可以确保生成一致镜像的地步。这种黑箱镜像的维护工作是非常痛苦的。</p><p>所以要定制镜像，推荐使用<code>dockerfile</code>，它可以很好地解决制作镜像无法重复的问题、镜像构建透明性的问题等。</p><h2 id="docker指令run的最佳实践">Docker指令RUN的最佳实践</h2><p>Docker镜像的分层存储特性决定了dockerfile中每一个指令都会建立一层，<code>RUN</code>也不例外。每一个<code>RUN</code>指令新建一层，在其上执行这些命令，执行结束后，commit 这一层的修改，构成新的镜像。所以我们在使用RUN指令的时候一定要注意不要将多个无意义且有关联的命令写到不同的RUN指令中，因为这不但会使镜像层数增加，而且有些中间层完全没有必要保存。另外，<code>Union FS</code>是有最大层数限制的，之前的docker版本规定是最大不得超过42层，现在是不得超过127层。推荐的做法是使用一个RUN指令，并使用<code>&amp;&amp;</code>将各个关联的命令串联起来，来建立新的一层，同时最好在命令的最后有相关的清理工作，例如：</p><pre><code>FROM debian:stretch
 
-此外，使用`docker commit`意味着所有对镜像的操作都是黑箱操作，生成的镜像也被称为**黑箱镜像**，这就是说就是除了制作镜像人知道新镜像是怎么生成的，别人根本无从得知。虽然`docker diff`或许可以告诉得到一些线索，但是远远不到可以确保生成一致镜像的地步。这种黑箱镜像的维护工作是非常痛苦的。
+RUN buildDeps='gcc libc6-dev make wget' \
+    &amp;&amp; apt-get update \
+    &amp;&amp; apt-get install -y $buildDeps \
+    &amp;&amp; wget -O redis.tar.gz &quot;http://download.redis.io/releases/redis-5.0.3.tar.gz&quot; \
+    &amp;&amp; mkdir -p /usr/src/redis \
+    &amp;&amp; tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1 \
+    &amp;&amp; make -C /usr/src/redis \
+    &amp;&amp; make -C /usr/src/redis install \
+    &amp;&amp; rm -rf /var/lib/apt/lists/* \
+    &amp;&amp; rm redis.tar.gz \
+    &amp;&amp; rm -r /usr/src/redis \
+    &amp;&amp; apt-get purge -y --auto-remove $buildDeps
+</code></pre><blockquote><p>Note: 相关的清理工作一定要在执行命令的同一层，因为镜像是多层存储，每一层的东西并不会在下一层被删除。</p></blockquote><h2 id="docker镜像构建上下文-context">Docker镜像构建上下文(Context)</h2><p>我们使用dockerfile构建镜像的常用操作是：</p><pre><code>$ docker build -t &lt;image&gt;:&lt;tag&gt; .
+</code></pre><p>看到在命令的最后有一个<code>.</code>。<code>.</code>表示当前目录，而<code>dockerfile</code>就在当前目录，因此很多人认为这个<code>.</code>是指dockerfile所在路径。这么理解其实是不准确的，其实这在指定镜像构建的<strong>上下文路径</strong>。何为上下文呢？</p><p>要了解镜像构建的上下文，先要知道docker的架构。Docker是典型的CS(Client/Server)架构的软件，以后台服务运行的docker引擎作为服务器端，而实际和终端用户进行交互的是docker客户端。docker引擎暴露一组<a href="https://docs.docker.com/develop/sdk/">Rest API</a>供客户端调用，从而完成各种实际功能。虽然表面上我们好像是在本机执行各种 docker 功能，但实际上，一切都是使用的远程调用形式在服务端（Docker 引擎）完成。</p><p>当我们进行镜像构建的时候，并非所有定制都会通过<code>RUN</code>指令完成，经常会需要将一些本地文件复制进镜像，比如通过<code>COPY</code>指令、<code>ADD</code>指令等。而<code>docker build</code>命令构建镜像，其实并非在本地构建，而是在服务端，也就是docker引擎中构建的。那么在这种客户端/服务端的架构中，如何才能让服务端获得本地文件呢？</p><p>这就引入了<strong>上下文</strong>的概念。当构建的时候，用户需要指定构建镜像上下文的路径，<code>docker build</code>命令得知这个路径后，会将路径下的所有内容打包，然后上传给docker引擎。这样docker引擎收到这个上下文包后，展开就会获得构建镜像所需的一切文件。</p><p>比如，我们在有着一个dockerfile：</p><pre><code>FROM node:slim
+COPY ./package.json /app/
+</code></pre><p>上面的COPY指令并不是复制dockerfile所在目录下的<code>package.json</code>，而是复制<strong>上下文</strong>目录下的<code>package.json</code>到新镜像中。像COPY这类指令中的源文件的路径都是相对路径。这也是为什么<code>COPY ../package.json /app</code>或者<code>COPY /opt/xxxx /app</code>无法工作的原因，因为这些路径已经超出了<strong>上下文</strong>的范围，Docker引擎无法获得这些位置的文件，如果真的需要那些文件，应该将它们复制到上下文目录中去。</p><p>现在仔细观察一下构建的过程，我们会发现有这个发送上下文的过程：</p><pre><code>$ docker build -t myapp:v1 .
+Sending build context to Docker daemon   2.56kB
+Step 1/2 : FROM node:slim
+ ---&gt; 6a8b33e0406d
+Step 2/2 : COPY ./package.json /app/
+ ---&gt; 5bc4ede5a3aa
+Successfully built 5bc4ede5a3aa
+Successfully tagged myapp:v1
+</code></pre><p>了解<strong>上下文</strong>对于镜像构建是很重要的，避免犯一些不应该的错误。比如有人常常把dockerfile放到硬盘某个目录下面去构建镜像，结果发现<code>docker build</code>执行后，在发送一个几十GB的东西，极为缓慢而且很容易构建失败。那是因为这种做法是在让<code>docker build</code>打包整个硬盘，这显然是使用错误。</p><p>推荐的做法是，应该会将<code>dockerfile</code>置于一个空目录下，或者项目根目录下。如果该目录下没有所需文件，那么应该把所需文件复制一份过来。如果目录下有些东西确实不希望构建时传给docker引擎，那么可以用<code>.gitignore</code>一样的语法写一个<code>.dockerignore</code>，该文件是用于剔除构建上下文中不需要传送给docker引擎的文件或目录。</p><p>另外，需要关注的是<code>docker build</code>还支持从URL(比如git仓库)、tar压缩包构建，甚至还可以从标准输入读取dockerfile来构建镜像。</p><h2 id="dockerfile指令copy和add的区别">Dockerfile指令COPY和ADD的区别</h2><p>COPY指令的作用是复制文件到新镜像中，有两种格式：</p><pre><code>COPY [--chown=&lt;user&gt;:&lt;group&gt;] &lt;source1&gt;, ... &lt;destionation&gt;
+COPY [--chown=&lt;user&gt;:&lt;group&gt;] [&quot;&lt;source1&gt;&quot;,... &quot;&lt;destionation&gt;&quot;]
+</code></pre><p>使用COPY指令，源文件的各种元数据都会保留。比如读、写、执行权限、文件变更时间等。这个特性对于镜像定制很有用。特别是构建相关文件都在使用Git进行管理的时候。</p><p>ADD指令和COPY的格式和性质基本一样，却是更高级的复制。</p><p>1）比如<code>&lt;source&gt;</code>可以是URL。这种情况下，docker引擎会试图去下载这个URL的文件放到<code>&lt;destination&gt;</code>，下载后的文件权限自动设置为<code>600</code>，如果这并不是想要的权限，那么还需要增加额外的一层RUN进行权限调整，另外，如果下载的是个压缩包，需要解压缩，也一样还需要额外的一层RUN指令进行解压缩。</p><p>所以不如直接使用 RUN 指令，然后使用<code>wget</code>或者<code>curl</code>工具下载，处理权限、解压缩、然后清理无用文件更合理。因此，这个功能其实并不实用，而且不推荐使用。</p><p>2）如果<code>&lt;source&gt;</code>为一个tar压缩文件的话，压缩格式为<code>gzip</code>,<code>bzip2</code>以及<code>xz</code>的情况下，ADD指令将会自动解压缩这个压缩文件到<code>&lt;destination&gt;</code>。</p><p>此外，需要注意的是ADD指令会令镜像构建缓存失效，从而可能会令镜像构建变得比较缓慢。</p><p>所以在COPY和ADD指令中选择最佳实践是：<strong>所有的文件复制均使用COPY指令，仅在需要自动解压缩的场合使用ADD</strong>。</p><h2 id="cmd和entrypoint的区别">CMD和ENTRYPOINT的区别</h2><p>CMD指令和ENTRYPOINT指令都是用来指定默认的容器主进程的启动命令的。</p><p>CMD指令指定的默认启动命令及参数，在运行时可以指定新的命令来替代镜像设置中的这个默认命令，比如，<code>ubuntu</code>镜像默认的<code>CMD</code>是<code>/bin/bash</code>，如果我们直接<code>docker run -it ubuntu</code>的话，会直接进入<code>bash</code>。我们也可以在运行时指定运行别的命令，如<code>docker run -it ubuntu cat /etc/os-release</code>。这就是用<code>cat /etc/os-release</code>命令替换了默认的<code>/bin/bash</code>命令了，输出了系统版本信息。</p><p>ENTRYPOINT指令指定的默认命令在运行时也可以替代，不过比CMD要略显繁琐，需要通过<code>docker run</code>的参数<code>--entrypoint</code>来指定新的命令。同时，当指定了ENTRYPOINT指令后，CMD指令的含义就发生了改变，不再是直接的运行其命令，而是将CMD的内容作为参数传给ENTRYPOINT指令，换句话说实际执行时，将变为：</p><pre><code>&lt;ENTRYPOINT&gt; &quot;&lt;CMD&gt;&quot;
+</code></pre><p>ENTRYPOINT指令还有一个作用是做程序运行前的一些准备工作。</p><p>例如<code>mysql</code>之类的数据库，可能需要一些数据库配置、初始化的工作，这些工作要在最终的<code>mysql</code>服务器运行之前解决。此外，可能希望避免使用<code>root</code>用户去启动服务，从而提高安全性，而在启动服务前还需要以<code>root</code>身份执行一些必要的准备工作，最后切换到服务用户身份启动服务。或者除了服务外，其它命令依旧可以使用<code>root</code>身份执行，方便调试等。</p><p>这些准备工作是和容器CMD指令的内容无关，这种情况下，可以写一个脚本，然后放入ENTRYPOINT指令中去执行，而这个脚本会将接到的参数（也就是<code>&lt;CMD&gt;</code>）作为命令，在脚本最后执行。比如官方镜像redis中就是这么做的：</p><pre><code>FROM alpine:3.6
+...
+RUN addgroup -S redis &amp;&amp; adduser -S -G redis redis
+...
+ENTRYPOINT [&quot;docker-entrypoint.sh&quot;]
 
-所以要定制镜像，推荐使用`dockerfile`，它可以很好地解决制作镜像无法重复的问题、镜像构建透明性的问题等。
+EXPOSE 6379
+CMD [ &quot;redis-server&quot; ]
+</code></pre><p>可以看到其中为了redis服务创建了<code>redis</code>用户以用户组，并在最后指定了ENTRYPOINT为<code>docker-entrypoint.sh</code>脚本：</p><pre><code>#!/bin/sh
+...
+# allow the container to be started with `--user`
+if [ &quot;$1&quot; = 'redis-server' -a &quot;$(id -u)&quot; = '0' ]; then
+    chown -R redis .
+    exec su-exec redis &quot;$0&quot; &quot;$@&quot;
+fi
 
-## Docker指令RUN的最佳实践
-
-Docker镜像的分层存储特性决定了dockerfile中每一个指令都会建立一层，`RUN`也不例外。每一个`RUN`指令新建一层，在其上执行这些命令，执行结束后，commit 这一层的修改，构成新的镜像。所以我们在使用RUN指令的时候一定要注意不要将多个无意义且有关联的命令写到不同的RUN指令中，因为这不但会使镜像层数增加，而且有些中间层完全没有必要保存。另外，`Union FS`是有最大层数限制的，之前的docker版本规定是最大不得超过42层，现在是不得超过127层。推荐的做法是使用一个RUN指令，并使用`&amp;&amp;`将各个关联的命令串联起来，来建立新的一层，同时最好在命令的最后有相关的清理工作，例如：
-
-</code></pre><p>FROM debian:stretch</p><p>RUN buildDeps=&lsquo;gcc libc6-dev make wget&rsquo;<br>&amp;&amp; apt-get update<br>&amp;&amp; apt-get install -y $buildDeps<br>&amp;&amp; wget -O redis.tar.gz &ldquo;<a href="http://download.redis.io/releases/redis-5.0.3.tar.gz&quot;">http://download.redis.io/releases/redis-5.0.3.tar.gz&quot;</a><br>&amp;&amp; mkdir -p /usr/src/redis<br>&amp;&amp; tar -xzf redis.tar.gz -C /usr/src/redis &ndash;strip-components=1<br>&amp;&amp; make -C /usr/src/redis<br>&amp;&amp; make -C /usr/src/redis install<br>&amp;&amp; rm -rf /var/lib/apt/lists/*<br>&amp;&amp; rm redis.tar.gz<br>&amp;&amp; rm -r /usr/src/redis<br>&amp;&amp; apt-get purge -y &ndash;auto-remove $buildDeps</p><pre><code>
-&gt; Note: 相关的清理工作一定要在执行命令的同一层，因为镜像是多层存储，每一层的东西并不会在下一层被删除。
-
-
-## Docker镜像构建上下文(Context)
-
-我们使用dockerfile构建镜像的常用操作是：
-
-</code></pre><p>$ docker build -t<image>:<tag>.</tag></image></p><pre><code>
-看到在命令的最后有一个`.`。`.`表示当前目录，而`dockerfile`就在当前目录，因此很多人认为这个`.`是指dockerfile所在路径。这么理解其实是不准确的，其实这在指定镜像构建的**上下文路径**。何为上下文呢？
-
-要了解镜像构建的上下文，先要知道docker的架构。Docker是典型的CS(Client/Server)架构的软件，以后台服务运行的docker引擎作为服务器端，而实际和终端用户进行交互的是docker客户端。docker引擎暴露一组[Rest API](https://docs.docker.com/develop/sdk/)供客户端调用，从而完成各种实际功能。虽然表面上我们好像是在本机执行各种 docker 功能，但实际上，一切都是使用的远程调用形式在服务端（Docker 引擎）完成。
-
-当我们进行镜像构建的时候，并非所有定制都会通过`RUN`指令完成，经常会需要将一些本地文件复制进镜像，比如通过`COPY`指令、`ADD`指令等。而`docker build`命令构建镜像，其实并非在本地构建，而是在服务端，也就是docker引擎中构建的。那么在这种客户端/服务端的架构中，如何才能让服务端获得本地文件呢？
-
-这就引入了**上下文**的概念。当构建的时候，用户需要指定构建镜像上下文的路径，`docker build`命令得知这个路径后，会将路径下的所有内容打包，然后上传给docker引擎。这样docker引擎收到这个上下文包后，展开就会获得构建镜像所需的一切文件。
-
-比如，我们在有着一个dockerfile：
-
-</code></pre><p>FROM node:slim COPY ./package.json /app/</p><pre><code>
-
-上面的COPY指令并不是复制dockerfile所在目录下的`package.json`，而是复制**上下文**目录下的`package.json`到新镜像中。像COPY这类指令中的源文件的路径都是相对路径。这也是为什么`COPY ../package.json /app`或者`COPY /opt/xxxx /app`无法工作的原因，因为这些路径已经超出了**上下文**的范围，Docker引擎无法获得这些位置的文件，如果真的需要那些文件，应该将它们复制到上下文目录中去。
-
-现在仔细观察一下构建的过程，我们会发现有这个发送上下文的过程：
-
-</code></pre><p>$ docker build -t myapp:v1 . Sending build context to Docker daemon 2.56kB Step <sup>1</sup>&frasl;<sub>2</sub> : FROM node:slim &mdash;&gt; 6a8b33e0406d Step <sup>2</sup>&frasl;<sub>2</sub> : COPY ./package.json /app/ &mdash;&gt; 5bc4ede5a3aa Successfully built 5bc4ede5a3aa Successfully tagged myapp:v1</p><pre><code>
-了解**上下文**对于镜像构建是很重要的，避免犯一些不应该的错误。比如有人常常把dockerfile放到硬盘某个目录下面去构建镜像，结果发现`docker build`执行后，在发送一个几十GB的东西，极为缓慢而且很容易构建失败。那是因为这种做法是在让`docker build`打包整个硬盘，这显然是使用错误。
-
-推荐的做法是，应该会将`dockerfile`置于一个空目录下，或者项目根目录下。如果该目录下没有所需文件，那么应该把所需文件复制一份过来。如果目录下有些东西确实不希望构建时传给docker引擎，那么可以用`.gitignore`一样的语法写一个`.dockerignore`，该文件是用于剔除构建上下文中不需要传送给docker引擎的文件或目录。
-
-另外，需要关注的是`docker build`还支持从URL(比如git仓库)、tar压缩包构建，甚至还可以从标准输入读取dockerfile来构建镜像。
-
-## Dockerfile指令COPY和ADD的区别
-
-COPY指令的作用是复制文件到新镜像中，有两种格式：
-
-</code></pre><p>COPY [&ndash;chown=<user>:<group>]<source1>, &hellip;<destionation>COPY [&ndash;chown=<user>:<group>] [&rdquo;<source1>&rdquo;,&hellip; &ldquo;<destionation>&rdquo;]</destionation></source1></group></user></destionation></source1></group></user></p><pre><code>
-使用COPY指令，源文件的各种元数据都会保留。比如读、写、执行权限、文件变更时间等。这个特性对于镜像定制很有用。特别是构建相关文件都在使用Git进行管理的时候。
-
-ADD指令和COPY的格式和性质基本一样，却是更高级的复制。
-
-1）比如`&lt;source&gt;`可以是URL。这种情况下，docker引擎会试图去下载这个URL的文件放到`&lt;destination&gt;`，下载后的文件权限自动设置为`600`，如果这并不是想要的权限，那么还需要增加额外的一层RUN进行权限调整，另外，如果下载的是个压缩包，需要解压缩，也一样还需要额外的一层RUN指令进行解压缩。
-
-所以不如直接使用 RUN 指令，然后使用`wget`或者`curl`工具下载，处理权限、解压缩、然后清理无用文件更合理。因此，这个功能其实并不实用，而且不推荐使用。
-
-2）如果`&lt;source&gt;`为一个tar压缩文件的话，压缩格式为`gzip`,`bzip2`以及`xz`的情况下，ADD指令将会自动解压缩这个压缩文件到`&lt;destination&gt;`。
-
-此外，需要注意的是ADD指令会令镜像构建缓存失效，从而可能会令镜像构建变得比较缓慢。
-
-所以在COPY和ADD指令中选择最佳实践是：**所有的文件复制均使用COPY指令，仅在需要自动解压缩的场合使用ADD**。
-
-## CMD和ENTRYPOINT的区别
-
-CMD指令和ENTRYPOINT指令都是用来指定默认的容器主进程的启动命令的。
-
-CMD指令指定的默认启动命令及参数，在运行时可以指定新的命令来替代镜像设置中的这个默认命令，比如，`ubuntu`镜像默认的`CMD`是`/bin/bash`，如果我们直接`docker run -it ubuntu`的话，会直接进入`bash`。我们也可以在运行时指定运行别的命令，如`docker run -it ubuntu cat /etc/os-release`。这就是用`cat /etc/os-release`命令替换了默认的`/bin/bash`命令了，输出了系统版本信息。
-
-ENTRYPOINT指令指定的默认命令在运行时也可以替代，不过比CMD要略显繁琐，需要通过`docker run`的参数`--entrypoint`来指定新的命令。同时，当指定了ENTRYPOINT指令后，CMD指令的含义就发生了改变，不再是直接的运行其命令，而是将CMD的内容作为参数传给ENTRYPOINT指令，换句话说实际执行时，将变为：
-
-</code></pre><p><entrypoint>&ldquo;<cmd>&ldquo;</cmd></entrypoint></p><pre><code>
-ENTRYPOINT指令还有一个作用是做程序运行前的一些准备工作。
-
-例如`mysql`之类的数据库，可能需要一些数据库配置、初始化的工作，这些工作要在最终的`mysql`服务器运行之前解决。此外，可能希望避免使用`root`用户去启动服务，从而提高安全性，而在启动服务前还需要以`root`身份执行一些必要的准备工作，最后切换到服务用户身份启动服务。或者除了服务外，其它命令依旧可以使用`root`身份执行，方便调试等。
-
-这些准备工作是和容器CMD指令的内容无关，这种情况下，可以写一个脚本，然后放入ENTRYPOINT指令中去执行，而这个脚本会将接到的参数（也就是`&lt;CMD&gt;`）作为命令，在脚本最后执行。比如官方镜像redis中就是这么做的：
-
-</code></pre><p>FROM alpine:3.6 &hellip; RUN addgroup -S redis &amp;&amp; adduser -S -G redis redis &hellip; ENTRYPOINT [&ldquo;docker-entrypoint.sh&rdquo;]</p><p>EXPOSE 6379 CMD [ &ldquo;redis-server&rdquo; ]</p><pre><code>
-可以看到其中为了redis服务创建了`redis`用户以用户组，并在最后指定了ENTRYPOINT为`docker-entrypoint.sh`脚本：
-
-</code></pre><p>#!/bin/sh &hellip;</p><h1 id="allow-the-container-to-be-started-with-user">allow the container to be started with <code>--user</code></h1><p>if [ &ldquo;$1&rdquo; = &lsquo;redis-server&rsquo; -a &ldquo;$(id -u)&rdquo; = &lsquo;0&rsquo; ]; then chown -R redis . exec su-exec redis &ldquo;$0&rdquo; &ldquo;$@&rdquo; fi</p><p>exec &ldquo;$@&rdquo;</p><pre><code>
-该脚本的内容就是根据CMD的内容来判断，如果是`redis-server`的话，则切换到`redis`用户身份启动服务器，否则依旧使用`root`身份执行。比如：
-
-</code></pre><p>$ docker run -it redis id uid=0(root) gid=0(root) groups=0(root) ```</p></div></div></div></article><script src="https://blog.morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+exec &quot;$@&quot;
+</code></pre><p>该脚本的内容就是根据CMD的内容来判断，如果是<code>redis-server</code>的话，则切换到<code>redis</code>用户身份启动服务器，否则依旧使用<code>root</code>身份执行。比如：</p><pre><code>$ docker run -it redis id
+uid=0(root) gid=0(root) groups=0(root)
+</code></pre></div></div></div></article><script src="https://blog.morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
     container: document.getElementById('article')
   });</script><script>hljs.initHighlightingOnLoad();
   
