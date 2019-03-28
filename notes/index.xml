@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Notes on Morven&#39;s Life</title>
-    <link>https://blog.morven.life/notes/</link>
+    <link>https://morven.life/notes/</link>
     <description>Recent content in Notes on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 14 Mar 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://blog.morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>一些容易被忽视的docker知识</title>
-      <link>https://blog.morven.life/notes/the_knowledge_of_docker/</link>
+      <link>https://morven.life/notes/the_knowledge_of_docker/</link>
       <pubDate>Wed, 14 Mar 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/the_knowledge_of_docker/</guid>
+      <guid>https://morven.life/notes/the_knowledge_of_docker/</guid>
       <description>Docker是一个划时代的产品，它彻底地释放了计算机虚拟化的威力，极大的提高了应用的部署、测试和分发。虽然我们几乎每天都使用docker，但还是有一些特别容易被忽略却很重要的docker知识，今天，我们就集中起来聊一聊。
 Docker与传统虚拟机的区别 经常有人说“docker是一种性能非常好的虚拟机”，这种说法是错误的。Docker相比于传统虚拟机的技术来说更为轻便，具体表现在docker不是在宿主机上虚拟出一套硬件后再运行一个完整的操作系统，然后再在其上运行所需的应用进程，而是docker容器里面的进程直接运行在宿主的内核（Docker会做文件系统、网络互联到进程隔离等等），容器内没有自己的内核，而且也没有进行硬件虚拟。这样一来docker会相对于传统虚拟机来说“体积更轻、跑的更快、同宿主机下可创建的个数更多”。
 Docker不是虚拟机，容器中的应用都应该以前台执行，而不是像虚拟机、物理机里面那样，用systemd去启动后台服务，容器内没有后台服务的概念。举个例子，常有人在dockerfile里面这样写：
@@ -30,10 +30,10 @@ $ curl http://localhost &amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html&amp;gt; &amp;
     
     <item>
       <title>webpack使用小结</title>
-      <link>https://blog.morven.life/notes/webpack_summary/</link>
+      <link>https://morven.life/notes/webpack_summary/</link>
       <pubDate>Sun, 20 Nov 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/webpack_summary/</guid>
+      <guid>https://morven.life/notes/webpack_summary/</guid>
       <description>分而治之是软件工程领域的重要思想，对于复杂度日益增加的前端也同样适用。一般前端团队选择合适的框架之后就要开始考虑开发维护的效率问题。而模块化是目前前端领域比较流行的分而治之手段。 Javascript模块化已经有很多规范和工具，例如CommonJS/AMD/requireJS/CMD/ES6 Module，在上篇文章中有详细的介绍。CSS模块化基本要依靠Less, Sass以及Stylus等于处理器的import/minxin特性实现。而HTML以及HTML模版和其他资源比如图片的模块化怎么去处理呢？ 这也正是webpack要解决的问题之一。严格来说，webpack是一个模块打包工具（module bundler），它既不像requireJS和seaJS这样的模块加载器，也不像grunt和gulp这样优化前端开发流程的构建工具，像是两类工具的集合却又远不止如此。
 Webpack是一个模块打包工具，它将JS、CSS、HTML以及图片等都视为模块资源，这些模块资源必然存在某种依赖关系，webpack就是通过静态分析各种模块文件之间的依赖关系，通过不同种类的Loader将所有模块打包成起来。
 webpack VS Gulp 严格来说，Gulp与webpack并没有可比性。Gulp应该和Grunt属于同一类工具，能够优化前端工作流程，比如压缩合并JS、CSS ，预编译Typescript、Sass等。也就是说，我们可以根据需要配置插件，就可以将之前需要手动完成的任务自动化。webpack作为模块打包工具，可以和browserify相提并论。两者都是预编译模块化解决方案。相比requireJS、seaJS这类‘在线’模块化方案更加智能。因为是‘预编译’，不需要在浏览器中加载解释器。另外，你可以直接在本地编写JS，不管是 AMD / CMD / ES6 风格的模块化，都编译成浏览器认识的JS。
@@ -46,10 +46,10 @@ if (__DEV__) { // code for dev //.</description>
     
     <item>
       <title>Javascript模块化开发</title>
-      <link>https://blog.morven.life/notes/developing-modular-javascript/</link>
+      <link>https://morven.life/notes/developing-modular-javascript/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/developing-modular-javascript/</guid>
+      <guid>https://morven.life/notes/developing-modular-javascript/</guid>
       <description>随着互联网时代的到来，前端技术更新速度越来越快。起初只要在script标签中嵌入几行代码就能实现一些基本的用户交互，到现在随着Ajax，jQuery，MVC以及MVVM的发展，Javascript代码量变得日益庞大复杂。 网页越来越像桌面程序，需要一个团队分工协作、进度管理、单元测试等等&amp;hellip;&amp;hellip;开发者不得不使用软件工程的方法，管理网页的业务逻辑。 Javascript模块化开发，已经成为一个迫切的需求。理想情况下，开发者只需要实现核心的业务逻辑，其他都可以加载别人已经写好的模块。 但是，Javascript不是一种模块化编程语言，它不支持&amp;rdquo;类&amp;rdquo;（class），更遑论&amp;rdquo;模块&amp;rdquo;（module）了。直到前不久ES6正式定稿，Javascript才开始正式支持&amp;rdquo;类&amp;rdquo;和&amp;rdquo;模块&amp;rdquo;，但还需要很长时间才能完全投入实用。
 什么是模块化 模块是任何大型应用程序架构中不可缺少的一部分，一个模块就是实现特定功能的代码区块或者文件。模块可以使我们清晰地分离和组织项目中的代码单元。在项目开发中，通过移除依赖，松耦合可以使应用程序的可维护性更强。有了模块，开发者就可以更方便地使用别人的代码，想要什么功能，就加载什么模块。模块开发需要遵循一定的规范，否则就会混乱不堪。
 Javascript社区做了很多努力，在现有的运行环境中，实现&amp;rdquo;模块&amp;rdquo;的效果。本文总结了当前＂Javascript模块化编程＂的最佳实践，说明如何投入实用。
@@ -65,10 +65,10 @@ var moduleA = (function(){ var _count = 0; var func1 = function(){ //.</descript
     
     <item>
       <title>SSH协议以及端口转发</title>
-      <link>https://blog.morven.life/notes/the_knowledge_of_ssh/</link>
+      <link>https://morven.life/notes/the_knowledge_of_ssh/</link>
       <pubDate>Tue, 10 Feb 2015 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/the_knowledge_of_ssh/</guid>
+      <guid>https://morven.life/notes/the_knowledge_of_ssh/</guid>
       <description>SSH估计是每台Linux机器的标配了。日程工作中程序员在本机写完Code之后，很少在本机上直接部署测试，经常需要通过SSH协议登录到实验室的Linux主机上验证。实际上SSH具备多种功能，不仅仅是远程登录这么简单，今天我们就详细探讨一下SSH协议以及它的高级功能-端口转发。
 SSH的原理 SSH是一种网络协议，用于计算机之间的加密登录，也就是说这种登陆是安全的。SSH协议之所以安全，是因为它基于非对称加密。基本的过程可以描述为：
  客户端通过SSH user@remote-host发起登录远程主机的请求 远程主机收到请求之后，将自己的公钥发给客户端 客户端使用这个公钥加密登录密码之后发给远程主机 远程主机使用自己的私钥，解密登陆请求，获得登录密码，如果正确，则建立SSH通道，之后所有客户端和远程主机的数据传输都要加密发送  看似很完美是吗？其实有个问题，如果有人中途拦截了登录请求，将自己伪造的公钥发送给客户端，客户端其实并不能识别这个公钥的可靠性，因为SSH协议并不像HTTPS协议那样，公钥是包含在证书中心CA来颁发的证书之中。所以有攻击者（中间人攻击-Man-in-the-middle-attack）拦截客户端到远程主机的登陆请求，伪造公钥来获取远程主机的登录密码，SSH协议的安全机制就荡然无存了。
@@ -84,10 +84,10 @@ $ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair.</
     
     <item>
       <title>创建私有CA以及颁发SSL证书</title>
-      <link>https://blog.morven.life/notes/create_pki_with_openssl/</link>
+      <link>https://morven.life/notes/create_pki_with_openssl/</link>
       <pubDate>Mon, 24 Nov 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/create_pki_with_openssl/</guid>
+      <guid>https://morven.life/notes/create_pki_with_openssl/</guid>
       <description>在上一篇文章深入理解PKI系统的与数字证书中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
 SSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:
  Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
@@ -98,10 +98,10 @@ $ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair. E
     
     <item>
       <title>深入理解PKI系统的与CA中心</title>
-      <link>https://blog.morven.life/notes/the_pki_and_digital_certificate/</link>
+      <link>https://morven.life/notes/the_pki_and_digital_certificate/</link>
       <pubDate>Wed, 12 Nov 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/the_pki_and_digital_certificate/</guid>
+      <guid>https://morven.life/notes/the_pki_and_digital_certificate/</guid>
       <description>在上一篇文章数字签名与数字证书中介绍了数字签名以及数字证书的一些基础知识以及数字证书的作用，但是并没有提到数字证书的管理，比如数字证书的申请，数字证书的文件格式等知识。这篇文章将继续探讨数字证书的管理知识。
 说到数字证书的管理，不得不提到一个词，PKI(Publick Key Infrastructure)，即公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的供私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。
  PKI既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为PKI
@@ -120,10 +120,10 @@ X.509是定义了公钥证书结构的基本标准，是目前非常通用的证
     
     <item>
       <title>数字签名与数字证书</title>
-      <link>https://blog.morven.life/notes/the_digital_signature_and_digital_certificate/</link>
+      <link>https://morven.life/notes/the_digital_signature_and_digital_certificate/</link>
       <pubDate>Mon, 06 Oct 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/the_digital_signature_and_digital_certificate/</guid>
+      <guid>https://morven.life/notes/the_digital_signature_and_digital_certificate/</guid>
       <description>在之前的密码学笔记主要是介绍密码学的基础知识，包括两种加密算法的原理，引入在非对称加密算法中数字证书（Digital Certificate）的概念。这篇笔记将继续探讨什么是数字证书，不过在了解它之前，先得知道什么是数字签名（Digital Signature）。
 关于数字签名和数字证书的概念，有一篇非常经典的文章，本文的大部分内容来自于那篇文章，喜欢读英文原版的请移步至：http://www.youdzone.com/signature.html
 Bob生成了自己的（公钥，私钥）对，将私钥自己保存，并将公钥分发给了他的朋友们：Pat，Susan，Daug，
@@ -140,10 +140,10 @@ Susan收到信件之后，首先使用用CA的公钥（一般都是公开的）�
     
     <item>
       <title>密码学基础</title>
-      <link>https://blog.morven.life/notes/the_basic_of_cryptology/</link>
+      <link>https://morven.life/notes/the_basic_of_cryptology/</link>
       <pubDate>Tue, 16 Sep 2014 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/the_basic_of_cryptology/</guid>
+      <guid>https://morven.life/notes/the_basic_of_cryptology/</guid>
       <description>密码学（Cryptography） 密码学是研究编制密码和破译密码的技术科学。研究密码变化的客观规律，应用于编制密码以保守通信秘密的，称为编码学；应用于破译密码以获取通信情报的，称为破译学，总称密码学。 密码是通信双方按约定的法则进行信息特殊变换的一种重要保密手段。依照这些法则，变明文为密文，称为加密变换；变密文为明文，称为脱密变换。密码在早期仅对文字或数码进行加、脱密变换，随着通信技术的发展，对语音、图像、数据等都可实施加、脱密变换。
 密码算法 什么是密码算法（Cryptography Algorithm），通常是指加、解密过程所使用的信息变换规则，是用于信息加密和解密的数学函数。对明文进行加密时所采用的规则称作加密算法，而对密文进行解密时所采用的规则称作解密算法。加密算法和解密算法的操作通常都是在一组密钥的控制下进行的。
 什么是密钥？密钥（Secret Key）是密码算法中的一个可变参数，通常是一组满足一定条件的随机序列。用于加密算法的叫做加密密钥，用于解密算法的叫做解密密钥，加密密钥和解密密钥可能相同，也可能不相同。
@@ -165,10 +165,10 @@ DES、3DES、AES、Blowfish、IDEA、RC5、RC6。  非对称加密 非对称加�
     
     <item>
       <title>字符编码的前世今生</title>
-      <link>https://blog.morven.life/notes/character_encoding/</link>
+      <link>https://morven.life/notes/character_encoding/</link>
       <pubDate>Sun, 12 May 2013 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.morven.life/notes/character_encoding/</guid>
+      <guid>https://morven.life/notes/character_encoding/</guid>
       <description>字符编码问题看似无关紧要，常常被忽略，但是对字符编码知识没有一个完整系统的认识，实际编码过程中会让我们吃尽苦头。今天，我们就来看一看字符编码的前世今生。
 ASCII-一切的起源 字符编码主要是解决如何使用计算机的方式来表达特定的字符，但是有计算机基础理论知识的人都知道，计算机内部所有的数据都是基于二进制，每个二进制位（bit）有0和1两种状态，我们可以组合多个二进位来表达更大的数值，例如八个二进制位就可以组合出256种状态，这被称为一个字节（byte）。这就是说，我们可以一个字节来映射用来表示256种不同的状态，每一个状态对应一个符号，就是256个符号，从00000000到11111111，这样就建立了最初的计算机数值到自然语言字符最基本的映射关系。上个世纪60年代，美国国家标准协会ANSI制定了一个标准，规定了常用字符的集合以及每个字符对应的编号，这就是ASCII字符集（Character Set），也称ASCII码。ASCII码规定了英语字符与二进制位之间的对应关系。
 ASCII码一共规定了128个字符的编码（包括32个不能打印出来的控制符号），比如空格SPACE是32（二进制表示为00100000），大写的字母A是65（二进制表示为01000001）。这128个符号只需要占用了一个字节的后面7位，最前面的一位统一规定为0。
