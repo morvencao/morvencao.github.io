@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/character_encoding/"><link rel="canonical" href="https://morven.life/notes/character_encoding/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_character_encoding/"><link rel="canonical" href="https://morven.life/notes/the_character_encoding/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -43,7 +43,7 @@ UTF-8的编码规则简单实用：
       "copyrightYear" : "2013",
       "datePublished": "2013-05-12 00:00:00 &#43;0000 UTC",
       "dateModified" : "2013-05-12 00:00:00 &#43;0000 UTC",
-      "url" : "https://morven.life/notes/character_encoding/",
+      "url" : "https://morven.life/notes/the_character_encoding/",
       "keywords" : [  ]
   }</script><title>字符编码的前世今生 - Morven&#39;s Life</title><meta property="og:title" content="字符编码的前世今生 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="字符编码问题看似无关紧要，常常被忽略，但是对字符编码知识没有一个完整系统的认识，实际编码过程中会让我们吃尽苦头。今天，我们就来看一看字符编码的前世今生。
 ASCII-一切的起源 字符编码主要是解决如何使用计算机的方式来表达特定的字符，但是有计算机基础理论知识的人都知道，计算机内部所有的数据都是基于二进制，每个二进制位（bit）有0和1两种状态，我们可以组合多个二进位来表达更大的数值，例如八个二进制位就可以组合出256种状态，这被称为一个字节（byte）。这就是说，我们可以一个字节来映射用来表示256种不同的状态，每一个状态对应一个符号，就是256个符号，从00000000到11111111，这样就建立了最初的计算机数值到自然语言字符最基本的映射关系。上个世纪60年代，美国国家标准协会ANSI制定了一个标准，规定了常用字符的集合以及每个字符对应的编号，这就是ASCII字符集（Character Set），也称ASCII码。ASCII码规定了英语字符与二进制位之间的对应关系。

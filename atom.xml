@@ -128,7 +128,7 @@ $ curl http://localhost &amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html&amp;gt; &amp;
     </item>
     
     <item>
-      <title>webpack使用小结</title>
+      <title>Webpack使用小结</title>
       <link>https://morven.life/notes/webpack_summary/</link>
       <pubDate>Sun, 20 Nov 2016 00:00:00 +0000</pubDate>
       
@@ -310,10 +310,10 @@ DES、3DES、AES、Blowfish、IDEA、RC5、RC6。  非对称加密 非对称加�
     
     <item>
       <title>字符编码的前世今生</title>
-      <link>https://morven.life/notes/character_encoding/</link>
+      <link>https://morven.life/notes/the_character_encoding/</link>
       <pubDate>Sun, 12 May 2013 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/character_encoding/</guid>
+      <guid>https://morven.life/notes/the_character_encoding/</guid>
       <description>字符编码问题看似无关紧要，常常被忽略，但是对字符编码知识没有一个完整系统的认识，实际编码过程中会让我们吃尽苦头。今天，我们就来看一看字符编码的前世今生。
 ASCII-一切的起源 字符编码主要是解决如何使用计算机的方式来表达特定的字符，但是有计算机基础理论知识的人都知道，计算机内部所有的数据都是基于二进制，每个二进制位（bit）有0和1两种状态，我们可以组合多个二进位来表达更大的数值，例如八个二进制位就可以组合出256种状态，这被称为一个字节（byte）。这就是说，我们可以一个字节来映射用来表示256种不同的状态，每一个状态对应一个符号，就是256个符号，从00000000到11111111，这样就建立了最初的计算机数值到自然语言字符最基本的映射关系。上个世纪60年代，美国国家标准协会ANSI制定了一个标准，规定了常用字符的集合以及每个字符对应的编号，这就是ASCII字符集（Character Set），也称ASCII码。ASCII码规定了英语字符与二进制位之间的对应关系。
 ASCII码一共规定了128个字符的编码（包括32个不能打印出来的控制符号），比如空格SPACE是32（二进制表示为00100000），大写的字母A是65（二进制表示为01000001）。这128个符号只需要占用了一个字节的后面7位，最前面的一位统一规定为0。
