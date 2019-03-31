@@ -6,7 +6,7 @@
     <description>Recent content in Notes on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 14 Mar 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 13 Dec 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>容易被忽视的docker知识</title>
       <link>https://morven.life/notes/the_knowledge_of_docker/</link>
-      <pubDate>Wed, 14 Mar 2018 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 13 Dec 2018 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/the_knowledge_of_docker/</guid>
       <description>Docker是一个划时代的产品，它彻底地释放了计算机虚拟化的威力，极大的提高了应用的部署、测试和分发。虽然我们几乎每天都使用docker，但还是有一些特别容易被忽略却很重要的docker知识，今天，我们就集中起来聊一聊。
