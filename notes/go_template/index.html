@@ -8,10 +8,10 @@
       "articleSection" : "notes",
       "name" : "深入理解GoTemplate",
       "headline" : "深入理解GoTemplate",
-      "description" : "虽然近几年Restful架构的盛行推动前后端分离大行其道，模板渲染的地方由后端转移到了前端，类似于JSP和PHP的传统技术没多少人在用了。但是在Go语言中，模板技术不只局限于服务端HTML页面的渲染，可以实现文本化的输出，对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
+      "description" : "随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
 运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（&quot;.&quot;表示当前的作用域）标识当前位置的元素。
 类似于Python的jinja，Node的jade等模版引擎，Go语言模板引擎的运行机制也是类似：
- 创建模板对象 解析模板字串 加载数据渲染模板  Warning Up Go提供了两个标准库用来处理模板text/template和html/template，它们的接口基本一样，其中text/template用来处理普通文本的模板渲染，而html/template专门用来格式化html字符串。
+ 创建模板对象 解析模板字串 加载数据渲染模板  Go模板核心包 Go提供了两个标准库用来处理模板渲染text/template和html/template，它们的接口一致，但处理的模板数据不同。其中text/template用来处理普通文本的模板渲染，而html/template专门用来渲染格式化html字符串。
 下面的例子我们使用text/template来处理普通文本模板的渲染：
 package main import ( &quot;os&quot; &quot;text/template&quot; ) type Student struct { ID uint Name string } func main() { stu := Student{0, &quot;jason&quot;} tmpl, err := template.New(&quot;test&quot;).Parse(&quot;The name for student {{.ID}} is {{.Name}}&quot;) if err != nil { panic(err) } err = tmpl.Execute(os.Stdout, stu) if err != nil { panic(err) } }  上述代码第4行引入text/template来处理普通文本模板渲染，第14行定义一个模板对象test来解析变量&quot;The name for student {{.",
       "inLanguage" : "en-US",
@@ -25,12 +25,12 @@ package main import ( &quot;os&quot; &quot;text/template&quot; ) type Student st
       "dateModified" : "2018-08-24 00:00:00 &#43;0000 UTC",
       "url" : "https://morven.life/notes/go_template/",
       "keywords" : [  ]
-  }</script><title>深入理解GoTemplate - Morven&#39;s Life</title><meta property="og:title" content="深入理解GoTemplate - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="虽然近几年Restful架构的盛行推动前后端分离大行其道，模板渲染的地方由后端转移到了前端，类似于JSP和PHP的传统技术没多少人在用了。但是在Go语言中，模板技术不只局限于服务端HTML页面的渲染，可以实现文本化的输出，对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
+  }</script><title>深入理解GoTemplate - Morven&#39;s Life</title><meta property="og:title" content="深入理解GoTemplate - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
 运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（&quot;.&quot;表示当前的作用域）标识当前位置的元素。
 类似于Python的jinja，Node的jade等模版引擎，Go语言模板引擎的运行机制也是类似：
- 创建模板对象 解析模板字串 加载数据渲染模板  Warning Up Go提供了两个标准库用来处理模板text/template和html/template，它们的接口基本一样，其中text/template用来处理普通文本的模板渲染，而html/template专门用来格式化html字符串。
+ 创建模板对象 解析模板字串 加载数据渲染模板  Go模板核心包 Go提供了两个标准库用来处理模板渲染text/template和html/template，它们的接口一致，但处理的模板数据不同。其中text/template用来处理普通文本的模板渲染，而html/template专门用来渲染格式化html字符串。
 下面的例子我们使用text/template来处理普通文本模板的渲染：
-package main import ( &quot;os&quot; &quot;text/template&quot; ) type Student struct { ID uint Name string } func main() { stu := Student{0, &quot;jason&quot;} tmpl, err := template.New(&quot;test&quot;).Parse(&quot;The name for student {{.ID}} is {{.Name}}&quot;) if err != nil { panic(err) } err = tmpl.Execute(os.Stdout, stu) if err != nil { panic(err) } }  上述代码第4行引入text/template来处理普通文本模板渲染，第14行定义一个模板对象test来解析变量&quot;The name for student {{."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">深入理解GoTemplate</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2018-08-24 00:00:00 UTC">24 Aug 2018</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>虽然近几年Restful架构的盛行推动前后端分离大行其道，模板渲染的地方由后端转移到了前端，类似于JSP和PHP的传统技术没多少人在用了。但是在Go语言中，模板技术不只局限于服务端HTML页面的渲染，可以实现文本化的输出，对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。</p><h2 id="运行机制">运行机制</h2><p>模板的渲染技术本质上都是一样的，一句话来说明就是<strong>字串模板和结构化数据的结合</strong>。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（<code>&quot;.&quot;</code>表示当前的作用域）标识当前位置的元素。</p><p>类似于Python的<a href="http://jinja.pocoo.org/">jinja</a>，Node的<a href="http://jade-lang.com/">jade</a>等模版引擎，Go语言模板引擎的运行机制也是类似：</p><ol><li>创建模板对象</li><li>解析模板字串</li><li>加载数据渲染模板</li></ol><p><img src="https://i.loli.net/2019/03/31/5ca036206c6f3.jpg" alt=""></p><h2 id="warning-up">Warning Up</h2><p>Go提供了两个标准库用来处理模板<code>text/template</code>和<code>html/template</code>，它们的接口基本一样，其中<code>text/template</code>用来处理普通文本的模板渲染，而<code>html/template</code>专门用来格式化<code>html</code>字符串。</p><p>下面的例子我们使用<code>text/template</code>来处理普通文本模板的渲染：</p><pre><code>package main
+package main import ( &quot;os&quot; &quot;text/template&quot; ) type Student struct { ID uint Name string } func main() { stu := Student{0, &quot;jason&quot;} tmpl, err := template.New(&quot;test&quot;).Parse(&quot;The name for student {{.ID}} is {{.Name}}&quot;) if err != nil { panic(err) } err = tmpl.Execute(os.Stdout, stu) if err != nil { panic(err) } }  上述代码第4行引入text/template来处理普通文本模板渲染，第14行定义一个模板对象test来解析变量&quot;The name for student {{."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">深入理解GoTemplate</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2018-08-24 00:00:00 UTC">24 Aug 2018</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。</p><h2 id="运行机制">运行机制</h2><p>模板的渲染技术本质上都是一样的，一句话来说明就是<strong>字串模板和结构化数据的结合</strong>。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（<code>&quot;.&quot;</code>表示当前的作用域）标识当前位置的元素。</p><p>类似于Python的<a href="http://jinja.pocoo.org/">jinja</a>，Node的<a href="http://jade-lang.com/">jade</a>等模版引擎，Go语言模板引擎的运行机制也是类似：</p><ol><li>创建模板对象</li><li>解析模板字串</li><li>加载数据渲染模板</li></ol><p><img src="https://i.loli.net/2019/03/31/5ca036206c6f3.jpg" alt=""></p><h2 id="go模板核心包">Go模板核心包</h2><p>Go提供了两个标准库用来处理模板渲染<code>text/template</code>和<code>html/template</code>，它们的接口一致，但处理的模板数据不同。其中<code>text/template</code>用来处理普通文本的模板渲染，而<code>html/template</code>专门用来渲染格式化<code>html</code>字符串。</p><p>下面的例子我们使用<code>text/template</code>来处理普通文本模板的渲染：</p><pre><code>package main
 
 import (
 	&quot;os&quot;
@@ -105,7 +105,7 @@ if err != nil { panic(err) }
 err = tmpl.ExecuteTemplate(os.Stdout, &quot;stu_info&quot;, stu)
 if err != nil { panic(err) }
 }
-</code></pre><p>上面的例子当中我们在<code>stu_into</code>模板中使用<code>template</code>引入了<code>stu_name</code>模板，同时传给<code>stu_name</code>模板当前作用域的数据(<code>.</code>)，第三个参数是可选的，如果为空，则表示传给嵌套模版的数据为<code>nil</code>。</p><p>总而言之，创建模板对象后和加载多个模板文件，执行模板文件的时候需要指定base模板（<code>stu_info</code>），在base模板中可以引入其他命名的模板。无论点<code>.</code>，<code>define</code>，<code>template</code>这些在双花括号的关键字其实都是Go Template的action（模板标签）。</p><h2 id="action">Action</h2><p>Go Template的action是用于动态执行一些逻辑和展示数据的形式，大致分为下面几类：</p><ul><li>条件语句</li><li>迭代</li><li>封装</li><li>引用</li></ul><p>我们在之前的例子中看到了<code>define</code>以及<code>template</code>的用法，下面再看看其他的action怎么使用：</p><h4 id="条件判断">条件判断</h4><p>条件判断的语法很简单：</p><pre><code>{{if pipeline}} T1 {{end}}
+</code></pre><p>上面的例子当中我们在<code>stu_into</code>模板中使用<code>template</code>引入了<code>stu_name</code>模板，同时传给<code>stu_name</code>模板当前作用域的数据(<code>.</code>)，第三个参数是可选的，如果为空，则表示传给嵌套模版的数据为<code>nil</code>。</p><p>总而言之，创建模板对象后和加载多个模板文件，执行模板文件的时候需要指定base模板（<code>stu_info</code>），在base模板中可以引入其他命名的模板。无论点<code>.</code>，<code>define</code>，<code>template</code>这些在双花括号的关键字其实都是Go Template的action（模板标签）。</p><h2 id="模板action">模板Action</h2><p>通过前面的介绍，我们知道模板其实是包含了一个或多个由双花括号包含的<code>{{ }}</code>的模板字符串的文本或者文件。大部分模板字符串只是按字面值打印，但是如果模板字符串包含<code>action</code>将触发其它的行为。每个<code>action</code>都包含了一个用模板语言书写的表达式，一个action虽然简短但是可以输出复杂的打印值，模板语言包含通过选择结构体的成员、调用函数或方法、表达式控制流<code>if-else</code>语句和<code>rang</code>e循环语句，还有其它实例化模板等诸多特性。</p><p>概括起来，Go Template的action是用于动态执行一些逻辑和展示数据的形式，大致分为下面几类：</p><ul><li>条件语句</li><li>迭代</li><li>封装</li><li>引用</li></ul><p>我们在之前的例子中看到了<code>define</code>以及<code>template</code>的用法，下面再看看其他的action怎么使用：</p><h4 id="条件判断">条件判断</h4><p>条件判断的语法很简单：</p><pre><code>{{if pipeline}} T1 {{end}}
 	If the value of the pipeline is empty, no output is generated;
 	otherwise, T1 is executed. The empty values are false, 0, any
 	nil pointer or interface value, and any array, slice, map, or
@@ -121,6 +121,35 @@ if err != nil { panic(err) }
 	of an if may include another if directly; the effect is exactly
 	the same as writing
 		{{if pipeline}} T1 {{else}}{{if pipeline}} T0 {{end}}{{end}}
+</code></pre><p>举个简单的例子：</p><pre><code>func test1(a int) bool {
+    if a == 3 {
+        return true;
+    }
+    return false;
+}
+
+func main() {
+	t := template.New(&quot;test&quot;);
+	t.Funcs(template.FuncMap{&quot;test1&quot;: test1});
+	// {{if 表达式}}{{else if}}{{else}}{{end}}
+	// if后面可以是一个条件表达式，可以是字符串或布尔值变量
+	// 注意if后面不能直接使用==来判断
+	t, _ = t.Parse(`
+{{if 1}}
+    it's true
+{{else}}
+	it's false
+{{end}}
+ 
+{{$a := 4}}
+{{if $a|test1}}
+	$a=3
+{{else}}
+	$a!=3
+{{end}}
+`);
+	t.Execute(os.Stdout, nil);
+	fmt.Println();
 </code></pre><h4 id="迭代">迭代</h4><p>对于一些数组，Slice或者是Map，可以使用迭代的action，与Go语言本身的迭代类似，使用<code>range</code>进行处理：</p><p>详细规范如下：</p><pre><code>{{range pipeline}} T1 {{end}}
 	The value of the pipeline must be an array, slice, map, or channel.
 	If the value of the pipeline has length zero, nothing is output;
@@ -156,13 +185,40 @@ if err != nil { panic(err) }
 {{ else }}
  {{ . }}
 {{ end }}
+</code></pre><h4 id="嵌套模板">嵌套模板</h4><pre><code>func test1() string {
+	return &quot;test1&quot;;
+}
+
+func main() {
+	t := template.New(&quot;test&quot;);
+	t.Funcs(template.FuncMap{&quot;test1&quot;: test1});
+	// {{ define &quot;templateName&quot; }}Template Content{{end}} --&gt; define the template
+	// {{ template &quot;templateName&quot; }} --&gt; reference the template
+	// {{ template &quot;templateName&quot; function }} --&gt; Pass the return value of function to {{.}}
+	t, _ = t.Parse(`
+{{define &quot;tp1&quot;}} template one {{end}}
+{{define &quot;tp2&quot;}} template two {{.}} {{end}}
+{{define &quot;tp3&quot;}} {{template &quot;tp1&quot;}} {{template &quot;tp2&quot;}} {{end}}
+{{template &quot;tp1&quot;}}
+{{template &quot;tp2&quot; test1}}
+{{template &quot;tp3&quot; test1}}
+`);
+	t.Execute(os.Stdout, nil);
+	fmt.Println();
+}
 </code></pre><h4 id="参数和管道">参数和管道</h4><p>前面我们提到过<code>template</code> action可以有可选的参数来传递给内部嵌套模版。实际上，引用除了模板的include，还包括参数的传递。</p><p>模板的参数可以是Go中的基本数据类型，如数字，布尔值，字符串，数组切片或者一个结构体。在模板中设置变量可以使用：</p><pre><code>$variable := value
 </code></pre><p>Go还有一个特性就是模板的管道函数，熟悉django和jinja的开发者应该很熟悉这种手法。通过定义函数过滤器，实现模板的一些简单格式化处理。并且通过管道哲学，这样的处理方式可以连成一起。</p><p>例如，模板内置了一些函数，比如格式化输出：</p><pre><code>{{ 3.1415926 | printf &quot;%.3f&quot; }}
-</code></pre><h4 id="函数">函数</h4><p>既然管道符可以成为模板中的过滤器，那么除了内建的函数，Go Template还支持自定义函数可以扩展模板的功能：</p><p>在Go Template中定义一个函数分两步：</p><ol><li>创建一个<code>FuncMap</code>类型的map，key是模板函数的名字，value是其函数的定义</li><li>将<code>FuncMap</code>注入到模板中</li></ol><pre><code>funcMap := template.FuncMap{&quot;fdate&quot;: formDate}
-tmpl := template.New(&quot;test&quot;).Funcs(funcMap)
-tmpl = template.Must(t.Parse(`test data: {{.}}`))
-tmpl.ExecuteTemplate(os.Stdout, &quot;test&quot;, time.Now())
-</code></pre><p>在模板中可以使用<code>{{ . | fdate }}</code>，当然也可以不用管道过滤器，而是使用正常的函数调用形式<code>{{ fdate . }}</code>。</p><h2 id="summary">Summary</h2><p>Go Template经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。</p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+</code></pre><h4 id="函数">函数</h4><p>既然管道符可以成为模板中的过滤器，那么除了内建的函数，Go Template还支持自定义函数可以扩展模板的功能：</p><p>在Go Template中定义一个函数分两步：</p><ol><li>创建一个<code>FuncMap</code>类型的map，key是模板函数的名字，value是其函数的定义</li><li>将<code>FuncMap</code>注入到模板中</li></ol><pre><code>func fdate(t time.Time) {
+	return t.Format(time.ANSIC)
+}
+
+func main() {
+	funcMap := template.FuncMap{&quot;fd&quot;: fdate}
+	tmpl := template.New(&quot;test&quot;).Funcs(funcMap)
+	tmpl = template.Must(t.Parse(`test data: {{ . | fd }}`))
+	tmpl.ExecuteTemplate(os.Stdout, &quot;test&quot;, time.Now())
+}
+</code></pre><p>在模板中可以使用<code>{{ . | fd }}</code>，当然也可以不用管道过滤器，而是使用正常的函数调用形式<code>{{ fd . }}</code>。</p><h2 id="summary">Summary</h2><p>这篇笔记主要通过例子探讨了Go语言模板技术基本语法，简而言之Go语言模板技术是定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。Go模板技术经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。</p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
     container: document.getElementById('article')
   });</script><script>hljs.initHighlightingOnLoad();
   
