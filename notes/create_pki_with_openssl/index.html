@@ -1,29 +1,24 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/create_pki_with_openssl/"><link rel="canonical" href="https://morven.life/notes/create_pki_with_openssl/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/create_pki_with_openssl/"><link rel="canonical" href="https://morven.life/notes/create_pki_with_openssl/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
            "@type": "WebPage",
-           "@id": "https://morven.life/"
+           "@id": "https:\/\/morven.life\/"
       },
       "articleSection" : "notes",
       "name" : "创建私有CA以及颁发SSL证书",
       "headline" : "创建私有CA以及颁发SSL证书",
-      "description" : "在上一篇文章深入理解PKI系统的与数字证书中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
-SSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:
- Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。
-  ssh-keygen openssl genrsa  实际上ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。
-ssh-keygen 举例来说，我们要生成2048位RSA密钥对：
-$ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key's randomart image is: +--[ RSA 2048]----+ | | | | | | | .",
+      "description" : "在上一篇文章深入理解PKI系统的与数字证书中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI\/CA数字证书信任体系。\nSSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:\n Note: 有些情形只需要公私密钥对就够了，不需要数字证书，比如私有的SSH服务。但是对于一些要求身份认证的情形，则需要对公钥进行数字签名形成数字证书。\n  ssh-keygen openssl genrsa  实际上ssh-keygen底层也是使用OpenSSL提供的库来生成密钥。\nssh-keygen 举例来说，我们要生成2048位RSA密钥对：\n$ ssh-keygen -b 2048 -t rsa -f foo_rsa Generating public\/private rsa key pair. Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in foo_rsa. Your public key has been saved in foo_rsa.pub. The key fingerprint is: b8:c4:5f:2a:94:fd:b9:56:9d:5b:fd:96:02:5a:7e:b7 user@oasis The key\x27s randomart image is: \x2b--[ RSA 2048]----\x2b | | | | | | | .",
       "inLanguage" : "en-US",
-      "author" : "Morven&#39;s Life",
-      "creator" : "Morven&#39;s Life",
-      "publisher": "Morven&#39;s Life",
-      "accountablePerson" : "Morven&#39;s Life",
-      "copyrightHolder" : "Morven&#39;s Life",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
       "copyrightYear" : "2014",
-      "datePublished": "2014-11-24 00:00:00 &#43;0000 UTC",
-      "dateModified" : "2014-11-24 00:00:00 &#43;0000 UTC",
-      "url" : "https://morven.life/notes/create_pki_with_openssl/",
+      "datePublished": "2014-11-24 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2014-11-24 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/create_pki_with_openssl\/",
       "keywords" : [  ]
   }</script><title>创建私有CA以及颁发SSL证书 - Morven&#39;s Life</title><meta property="og:title" content="创建私有CA以及颁发SSL证书 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="在上一篇文章深入理解PKI系统的与数字证书中介绍了PKI系统的基本组成以及CA认证中心的主要作用，以及X.509证书基本标准。今天，我们继续应用已经学习的理论知识构建一套自己的PKI/CA数字证书信任体系。
 SSL证书生成工具 有以下两种常见的工具来生成RSA公私密钥对:

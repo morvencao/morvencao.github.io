@@ -30,10 +30,10 @@ $ curl http://localhost &amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html&amp;gt; &amp;
     
     <item>
       <title>深入理解Go Template</title>
-      <link>https://morven.life/notes/go_template/</link>
+      <link>https://morven.life/notes/the_go_template/</link>
       <pubDate>Fri, 24 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/go_template/</guid>
+      <guid>https://morven.life/notes/the_go_template/</guid>
       <description>随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
 运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（&amp;quot;.&amp;quot;表示当前的作用域）标识当前位置的元素。
 类似于Python的jinja，Node的jade等模版引擎，Go语言模板引擎的运行机制也是类似：
@@ -44,10 +44,10 @@ package main import ( &amp;quot;os&amp;quot; &amp;quot;text/template&amp;quot; )
     
     <item>
       <title>Go Routine &amp; Channel</title>
-      <link>https://morven.life/notes/go_channel/</link>
+      <link>https://morven.life/notes/the_go_channel/</link>
       <pubDate>Mon, 12 Feb 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/go_channel/</guid>
+      <guid>https://morven.life/notes/the_go_channel/</guid>
       <description>说到Go语言，不得不提一下Go语言的并发编程。Go从语言层面增加了对并发编程的良好支持，不像Python、Java等其他语言使用Thread库来新建线程，同时使用线程安全队列库来共享数据。Go语言对于并发编程的支持依赖于Go语言的两个基础概念：Go Routine和Go Channel。
  Note: 也许我们还对并发(Concurrency)和并行(Parallelism)傻傻分不清楚，在这里再次强调两者的不同点：
 Concurrency is about dealing with lots of things at once. Parallelism is about doing lots of things at once.

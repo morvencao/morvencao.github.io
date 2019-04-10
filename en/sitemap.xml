@@ -8,26 +8,6 @@
   </url>
   
   <url>
-    <loc>https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/</loc>
-    <lastmod>2018-04-10T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://morven.life/en/categories/</loc>
-    <priority>0</priority>
-    <xhtml:link
-                rel="alternate"
-                hreflang="cn"
-                href="https://morven.life/categories/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://morven.life/en/categories/"
-                />
-  </url>
-  
-  <url>
     <loc>https://morven.life/en/</loc>
     <lastmod>2019-03-18T00:00:00+00:00</lastmod>
     <priority>0</priority>
@@ -56,6 +36,26 @@
                 rel="alternate"
                 hreflang="en"
                 href="https://morven.life/en/posts/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/</loc>
+    <lastmod>2018-04-10T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morven.life/en/categories/</loc>
+    <priority>0</priority>
+    <xhtml:link
+                rel="alternate"
+                hreflang="cn"
+                href="https://morven.life/categories/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://morven.life/en/categories/"
                 />
   </url>
   

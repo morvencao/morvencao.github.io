@@ -1,37 +1,24 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_pki_and_digital_certificate/"><link rel="canonical" href="https://morven.life/notes/the_pki_and_digital_certificate/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_pki_and_digital_certificate/"><link rel="canonical" href="https://morven.life/notes/the_pki_and_digital_certificate/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
            "@type": "WebPage",
-           "@id": "https://morven.life/"
+           "@id": "https:\/\/morven.life\/"
       },
       "articleSection" : "notes",
       "name" : "深入理解PKI系统的与CA中心",
       "headline" : "深入理解PKI系统的与CA中心",
-      "description" : "在上一篇文章数字签名与数字证书中介绍了数字签名以及数字证书的一些基础知识以及数字证书的作用，但是并没有提到数字证书的管理，比如数字证书的申请，数字证书的文件格式等知识。这篇文章将继续探讨数字证书的管理知识。
-说到数字证书的管理，不得不提到一个词，PKI(Publick Key Infrastructure)，即公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的供私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。
- PKI既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为PKI
- PKI的组成 PKI作为一个实施标准，有一系列的组件组成：
- CA(Certificate Authority)中心(证书签发)：是PKI的”核心”，即数字证书的申请及签发机关，CA必须具备权威性的特征，它负责管理PKI结构下的所有用户(包括各种应用程序)的证书，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份，CA还要负责用户证书的黑名单登记和黑名单发布。
- X.500目录服务器(证书保存)：X.500目录服务器用于&rdquo;发布&rdquo;用户的证书和黑名单信息，用户可通过标准的LDAP协议查询自己或其他人的证书和下载黑名单信息。
- 基于SSL(Secure socket layer)的安全web服务器：Secure Socket Layer(SSL)协议最初由Netscape企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准。
- Web(安全通信平台)：Web有Web Client端和Web Server端两部分，分别安装在客户端和服务器端，通过具有高强度密码算法的SSL协议保证客户端和服务器端数据的机密性、完整性、身份验证。
- 自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的PKI包括:
-1) 认证政策的制定 2) 认证规则 3) 运作制度的制定 4) 所涉及的各方法律关系内容 5) 技术的实现等
-  CA 认证中心CA(Certificate Authority)，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。CA为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为PKI的核心部分，CA实现了PKI中一些很重要的功能:
- 接收验证最终用户数字证书的申请 确定是否接受最终用户数字证书的申请-证书的审批 向申请者颁发、拒绝颁发数字证书-证书的发放 接收、处理最终用户的数字证书更新请求-证书的更新 接收最终用户数字证书的查询、撤销 产生和发布证书废止列表(CRL) 数字证书的归档 密钥归档 历史数据归档  X.509标准 整个PKI体系中有很多格式标准，PKI的标准规定了PKI的设计、实施和运营，规定了PKI各种角色的&rdquo;游戏规则&rdquo;。如果两个PKI应用程序之间要想进行交互，只有相互理解对方的数据含义，交互才能正常进行，标准的作用就是提供了数据语法和语义的共同约定。PKI中最重要的标准，它定义了公钥证书的基本结构。
-X.509是定义了公钥证书结构的基本标准，是目前非常通用的证书格式。X.509标准在PKI中起到了举足轻重的作用，PKI由小变大，由原来网络封闭环境到分布式开放环境，X.509起了很大作用，可以说X.509标准是PKI的雏形。PKI是在X.509标准基础上发展起来的。理论上只要为一个网络应用程序创建的证书符合ITU-T X.509国际标准，就可以用于任何其他符合X.509标准的网络应用。对于符合X.509标准的数字证书，必须保证公钥及其所有者(Subject)的姓名是一致的，同时，认证者(Issuer)总是CA或由CA指定的人。X.509数字证书是一些标准字段的集合，这些字段包含有关用户或设备及其相应公钥的信息。X.509标准定义了证书中应该包含哪些信息，并描述了这些信息是如何编码的(即数据格式)，所有的X.509证书包含以下数据：
- 版本号(Version)：指出该证书使用了哪种版本的X.509标准（版本1、版本2或是版本3），版本号会影响证书中的一些特定信息，目前的版本为3 序列号(Serial Number)： 标识证书的唯一整数，由证书颁发者分配的本证书的唯一标识符 签名算法标识符： 用于签证书的算法标识，由对象标识符加上相关的参数组成，用于说明本证书所用的数字签名算法。例如，SHA-1和RSA的对象标识符就用来说明该数字签名是利用RSA对SHA-1杂凑加密 认证机构的数字签名：这是使用证书发布者私钥生成的签名，以确保这个证书在发放之后没有被撰改过 认证机构： 证书颁发者的可识别名（DN），是签发该证书的实体唯一的CA的X.500名字。使用该证书意味着信任签发证书的实体。(注意：在某些情况下，比如根或顶级CA证书，发布者自己签发证书) 有效期限(Validity)： 证书起始日期和时间以及终止日期和时间；指明证书在这两个时间内有效 主题信息(Subject)：证书持有人唯一的标识符(或称DN-distinguished name)这个名字在 Internet上应该是唯一的 公钥信息(Public-Key)： 包括证书持有人的公钥、算法(指明密钥属于哪种密码系统)的标识符和其他相关的密钥参数 颁发者唯一标识符(Issuer)：标识符—证书颁发者的唯一标识符，仅在版本2和版本3中有要求，属于可选项  除了以上字段之外，X.",
+      "description" : "在上一篇文章数字签名与数字证书中介绍了数字签名以及数字证书的一些基础知识以及数字证书的作用，但是并没有提到数字证书的管理，比如数字证书的申请，数字证书的文件格式等知识。这篇文章将继续探讨数字证书的管理知识。\n说到数字证书的管理，不得不提到一个词，PKI(Publick Key Infrastructure)，即公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的供私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。\n PKI既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为PKI\n PKI的组成 PKI作为一个实施标准，有一系列的组件组成：\n CA(Certificate Authority)中心(证书签发)：是PKI的”核心”，即数字证书的申请及签发机关，CA必须具备权威性的特征，它负责管理PKI结构下的所有用户(包括各种应用程序)的证书，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份，CA还要负责用户证书的黑名单登记和黑名单发布。\n X.500目录服务器(证书保存)：X.500目录服务器用于\x26rdquo;发布\x26rdquo;用户的证书和黑名单信息，用户可通过标准的LDAP协议查询自己或其他人的证书和下载黑名单信息。\n 基于SSL(Secure socket layer)的安全web服务器：Secure Socket Layer(SSL)协议最初由Netscape企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准。\n Web(安全通信平台)：Web有Web Client端和Web Server端两部分，分别安装在客户端和服务器端，通过具有高强度密码算法的SSL协议保证客户端和服务器端数据的机密性、完整性、身份验证。\n 自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的PKI包括:\n1) 认证政策的制定 2) 认证规则 3) 运作制度的制定 4) 所涉及的各方法律关系内容 5) 技术的实现等\n  CA 认证中心CA(Certificate Authority)，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。CA为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为PKI的核心部分，CA实现了PKI中一些很重要的功能:\n 接收验证最终用户数字证书的申请 确定是否接受最终用户数字证书的申请-证书的审批 向申请者颁发、拒绝颁发数字证书-证书的发放 接收、处理最终用户的数字证书更新请求-证书的更新 接收最终用户数字证书的查询、撤销 产生和发布证书废止列表(CRL) 数字证书的归档 密钥归档 历史数据归档  X.509标准 整个PKI体系中有很多格式标准，PKI的标准规定了PKI的设计、实施和运营，规定了PKI各种角色的\x26rdquo;游戏规则\x26rdquo;。如果两个PKI应用程序之间要想进行交互，只有相互理解对方的数据含义，交互才能正常进行，标准的作用就是提供了数据语法和语义的共同约定。PKI中最重要的标准，它定义了公钥证书的基本结构。\nX.509是定义了公钥证书结构的基本标准，是目前非常通用的证书格式。X.509标准在PKI中起到了举足轻重的作用，PKI由小变大，由原来网络封闭环境到分布式开放环境，X.509起了很大作用，可以说X.509标准是PKI的雏形。PKI是在X.509标准基础上发展起来的。理论上只要为一个网络应用程序创建的证书符合ITU-T X.509国际标准，就可以用于任何其他符合X.509标准的网络应用。对于符合X.509标准的数字证书，必须保证公钥及其所有者(Subject)的姓名是一致的，同时，认证者(Issuer)总是CA或由CA指定的人。X.509数字证书是一些标准字段的集合，这些字段包含有关用户或设备及其相应公钥的信息。X.509标准定义了证书中应该包含哪些信息，并描述了这些信息是如何编码的(即数据格式)，所有的X.509证书包含以下数据：\n 版本号(Version)：指出该证书使用了哪种版本的X.509标准（版本1、版本2或是版本3），版本号会影响证书中的一些特定信息，目前的版本为3 序列号(Serial Number)： 标识证书的唯一整数，由证书颁发者分配的本证书的唯一标识符 签名算法标识符： 用于签证书的算法标识，由对象标识符加上相关的参数组成，用于说明本证书所用的数字签名算法。例如，SHA-1和RSA的对象标识符就用来说明该数字签名是利用RSA对SHA-1杂凑加密 认证机构的数字签名：这是使用证书发布者私钥生成的签名，以确保这个证书在发放之后没有被撰改过 认证机构： 证书颁发者的可识别名（DN），是签发该证书的实体唯一的CA的X.500名字。使用该证书意味着信任签发证书的实体。(注意：在某些情况下，比如根或顶级CA证书，发布者自己签发证书) 有效期限(Validity)： 证书起始日期和时间以及终止日期和时间；指明证书在这两个时间内有效 主题信息(Subject)：证书持有人唯一的标识符(或称DN-distinguished name)这个名字在 Internet上应该是唯一的 公钥信息(Public-Key)： 包括证书持有人的公钥、算法(指明密钥属于哪种密码系统)的标识符和其他相关的密钥参数 颁发者唯一标识符(Issuer)：标识符—证书颁发者的唯一标识符，仅在版本2和版本3中有要求，属于可选项  除了以上字段之外，X.",
       "inLanguage" : "en-US",
-      "author" : "Morven&#39;s Life",
-      "creator" : "Morven&#39;s Life",
-      "publisher": "Morven&#39;s Life",
-      "accountablePerson" : "Morven&#39;s Life",
-      "copyrightHolder" : "Morven&#39;s Life",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
       "copyrightYear" : "2014",
-      "datePublished": "2014-11-12 00:00:00 &#43;0000 UTC",
-      "dateModified" : "2014-11-12 00:00:00 &#43;0000 UTC",
-      "url" : "https://morven.life/notes/the_pki_and_digital_certificate/",
+      "datePublished": "2014-11-12 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2014-11-12 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/the_pki_and_digital_certificate\/",
       "keywords" : [  ]
   }</script><title>深入理解PKI系统的与CA中心 - Morven&#39;s Life</title><meta property="og:title" content="深入理解PKI系统的与CA中心 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="在上一篇文章数字签名与数字证书中介绍了数字签名以及数字证书的一些基础知识以及数字证书的作用，但是并没有提到数字证书的管理，比如数字证书的申请，数字证书的文件格式等知识。这篇文章将继续探讨数字证书的管理知识。
 说到数字证书的管理，不得不提到一个词，PKI(Publick Key Infrastructure)，即公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的供私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。

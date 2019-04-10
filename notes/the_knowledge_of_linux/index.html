@@ -1,30 +1,24 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_knowledge_of_linux/"><link rel="canonical" href="https://morven.life/notes/the_knowledge_of_linux/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_knowledge_of_linux/"><link rel="canonical" href="https://morven.life/notes/the_knowledge_of_linux/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
            "@type": "WebPage",
-           "@id": "https://morven.life/"
+           "@id": "https:\/\/morven.life\/"
       },
       "articleSection" : "notes",
       "name" : "Linux的启动流程",
       "headline" : "Linux的启动流程",
-      "description" : "和Window等其他操作系统一样，linux的启动也分为两个阶段：引导（boot）和启动（startup）。引导阶段开始于打开电源开关，接下来板载程序BIOS的开始POST上电自检主过程，结束于内核初始化完成。启动阶段接管剩余的工作，直到操作系统初始化完成进入可操作状态，并能够执行用户的功能性任务。
-我们不花过多篇幅讲解引导阶段的硬件板载程序加载运行的过程。事实上，由于在板载程序上很多行为基本上固定的，程序员很难介入，所以接下来主要讲讲主板的引导程序如何加载内核程序以及控制权交给linux操作系统之后的各个服务的启动流程。
-GRUB引导加载程序 所谓引导程序，一个用于计算机寻找操作系统内核并加载其到内存的智能程序，通常位于硬盘的第一个扇区，并由BIOS载入内存执行。为什么需要引导程序，而不是直接由BIOS加载操作系统？原因是BOIS只会自动加载硬盘的第一个扇区的512字节的内容，而操作系统的大小远远大于这个值，所以才会先加载引导程序，然后通过引导程序加载程序加载操作系统到内存中。
-目前，各个Linux发行版主流的引导程序是GRUB(GRand Unified BootLoader)。GRUB的作用有以下几个： - 加载操作系统的内核 - 拥有一个可以让用户选择到底启动哪个系统的的菜单界面 - 可以调用其他的启动引导程序，来实现多系统引导
-GRUB1现在已经逐步被弃用，在大多数现代发行版上它已经被GRUB2所替换。GRUB2通过/boot/grub2/grub.cfg进行配置，最终GRUB定位和加载linux内核程序到内存中，并转移控制权到内核程序。
-内核程序 内核程序的相关文件位于/boot目录下，这些内核文件均带有前缀vmlinuz。内核文件都是以一种自解压的压缩格式存储以节省空间。在选定的内核加载到内存中并开始执行后，在其进行任何工作之前，内核文件首先必须从压缩格式解压自身。
-# ll /boot/ total 152404 drwxr-xr-x 4 root root 4096 Nov 29 15:34 ./ drwxr-xr-x 22 root root 335 Jan 16 12:22 ../ -rw-r--r-- 1 root root 190587 Aug 10 2018 config-3.2.0-3-amd64 -rw-r--r-- 1 root root 190611 Oct 2 12:22 config-3.2.0-4-amd64 drwxr-xr-x 5 root root 4096 Nov 29 15:33 grub/ -rw-r--r-- 1 root root 39413114 Nov 29 15:33 initrd.",
+      "description" : "和Window等其他操作系统一样，linux的启动也分为两个阶段：引导（boot）和启动（startup）。引导阶段开始于打开电源开关，接下来板载程序BIOS的开始POST上电自检主过程，结束于内核初始化完成。启动阶段接管剩余的工作，直到操作系统初始化完成进入可操作状态，并能够执行用户的功能性任务。\n我们不花过多篇幅讲解引导阶段的硬件板载程序加载运行的过程。事实上，由于在板载程序上很多行为基本上固定的，程序员很难介入，所以接下来主要讲讲主板的引导程序如何加载内核程序以及控制权交给linux操作系统之后的各个服务的启动流程。\nGRUB引导加载程序 所谓引导程序，一个用于计算机寻找操作系统内核并加载其到内存的智能程序，通常位于硬盘的第一个扇区，并由BIOS载入内存执行。为什么需要引导程序，而不是直接由BIOS加载操作系统？原因是BOIS只会自动加载硬盘的第一个扇区的512字节的内容，而操作系统的大小远远大于这个值，所以才会先加载引导程序，然后通过引导程序加载程序加载操作系统到内存中。\n目前，各个Linux发行版主流的引导程序是GRUB(GRand Unified BootLoader)。GRUB的作用有以下几个： - 加载操作系统的内核 - 拥有一个可以让用户选择到底启动哪个系统的的菜单界面 - 可以调用其他的启动引导程序，来实现多系统引导\nGRUB1现在已经逐步被弃用，在大多数现代发行版上它已经被GRUB2所替换。GRUB2通过\/boot\/grub2\/grub.cfg进行配置，最终GRUB定位和加载linux内核程序到内存中，并转移控制权到内核程序。\n内核程序 内核程序的相关文件位于\/boot目录下，这些内核文件均带有前缀vmlinuz。内核文件都是以一种自解压的压缩格式存储以节省空间。在选定的内核加载到内存中并开始执行后，在其进行任何工作之前，内核文件首先必须从压缩格式解压自身。\n# ll \/boot\/ total 152404 drwxr-xr-x 4 root root 4096 Nov 29 15:34 .\/ drwxr-xr-x 22 root root 335 Jan 16 12:22 ..\/ -rw-r--r-- 1 root root 190587 Aug 10 2018 config-3.2.0-3-amd64 -rw-r--r-- 1 root root 190611 Oct 2 12:22 config-3.2.0-4-amd64 drwxr-xr-x 5 root root 4096 Nov 29 15:33 grub\/ -rw-r--r-- 1 root root 39413114 Nov 29 15:33 initrd.",
       "inLanguage" : "en-US",
-      "author" : "Morven&#39;s Life",
-      "creator" : "Morven&#39;s Life",
-      "publisher": "Morven&#39;s Life",
-      "accountablePerson" : "Morven&#39;s Life",
-      "copyrightHolder" : "Morven&#39;s Life",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
       "copyrightYear" : "2015",
-      "datePublished": "2015-02-10 00:00:00 &#43;0000 UTC",
-      "dateModified" : "2015-02-10 00:00:00 &#43;0000 UTC",
-      "url" : "https://morven.life/notes/the_knowledge_of_linux/",
+      "datePublished": "2015-02-10 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2015-02-10 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/the_knowledge_of_linux\/",
       "keywords" : [  ]
   }</script><title>Linux的启动流程 - Morven&#39;s Life</title><meta property="og:title" content="Linux的启动流程 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="和Window等其他操作系统一样，linux的启动也分为两个阶段：引导（boot）和启动（startup）。引导阶段开始于打开电源开关，接下来板载程序BIOS的开始POST上电自检主过程，结束于内核初始化完成。启动阶段接管剩余的工作，直到操作系统初始化完成进入可操作状态，并能够执行用户的功能性任务。
 我们不花过多篇幅讲解引导阶段的硬件板载程序加载运行的过程。事实上，由于在板载程序上很多行为基本上固定的，程序员很难介入，所以接下来主要讲讲主板的引导程序如何加载内核程序以及控制权交给linux操作系统之后的各个服务的启动流程。

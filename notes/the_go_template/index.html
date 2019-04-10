@@ -1,29 +1,24 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/go_template/"><link rel="canonical" href="https://morven.life/notes/go_template/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_go_template/"><link rel="canonical" href="https://morven.life/notes/the_go_template/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
            "@type": "WebPage",
-           "@id": "https://morven.life/"
+           "@id": "https:\/\/morven.life\/"
       },
       "articleSection" : "notes",
       "name" : "深入理解Go Template",
       "headline" : "深入理解Go Template",
-      "description" : "随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
-运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（&quot;.&quot;表示当前的作用域）标识当前位置的元素。
-类似于Python的jinja，Node的jade等模版引擎，Go语言模板引擎的运行机制也是类似：
- 创建模板对象 解析模板字串 加载数据渲染模板  Go模板核心包 Go提供了两个标准库用来处理模板渲染text/template和html/template，它们的接口一致，但处理的模板数据不同。其中text/template用来处理普通文本的模板渲染，而html/template专门用来渲染格式化html字符串。
-下面的例子我们使用text/template来处理普通文本模板的渲染：
-package main import ( &quot;os&quot; &quot;text/template&quot; ) type Student struct { ID uint Name string } func main() { stu := Student{0, &quot;jason&quot;} tmpl, err := template.New(&quot;test&quot;).Parse(&quot;The name for student {{.ID}} is {{.Name}}&quot;) if err != nil { panic(err) } err = tmpl.Execute(os.Stdout, stu) if err != nil { panic(err) } }  上述代码第4行引入text/template来处理普通文本模板渲染，第14行定义一个模板对象test来解析变量&quot;The name for student {{.",
+      "description" : "随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。\n运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（\x26quot;.\x26quot;表示当前的作用域）标识当前位置的元素。\n类似于Python的jinja，Node的jade等模版引擎，Go语言模板引擎的运行机制也是类似：\n 创建模板对象 解析模板字串 加载数据渲染模板  Go模板核心包 Go提供了两个标准库用来处理模板渲染text\/template和html\/template，它们的接口一致，但处理的模板数据不同。其中text\/template用来处理普通文本的模板渲染，而html\/template专门用来渲染格式化html字符串。\n下面的例子我们使用text\/template来处理普通文本模板的渲染：\npackage main import ( \x26quot;os\x26quot; \x26quot;text\/template\x26quot; ) type Student struct { ID uint Name string } func main() { stu := Student{0, \x26quot;jason\x26quot;} tmpl, err := template.New(\x26quot;test\x26quot;).Parse(\x26quot;The name for student {{.ID}} is {{.Name}}\x26quot;) if err != nil { panic(err) } err = tmpl.Execute(os.Stdout, stu) if err != nil { panic(err) } }  上述代码第4行引入text\/template来处理普通文本模板渲染，第14行定义一个模板对象test来解析变量\x26quot;The name for student {{.",
       "inLanguage" : "en-US",
-      "author" : "Morven&#39;s Life",
-      "creator" : "Morven&#39;s Life",
-      "publisher": "Morven&#39;s Life",
-      "accountablePerson" : "Morven&#39;s Life",
-      "copyrightHolder" : "Morven&#39;s Life",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
       "copyrightYear" : "2018",
-      "datePublished": "2018-08-24 00:00:00 &#43;0000 UTC",
-      "dateModified" : "2018-08-24 00:00:00 &#43;0000 UTC",
-      "url" : "https://morven.life/notes/go_template/",
+      "datePublished": "2018-08-24 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2018-08-24 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/the_go_template\/",
       "keywords" : [  ]
   }</script><title>深入理解Go Template - Morven&#39;s Life</title><meta property="og:title" content="深入理解Go Template - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
 运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（&quot;.&quot;表示当前的作用域）标识当前位置的元素。

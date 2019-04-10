@@ -1,35 +1,24 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.54.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_digital_signature_and_digital_certificate/"><link rel="canonical" href="https://morven.life/notes/the_digital_signature_and_digital_certificate/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_digital_signature_and_digital_certificate/"><link rel="canonical" href="https://morven.life/notes/the_digital_signature_and_digital_certificate/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
            "@type": "WebPage",
-           "@id": "https://morven.life/"
+           "@id": "https:\/\/morven.life\/"
       },
       "articleSection" : "notes",
       "name" : "数字签名与数字证书",
       "headline" : "数字签名与数字证书",
-      "description" : "在之前的密码学笔记主要是介绍密码学的基础知识，包括两种加密算法的原理，引入在非对称加密算法中数字证书（Digital Certificate）的概念。这篇笔记将继续探讨什么是数字证书，不过在了解它之前，先得知道什么是数字签名（Digital Signature）。
-关于数字签名和数字证书的概念，有一篇非常经典的文章，本文的大部分内容来自于那篇文章，喜欢读英文原版的请移步至：http://www.youdzone.com/signature.html
-Bob生成了自己的（公钥，私钥）对，将私钥自己保存，并将公钥分发给了他的朋友们：Pat，Susan，Daug，
-Susan要给Bob写一封保密的信件，写完后用Bob的公钥加密，就可以达到保密的效果。Bob收到信件之后用自己的私钥来解密，就可以看到信件的内容。这里假设Bob的私钥没有泄露（私钥是十分敏感的信息，一定要注意保管，泄露私钥那么文章里很多假设都不成立），即使信件被别人截获，信件内容也无法解密，也就是说这封信的内容不会有第三个人知道。
-Bob给Susan回信，决定采用&rdquo;数字签名&rdquo;：他写完后先用Hash函数，生成信件的摘要（Digest），然后，在使用自己的私钥，对这个摘要进行加密，生成&rdquo;数字签名&rdquo;（Digital Signature）。
-Bob将这个数字签名，附在信件里面，一起发给Susan。
-Susan收到信件之后，对信件本身使用相同的Hash函数，得到当前信件内容的摘要，同时，取下数字签名，用Bob的公钥解密，得到原始信件的摘要，如果两者相同就说明信件的内容没有被修改过。由此证明，这封信确实是Bob发出的。
-但是，更复杂的情况出现了。Daug想欺骗Susan，他伪装成Bob制作了一对（公钥，私钥）对，并将公钥分发给Susan，Susan此时实际保存的是Daug的公钥，但是还以为这是Bob的公钥。因此，Daug就可以冒充Bob，用自己的私钥做成&rdquo;数字签名&rdquo;写信给Susan，而Susan用假的鲍勃公钥进行解密。一切看起来完美无缺？
-Susan觉得有些不对劲，因为她并不确定这个公钥是不是真正属于Bob的。于是她想到了一个办法，要求Bob去找&rdquo;证书中心&rdquo;（Certificate Authority，简称CA），为公钥做认证。证书中心用证书中心的私钥，对Bob的公钥和一些相关信息一起加密，生成&rdquo;数字证书&rdquo;（Digital Certificate）。
-一旦Bob拿到数字证书以后，就可以放心写信给任何人了。只需要在信件内容的后面附上数字签名的同时，再附上数字证书就行了。
-Susan收到信件之后，首先使用用CA的公钥（一般都是公开的）解开数字证书，就可以拿到Bob真实可信的公钥了，然后就能用此公钥解密数字签名进一步验证信件内容是否被篡改过。
-由此可见，&rdquo;数字证书&rdquo;就是解决身份认证的问题，就如同现实中我们每一个人都要拥有一张证明个人身份的身份证或驾驶执照一样，以表明我们的身份或某种资格。数字证书是由权威公正的第三方机构即Certificate Authority(CA)中心签发的，确保信息的机密性和防抵赖性。对于一个大型的应用环境，认证中心往往采用一种多层次的分级结构，各级的认证中心类似于各级行政机关，上级认证中心负责签发和管理下级认证中心的证书，最下一级的认证中心直接面向最终用户。",
+      "description" : "在之前的密码学笔记主要是介绍密码学的基础知识，包括两种加密算法的原理，引入在非对称加密算法中数字证书（Digital Certificate）的概念。这篇笔记将继续探讨什么是数字证书，不过在了解它之前，先得知道什么是数字签名（Digital Signature）。\n关于数字签名和数字证书的概念，有一篇非常经典的文章，本文的大部分内容来自于那篇文章，喜欢读英文原版的请移步至：http:\/\/www.youdzone.com\/signature.html\nBob生成了自己的（公钥，私钥）对，将私钥自己保存，并将公钥分发给了他的朋友们：Pat，Susan，Daug，\nSusan要给Bob写一封保密的信件，写完后用Bob的公钥加密，就可以达到保密的效果。Bob收到信件之后用自己的私钥来解密，就可以看到信件的内容。这里假设Bob的私钥没有泄露（私钥是十分敏感的信息，一定要注意保管，泄露私钥那么文章里很多假设都不成立），即使信件被别人截获，信件内容也无法解密，也就是说这封信的内容不会有第三个人知道。\nBob给Susan回信，决定采用\x26rdquo;数字签名\x26rdquo;：他写完后先用Hash函数，生成信件的摘要（Digest），然后，在使用自己的私钥，对这个摘要进行加密，生成\x26rdquo;数字签名\x26rdquo;（Digital Signature）。\nBob将这个数字签名，附在信件里面，一起发给Susan。\nSusan收到信件之后，对信件本身使用相同的Hash函数，得到当前信件内容的摘要，同时，取下数字签名，用Bob的公钥解密，得到原始信件的摘要，如果两者相同就说明信件的内容没有被修改过。由此证明，这封信确实是Bob发出的。\n但是，更复杂的情况出现了。Daug想欺骗Susan，他伪装成Bob制作了一对（公钥，私钥）对，并将公钥分发给Susan，Susan此时实际保存的是Daug的公钥，但是还以为这是Bob的公钥。因此，Daug就可以冒充Bob，用自己的私钥做成\x26rdquo;数字签名\x26rdquo;写信给Susan，而Susan用假的鲍勃公钥进行解密。一切看起来完美无缺？\nSusan觉得有些不对劲，因为她并不确定这个公钥是不是真正属于Bob的。于是她想到了一个办法，要求Bob去找\x26rdquo;证书中心\x26rdquo;（Certificate Authority，简称CA），为公钥做认证。证书中心用证书中心的私钥，对Bob的公钥和一些相关信息一起加密，生成\x26rdquo;数字证书\x26rdquo;（Digital Certificate）。\n一旦Bob拿到数字证书以后，就可以放心写信给任何人了。只需要在信件内容的后面附上数字签名的同时，再附上数字证书就行了。\nSusan收到信件之后，首先使用用CA的公钥（一般都是公开的）解开数字证书，就可以拿到Bob真实可信的公钥了，然后就能用此公钥解密数字签名进一步验证信件内容是否被篡改过。\n由此可见，\x26rdquo;数字证书\x26rdquo;就是解决身份认证的问题，就如同现实中我们每一个人都要拥有一张证明个人身份的身份证或驾驶执照一样，以表明我们的身份或某种资格。数字证书是由权威公正的第三方机构即Certificate Authority(CA)中心签发的，确保信息的机密性和防抵赖性。对于一个大型的应用环境，认证中心往往采用一种多层次的分级结构，各级的认证中心类似于各级行政机关，上级认证中心负责签发和管理下级认证中心的证书，最下一级的认证中心直接面向最终用户。",
       "inLanguage" : "en-US",
-      "author" : "Morven&#39;s Life",
-      "creator" : "Morven&#39;s Life",
-      "publisher": "Morven&#39;s Life",
-      "accountablePerson" : "Morven&#39;s Life",
-      "copyrightHolder" : "Morven&#39;s Life",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
       "copyrightYear" : "2014",
-      "datePublished": "2014-10-06 00:00:00 &#43;0000 UTC",
-      "dateModified" : "2014-10-06 00:00:00 &#43;0000 UTC",
-      "url" : "https://morven.life/notes/the_digital_signature_and_digital_certificate/",
+      "datePublished": "2014-10-06 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2014-10-06 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/the_digital_signature_and_digital_certificate\/",
       "keywords" : [  ]
   }</script><title>数字签名与数字证书 - Morven&#39;s Life</title><meta property="og:title" content="数字签名与数字证书 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="在之前的密码学笔记主要是介绍密码学的基础知识，包括两种加密算法的原理，引入在非对称加密算法中数字证书（Digital Certificate）的概念。这篇笔记将继续探讨什么是数字证书，不过在了解它之前，先得知道什么是数字签名（Digital Signature）。
 关于数字签名和数字证书的概念，有一篇非常经典的文章，本文的大部分内容来自于那篇文章，喜欢读英文原版的请移步至：http://www.youdzone.com/signature.html
