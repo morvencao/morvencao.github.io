@@ -13,10 +13,10 @@
     
     <item>
       <title>MacBookPro开启HiDPI</title>
-      <link>https://morven.life/posts/hidpi_for_external_monitor/</link>
+      <link>https://morven.life/posts/enable_hidpi_for_external_monitor/</link>
       <pubDate>Fri, 12 Apr 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/posts/hidpi_for_external_monitor/</guid>
+      <guid>https://morven.life/posts/enable_hidpi_for_external_monitor/</guid>
       <description>上周旧笔记本（2015-Mid MacBookPro）由于自己的疏忽导致背包内水杯漏水而浸液，基本无法使用。因为是主力机，所以无奈只能硬着头皮换了最新款的MacBookPro（2018-Mid）。不换不知道，原本以为很快的数据和配置迁移消耗了我一整晚的时间。可能是因为近些年来苹果品控的下降，对于最新MacBookPro没多少好感，拿到新本后令人发狂的蝶式键盘加上鸡肋的TouchBar，让新旧本之间的过渡期再次延长，于是决定还是继续使用外接键盘和鼠标，并将自己之前的显示器作为主显示器。
 将外接显示器连接上之后，很快就会发现整体显示模糊，即使作为4K的显示屏也不能达到期望的Retina效果。其实原因也很简单，没有开启HiDPI。
 HiDPI 何为HiDPI
