@@ -174,6 +174,25 @@ func subTask() { i := 0 for { i++ fmt.Printf(&amp;quot;new goroutine: i = %d\n&a
     </item>
     
     <item>
+      <title>编写健壮的Shell脚本</title>
+      <link>https://morven.life/notes/writing-robust-shell-scripts/</link>
+      <pubDate>Mon, 06 Feb 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/writing-robust-shell-scripts/</guid>
+      <description>写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。
+set -euxo pipefail 在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：
+bash script.sh  Bash会创建一个新的Shell来执行script.sh，同时也默认给定了这个执行环境的各种参数。set命令可以用来修改Shell环境的运行参数，不带任何参数的set命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看官方手册，我们重点介绍其中最常用的四个。
+set -x
+默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。
+set -x用来在运行结果之前，先输出执行的那一行命令，行首以+表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。
+#!/bin/bash set -x v=5 echo $v echo &amp;quot;hello&amp;quot; # output: # + v=5 # + echo 5 # 5 # + echo hello # hello  实际上，set -x还有另一种写法set -o xtrace。
+set -u
+Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。
+#!/bin/bash echo $v echo &amp;quot;hello&amp;quot; # output: # # hello  可以看到，echo $v输出了一个空行，Bash完全忽略了不存在的$v继续执行后面的命令echo &amp;quot;hello&amp;quot;。这其实并不是开发者想要的行为，对于不存在的变量，脚本应该报错且停止执行来防止错误的叠加。set -u就用来改变这种默认忽略未定义变量行为，脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。
+#!/bin/bash set -u echo $a echo bar # output: # .</description>
+    </item>
+    
+    <item>
       <title>后会无期，2016</title>
       <link>https://morven.life/posts/farewell-2016/</link>
       <pubDate>Sun, 18 Dec 2016 00:00:00 +0000</pubDate>

@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.1"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/writing-robust-shell-scripts/"><link rel="canonical" href="https://morven.life/notes/writing-robust-shell-scripts/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/morven.life\/"
+      },
+      "articleSection" : "notes",
+      "name" : "编写健壮的Shell脚本",
+      "headline" : "编写健壮的Shell脚本",
+      "description" : "写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。\nset -euxo pipefail 在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：\nbash script.sh  Bash会创建一个新的Shell来执行script.sh，同时也默认给定了这个执行环境的各种参数。set命令可以用来修改Shell环境的运行参数，不带任何参数的set命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看官方手册，我们重点介绍其中最常用的四个。\nset -x\n默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。\nset -x用来在运行结果之前，先输出执行的那一行命令，行首以\x2b表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。\n#!\/bin\/bash set -x v=5 echo $v echo \x26quot;hello\x26quot; # output: # \x2b v=5 # \x2b echo 5 # 5 # \x2b echo hello # hello  实际上，set -x还有另一种写法set -o xtrace。\nset -u\nShell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。\n#!\/bin\/bash echo $v echo \x26quot;hello\x26quot; # output: # # hello  可以看到，echo $v输出了一个空行，Bash完全忽略了不存在的$v继续执行后面的命令echo \x26quot;hello\x26quot;。这其实并不是开发者想要的行为，对于不存在的变量，脚本应该报错且停止执行来防止错误的叠加。set -u就用来改变这种默认忽略未定义变量行为，脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。\n#!\/bin\/bash set -u echo $a echo bar # output: # .",
+      "inLanguage" : "en-US",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
+      "copyrightYear" : "2017",
+      "datePublished": "2017-02-06 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2017-02-06 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/writing-robust-shell-scripts\/",
+      "keywords" : [  ]
+  }</script><title>编写健壮的Shell脚本 - Morven&#39;s Life</title><meta property="og:title" content="编写健壮的Shell脚本 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。
+set -euxo pipefail 在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：
+bash script.sh  Bash会创建一个新的Shell来执行script.sh，同时也默认给定了这个执行环境的各种参数。set命令可以用来修改Shell环境的运行参数，不带任何参数的set命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看官方手册，我们重点介绍其中最常用的四个。
+set -x
+默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。
+set -x用来在运行结果之前，先输出执行的那一行命令，行首以&#43;表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。
+#!/bin/bash set -x v=5 echo $v echo &quot;hello&quot; # output: # &#43; v=5 # &#43; echo 5 # 5 # &#43; echo hello # hello  实际上，set -x还有另一种写法set -o xtrace。
+set -u
+Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。
+#!/bin/bash echo $v echo &quot;hello&quot; # output: # # hello  可以看到，echo $v输出了一个空行，Bash完全忽略了不存在的$v继续执行后面的命令echo &quot;hello&quot;。这其实并不是开发者想要的行为，对于不存在的变量，脚本应该报错且停止执行来防止错误的叠加。set -u就用来改变这种默认忽略未定义变量行为，脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。
+#!/bin/bash set -u echo $a echo bar # output: # ."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">编写健壮的Shell脚本</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2017-02-06 00:00:00 UTC">06 Feb 2017</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。</p><h3 id="set-euxo-pipefail"><code>set -euxo pipefail</code></h3><p>在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：</p><pre><code>bash script.sh
+</code></pre><p>Bash会创建一个新的Shell来执行<code>script.sh</code>，同时也默认给定了这个执行环境的各种参数。<code>set</code>命令可以用来修改Shell环境的运行参数，不带任何参数的<code>set</code>命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看<a href="https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html">官方手册</a>，我们重点介绍其中最常用的四个。</p><p><strong>set -x</strong></p><p>默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。</p><p><code>set -x</code>用来在运行结果之前，先输出执行的那一行命令，行首以<code>+</code>表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。</p><pre><code>#!/bin/bash
+set -x
+
+v=5
+echo $v
+echo &quot;hello&quot;
+
+# output:
+# + v=5
+# + echo 5
+# 5
+# + echo hello
+# hello
+</code></pre><p>实际上，<code>set -x</code>还有另一种写法<code>set -o xtrace</code>。</p><p><strong>set -u</strong></p><p>Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。</p><pre><code>#!/bin/bash
+
+echo $v
+echo &quot;hello&quot;
+
+# output:
+#
+# hello
+</code></pre><p>可以看到，<code>echo $v</code>输出了一个空行，Bash完全忽略了不存在的<code>$v</code>继续执行后面的命令<code>echo &quot;hello&quot;</code>。这其实并不是开发者想要的行为，对于不存在的变量，脚本应该报错且停止执行来防止错误的叠加。<code>set -u</code>就用来改变这种默认忽略未定义变量行为，脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。</p><pre><code>#!/bin/bash
+set -u
+
+echo $a
+echo bar
+
+# output:
+# ./script.sh: line 4: v: unbound variable
+</code></pre><p><code>set -u</code>另一种写法是<code>set -o nounset</code></p><p><strong>set -e</strong></p><p>对于默认的Shell脚本运行环境，有运行失败的命令（返回值非0），Bash会继续执行后面的命令：</p><pre><code>#!/bin/bash
+
+unknowncmd
+echo &quot;hello&quot;
+
+# output:
+# ./script.sh: line 3: unknowncmd: command not found
+# hello
+</code></pre><p>可以看到，Bash只是显示有错误，接着继续执行Shell脚本，这种行为很不利于脚本安全和排错。实际开发中，如果某个命令失败，往往需要脚本停止执行，防止错误累积。这时，一般采用下面的写法：</p><pre><code>command || exit 1
+</code></pre><p>上面的写法表示只要<code>command</code>有非零返回值，Shell脚本就会停止执行。如果停止执行之前需要完成多个操作，就要采用下面三种更高级的写法：</p><pre><code>command || { echo &quot;command failed&quot;; exit 1; }
+
+if ! command; then echo &quot;command failed&quot;; exit 1; fi
+
+command
+if [ &quot;$?&quot; -ne 0 ]; then echo &quot;command failed&quot;; exit 1; fi
+</code></pre><p>此外，我们就联想到另外一种很类似的用法，如果两个命令有继承关系，只有第一个命令成功了，才能继续执行第二个命令，那么就要采用下面的写法：</p><pre><code>command1 &amp;&amp; command2
+</code></pre><p>但是这些技巧多少有些麻烦，容易疏忽。而<code>set -e</code>从根本上解决了这个问题，它使得脚本只要发生错误，就终止执行：</p><pre><code>#!/bin/bash
+set -e
+
+unknowncmd
+echo &quot;hello&quot;
+
+# output:
+# ./script.sh: line 4: unknowncmd: command not found
+</code></pre><p>可以看到，第4行执行失败以后，脚本就终止执行了。</p><p><code>set -e</code>根据命令的返回值来判断命令是否运行失败。但是，某些命令的非零返回值可能不表示失败，或者开发者希望在命令失败的情况下，脚本继续执行下去：</p><pre><code>#!/bin/bash
+set -e
+
+$(ls foobar)
+echo &quot;hello&quot;
+
+# output:
+# ls: cannot access 'foobar': No such file or directory
+</code></pre><p>可以看到，打开<code>set -e</code>之后，即使<code>ls</code>是一个已存在的命令，但因为<code>ls</code>命令的运行参数<code>foobar</code>实际上并不存在导致命令的返回非0值，这有时候并不是我们看到的。</p><p>可以暂时关闭<code>set -e</code>，该命令执行结束后，再重新打开<code>set -e</code>：</p><pre><code>#!/bin/bash
+set -e
+
+set +e
+$(ls foobar)
+set -e
+
+echo &quot;hello&quot;
+
+# output:
+# ls: cannot access 'foobar': No such file or directory
+# hello
+</code></pre><p>上面代码中，<code>set +e</code>表示关闭<code>-e</code>选项，<code>set -e</code>表示重新打开<code>-e</code>选项。</p><p>还有一种方法是使用<code>command || true</code>，使得该命令即使执行失败，脚本也不会终止执行。</p><p><code>set -e</code>还有另一种写法<code>set -o errexit</code>。</p><p><strong>set -o pipefail</strong></p><p><code>set -e</code>有一个例外情况，就是不适用于管道命令。对于管道命令，Bash会把最后一个子命令的返回值作为整个命令的返回值。也就是说，只要最后一个子命令不失败，管道命令总是会执行成功，因此它后面命令依然会执行，<code>set -e</code>就失效了。</p><p>请看下面这个例子。</p><pre><code>#!/bin/bash
+set -e
+
+foo | echo &quot;bar&quot;
+echo &quot;hello&quot;
+
+# output:
+# ./script.sh: line 4: foo: command not found
+# bar
+# hello
+</code></pre><p>可以看到，<code>foo</code>是一个不存在的命令，但是<code>foo | echo bar</code>这个管道命令还是会执行成功，导致后面的<code>echo hello</code>会继续执行。</p><p><code>set -o pipefail</code>用来解决这种情况，只要一个子命令失败，整个管道命令就失败，脚本就会终止执行：</p><pre><code>#!/bin/bash
+set -e
+set -o pipefail
+
+foo | echo &quot;bar&quot;
+echo &quot;hello&quot;
+
+# output:
+# ./script.sh: line 5: foo: command not found
+# bar
+</code></pre><p>可以看到，<code>echo hello</code>命令并没有执行。</p><p><strong>合并四个参数</strong></p><p>对于上面提到的四个<code>set</code>命令参数，一般都放在一起使用。</p><pre><code># 写法一
+set -euxo pipefail
+
+# 写法二
+set -eux
+set -o pipefail
+</code></pre><p>这两种写法任选其一放在所有Shell脚本的头部。</p><p>当然，也可以在在执行Shell脚本的时候，从Bash命令行传入这些参数：</p><pre><code>bash -euxo pipefail script.sh
+</code></pre></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+    container: document.getElementById('article')
+  });</script><script>hljs.initHighlightingOnLoad();
+  
+  var posts = document.getElementById('posts-list');
+  posts && quicklink({
+    el: posts,
+    priority: true,
+  });</script></body></html>
