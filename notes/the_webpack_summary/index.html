@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.1"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/webpack_summary/"><link rel="canonical" href="https://morven.life/notes/webpack_summary/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.1"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_webpack_summary/"><link rel="canonical" href="https://morven.life/notes/the_webpack_summary/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -18,7 +18,7 @@
       "copyrightYear" : "2016",
       "datePublished": "2016-11-20 00:00:00 \x2b0000 UTC",
       "dateModified" : "2016-11-20 00:00:00 \x2b0000 UTC",
-      "url" : "https:\/\/morven.life\/notes\/webpack_summary\/",
+      "url" : "https:\/\/morven.life\/notes\/the_webpack_summary\/",
       "keywords" : [  ]
   }</script><title>Webpack使用小结 - Morven&#39;s Life</title><meta property="og:title" content="Webpack使用小结 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="分而治之是软件工程领域的重要思想，对于复杂度日益增加的前端也同样适用。一般前端团队选择合适的框架之后就要开始考虑开发维护的效率问题。而模块化是目前前端领域比较流行的分而治之手段。 Javascript模块化已经有很多规范和工具，例如CommonJS/AMD/requireJS/CMD/ES6 Module，在上篇文章中有详细的介绍。CSS模块化基本要依靠Less, Sass以及Stylus等于处理器的import/minxin特性实现。而HTML以及HTML模版和其他资源比如图片的模块化怎么去处理呢？ 这也正是webpack要解决的问题之一。严格来说，webpack是一个模块打包工具（module bundler），它既不像requireJS和seaJS这样的模块加载器，也不像grunt和gulp这样优化前端开发流程的构建工具，像是两类工具的集合却又远不止如此。
 Webpack是一个模块打包工具，它将JS、CSS、HTML以及图片等都视为模块资源，这些模块资源必然存在某种依赖关系，webpack就是通过静态分析各种模块文件之间的依赖关系，通过不同种类的Loader将所有模块打包成起来。

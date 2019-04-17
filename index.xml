@@ -195,10 +195,10 @@ func subTask() { i := 0 for { i++ fmt.Printf(&amp;quot;new goroutine: i = %d\n&a
     
     <item>
       <title>Webpack使用小结</title>
-      <link>https://morven.life/notes/webpack_summary/</link>
+      <link>https://morven.life/notes/the_webpack_summary/</link>
       <pubDate>Sun, 20 Nov 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/webpack_summary/</guid>
+      <guid>https://morven.life/notes/the_webpack_summary/</guid>
       <description>分而治之是软件工程领域的重要思想，对于复杂度日益增加的前端也同样适用。一般前端团队选择合适的框架之后就要开始考虑开发维护的效率问题。而模块化是目前前端领域比较流行的分而治之手段。 Javascript模块化已经有很多规范和工具，例如CommonJS/AMD/requireJS/CMD/ES6 Module，在上篇文章中有详细的介绍。CSS模块化基本要依靠Less, Sass以及Stylus等于处理器的import/minxin特性实现。而HTML以及HTML模版和其他资源比如图片的模块化怎么去处理呢？ 这也正是webpack要解决的问题之一。严格来说，webpack是一个模块打包工具（module bundler），它既不像requireJS和seaJS这样的模块加载器，也不像grunt和gulp这样优化前端开发流程的构建工具，像是两类工具的集合却又远不止如此。
 Webpack是一个模块打包工具，它将JS、CSS、HTML以及图片等都视为模块资源，这些模块资源必然存在某种依赖关系，webpack就是通过静态分析各种模块文件之间的依赖关系，通过不同种类的Loader将所有模块打包成起来。
 webpack VS Gulp 严格来说，Gulp与webpack并没有可比性。Gulp应该和Grunt属于同一类工具，能够优化前端工作流程，比如压缩合并JS、CSS ，预编译Typescript、Sass等。也就是说，我们可以根据需要配置插件，就可以将之前需要手动完成的任务自动化。webpack作为模块打包工具，可以和browserify相提并论。两者都是预编译模块化解决方案。相比requireJS、seaJS这类‘在线’模块化方案更加智能。因为是‘预编译’，不需要在浏览器中加载解释器。另外，你可以直接在本地编写JS，不管是 AMD / CMD / ES6 风格的模块化，都编译成浏览器认识的JS。
