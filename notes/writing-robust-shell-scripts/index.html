@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.1"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/writing-robust-shell-scripts/"><link rel="canonical" href="https://morven.life/notes/writing-robust-shell-scripts/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.2"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/writing-robust-shell-scripts/"><link rel="canonical" href="https://morven.life/notes/writing-robust-shell-scripts/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -8,7 +8,7 @@
       "articleSection" : "notes",
       "name" : "编写健壮的Shell脚本",
       "headline" : "编写健壮的Shell脚本",
-      "description" : "写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。\nset -euxo pipefail 在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：\nbash script.sh  Bash会创建一个新的Shell来执行script.sh，同时也默认给定了这个执行环境的各种参数。set命令可以用来修改Shell环境的运行参数，不带任何参数的set命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看官方手册，我们重点介绍其中最常用的四个。\nset -x\n默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。\nset -x用来在运行结果之前，先输出执行的那一行命令，行首以\x2b表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。\n#!\/bin\/bash set -x v=5 echo $v echo \x26quot;hello\x26quot; # output: # \x2b v=5 # \x2b echo 5 # 5 # \x2b echo hello # hello  实际上，set -x还有另一种写法set -o xtrace。\nset -u\nShell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。\n#!\/bin\/bash echo $v echo \x26quot;hello\x26quot; # output: # # hello  可以看到，echo $v输出了一个空行，Bash完全忽略了不存在的$v继续执行后面的命令echo \x26quot;hello\x26quot;。这其实并不是开发者想要的行为，对于不存在的变量，脚本应该报错且停止执行来防止错误的叠加。set -u就用来改变这种默认忽略未定义变量行为，脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。\n#!\/bin\/bash set -u echo $a echo bar # output: # .",
+      "description" : "写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。\nset -euxo pipefail 在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：\nbash script.sh  Bash会创建一个新的Shell来执行script.sh，同时也默认给定了这个执行环境的各种参数。set命令可以用来修改Shell环境的运行参数，不带任何参数的set命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看官方手册，我们重点介绍其中最常用的四个。\nset -x 默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。\nset -x用来在运行结果之前，先输出执行的那一行命令，行首以\x2b表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。\n#!\/bin\/bash set -x v=5 echo $v echo \x26quot;hello\x26quot; # output: # \x2b v=5 # \x2b echo 5 # 5 # \x2b echo hello # hello  实际上，set -x还有另一种写法set -o xtrace。\nset -u Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。\n#!\/bin\/bash echo $v echo \x26quot;hello\x26quot; # output: # # hello  可以看到，echo $v输出了一个空行，Bash完全忽略了不存在的$v继续执行后面的命令echo \x26quot;hello\x26quot;。这其实并不是开发者想要的行为，对于不存在的变量，脚本应该报错且停止执行来防止错误的叠加。set -u就用来改变这种默认忽略未定义变量行为，脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。\n#!\/bin\/bash set -u echo $a echo bar # output: # .",
       "inLanguage" : "en-US",
       "author" : "Morven\x27s Life",
       "creator" : "Morven\x27s Life",
@@ -23,15 +23,13 @@
   }</script><title>编写健壮的Shell脚本 - Morven&#39;s Life</title><meta property="og:title" content="编写健壮的Shell脚本 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。
 set -euxo pipefail 在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：
 bash script.sh  Bash会创建一个新的Shell来执行script.sh，同时也默认给定了这个执行环境的各种参数。set命令可以用来修改Shell环境的运行参数，不带任何参数的set命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看官方手册，我们重点介绍其中最常用的四个。
-set -x
-默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。
+set -x 默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。
 set -x用来在运行结果之前，先输出执行的那一行命令，行首以&#43;表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。
 #!/bin/bash set -x v=5 echo $v echo &quot;hello&quot; # output: # &#43; v=5 # &#43; echo 5 # 5 # &#43; echo hello # hello  实际上，set -x还有另一种写法set -o xtrace。
-set -u
-Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。
+set -u Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。
 #!/bin/bash echo $v echo &quot;hello&quot; # output: # # hello  可以看到，echo $v输出了一个空行，Bash完全忽略了不存在的$v继续执行后面的命令echo &quot;hello&quot;。这其实并不是开发者想要的行为，对于不存在的变量，脚本应该报错且停止执行来防止错误的叠加。set -u就用来改变这种默认忽略未定义变量行为，脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。
 #!/bin/bash set -u echo $a echo bar # output: # ."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">编写健壮的Shell脚本</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2017-02-06 00:00:00 UTC">06 Feb 2017</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>写Shell脚本应该已经成为程序员必须掌握的技能了。因为Shell脚本简单易上手的特性，在日常工作中，我们经常使用Shell脚本来自动化应用的部署测试，环境的搭建与清理等等。殊不知，Shell脚本也会有各种坑，经常导致Shell脚本因为各种原因不能正常执行成功。实际上，编写健壮可靠的Shell脚本也是有一定的技巧的，今天我们就来一一说明。</p><h3 id="set-euxo-pipefail"><code>set -euxo pipefail</code></h3><p>在执行Shell脚本的时候，通常都会创建一个新的Shell，比如，当我们执行：</p><pre><code>bash script.sh
-</code></pre><p>Bash会创建一个新的Shell来执行<code>script.sh</code>，同时也默认给定了这个执行环境的各种参数。<code>set</code>命令可以用来修改Shell环境的运行参数，不带任何参数的<code>set</code>命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看<a href="https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html">官方手册</a>，我们重点介绍其中最常用的四个。</p><p><strong>set -x</strong></p><p>默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。</p><p><code>set -x</code>用来在运行结果之前，先输出执行的那一行命令，行首以<code>+</code>表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。</p><pre><code>#!/bin/bash
+</code></pre><p>Bash会创建一个新的Shell来执行<code>script.sh</code>，同时也默认给定了这个执行环境的各种参数。<code>set</code>命令可以用来修改Shell环境的运行参数，不带任何参数的<code>set</code>命令，会显示所有的环境变量和Shell函数。对于所有可以定制的运行参数，请查看<a href="https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html">官方手册</a>，我们重点介绍其中最常用的四个。</p><h4 id="set-x"><strong>set -x</strong></h4><p>默认情况下，Shell脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。</p><p><code>set -x</code>用来在运行结果之前，先输出执行的那一行命令，行首以<code>+</code>表示是命令而非命令输出，同时，每个命令的参数也会展开，我们可以清晰地看到每个命令的运行实参，这对于Shell的debug来说非常友好。</p><pre><code>#!/bin/bash
 set -x
 
 v=5
@@ -44,7 +42,7 @@ echo &quot;hello&quot;
 # 5
 # + echo hello
 # hello
-</code></pre><p>实际上，<code>set -x</code>还有另一种写法<code>set -o xtrace</code>。</p><p><strong>set -u</strong></p><p>Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。</p><pre><code>#!/bin/bash
+</code></pre><p>实际上，<code>set -x</code>还有另一种写法<code>set -o xtrace</code>。</p><h4 id="set-u"><strong>set -u</strong></h4><p>Shell脚本不像其他高级语言，如Python, Ruby等，Shell脚本默认不提供安全机制，举个简单的例子，Ruby脚本尝试去读取一个没有初始化的变量的内容的时候会报错，而Shell脚本默认不会有任何提示，只是简单地忽略。</p><pre><code>#!/bin/bash
 
 echo $v
 echo &quot;hello&quot;
@@ -60,7 +58,7 @@ echo bar
 
 # output:
 # ./script.sh: line 4: v: unbound variable
-</code></pre><p><code>set -u</code>另一种写法是<code>set -o nounset</code></p><p><strong>set -e</strong></p><p>对于默认的Shell脚本运行环境，有运行失败的命令（返回值非0），Bash会继续执行后面的命令：</p><pre><code>#!/bin/bash
+</code></pre><p><code>set -u</code>另一种写法是<code>set -o nounset</code></p><h4 id="set-e"><strong>set -e</strong></h4><p>对于默认的Shell脚本运行环境，有运行失败的命令（返回值非0），Bash会继续执行后面的命令：</p><pre><code>#!/bin/bash
 
 unknowncmd
 echo &quot;hello&quot;
@@ -104,7 +102,7 @@ echo &quot;hello&quot;
 # output:
 # ls: cannot access 'foobar': No such file or directory
 # hello
-</code></pre><p>上面代码中，<code>set +e</code>表示关闭<code>-e</code>选项，<code>set -e</code>表示重新打开<code>-e</code>选项。</p><p>还有一种方法是使用<code>command || true</code>，使得该命令即使执行失败，脚本也不会终止执行。</p><p><code>set -e</code>还有另一种写法<code>set -o errexit</code>。</p><p><strong>set -o pipefail</strong></p><p><code>set -e</code>有一个例外情况，就是不适用于管道命令。对于管道命令，Bash会把最后一个子命令的返回值作为整个命令的返回值。也就是说，只要最后一个子命令不失败，管道命令总是会执行成功，因此它后面命令依然会执行，<code>set -e</code>就失效了。</p><p>请看下面这个例子。</p><pre><code>#!/bin/bash
+</code></pre><p>上面代码中，<code>set +e</code>表示关闭<code>-e</code>选项，<code>set -e</code>表示重新打开<code>-e</code>选项。</p><p>还有一种方法是使用<code>command || true</code>，使得该命令即使执行失败，脚本也不会终止执行。</p><p><code>set -e</code>还有另一种写法<code>set -o errexit</code>。</p><h4 id="set-o-pipefail"><strong>set -o pipefail</strong></h4><p><code>set -e</code>有一个例外情况，就是不适用于管道命令。对于管道命令，Bash会把最后一个子命令的返回值作为整个命令的返回值。也就是说，只要最后一个子命令不失败，管道命令总是会执行成功，因此它后面命令依然会执行，<code>set -e</code>就失效了。</p><p>请看下面这个例子。</p><pre><code>#!/bin/bash
 set -e
 
 foo | echo &quot;bar&quot;
@@ -124,14 +122,45 @@ echo &quot;hello&quot;
 # output:
 # ./script.sh: line 5: foo: command not found
 # bar
-</code></pre><p>可以看到，<code>echo hello</code>命令并没有执行。</p><p><strong>合并四个参数</strong></p><p>对于上面提到的四个<code>set</code>命令参数，一般都放在一起使用。</p><pre><code># 写法一
+</code></pre><p>可以看到，<code>echo hello</code>命令并没有执行。</p><h4 id="合并四个参数"><strong>合并四个参数</strong></h4><p>对于上面提到的四个<code>set</code>命令参数，一般都放在一起使用。</p><pre><code># 写法一
 set -euxo pipefail
 
 # 写法二
 set -eux
 set -o pipefail
 </code></pre><p>这两种写法任选其一放在所有Shell脚本的头部。</p><p>当然，也可以在在执行Shell脚本的时候，从Bash命令行传入这些参数：</p><pre><code>bash -euxo pipefail script.sh
-</code></pre></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+</code></pre><h3 id="shell脚本防御式编程">Shell脚本防御式编程</h3><p>编写Shell脚本的时候应该考虑不可预期的程序输入，如文件不存在或者目录没有创建成功&hellip;其实Shell命令有很多选项可以解决这类问题，例如，使用<code>mkdir</code>创建目录的时候，如果父目录不存在，<code>mkdir</code>默认返回错误，但如果加上<code>-p</code>选项，<code>mkdir</code>在父目录不存在的情况下先创建父目录；<code>rm</code>在删除一个不存在的文件会失败，但如果加上<code>-f</code>选项，即使文件不能存在也能执行成功。</p><p><strong>注意字符串中的空格</strong></p><p>我们必须时刻注意字符串中的空格字符，如文件名中的空格，命令参数中的空格等等，对于这些空格字符安全的最佳时实践是使用<code>&quot;</code>括住相应的字符串：</p><pre><code># will fail if $filename contains spaces
+if [ $filename = &quot;foo&quot; ];
+
+
+# will success even if $filename contains spaces
+if [ &quot;$filename&quot; = &quot;foo&quot; ];
+</code></pre><p>Someone will always use spaces in filenames or command line arguments and you should keep this in mind when writing shell scripts. In particular you should use quotes around variables.</p><p>if [ $filename = &ldquo;foo&rdquo; ]; will fail if $filename contains a space. This can be fixed by using:</p><p>if [ &ldquo;$filename&rdquo; = &ldquo;foo&rdquo; ];</p><p>类似的情况是，我们在使用<code>$@</code>或者其他包含由空格分割的多个字符串也要注意使用<code>&quot;</code>括住相应的变量，实际上，使用<code>&quot;</code>括住相应的变量没有任何副作用，只会是我们的Shell脚本更加健壮：</p><pre><code>foo() { for i in $@; do printf &quot;%s\n&quot; &quot;$i&quot;; done }; foo bar &quot;baz quux&quot;
+bar
+baz
+quux
+
+foo() { for i in &quot;$@&quot;; do printf &quot;%s\n&quot; &quot;$i&quot;; done }; foo bar &quot;baz quux&quot;
+bar
+baz quux
+</code></pre><h3 id="使用trap命令">使用trap命令</h3><p>关于Shell脚本一个常见的情况是，脚本执行失败导致文件系统处于不一致的状态，比如文件锁、临时文件或者Shell脚本的错误只更新了部分文件。为了达到“事务的完整性”我们需要解决这些不一致的问题，要么删除文件锁、临时文件，要么将状态恢复到更新之前的状态。实际上，Shell脚本确实提供了一种在捕捉到特定的unix信号的情况下执行一段命令或者函数的功能：</p><pre><code>trap command signal [signal ...]
+</code></pre><p>其实Shell脚本可以捕捉很多类型的信号（完整信号列表可以使用<code>kill -l</code>命令获取），但是我们通常只关心在问题发生之后用来恢复现场的三种信号：<code>INT</code>，<code>TERM</code>和<code>EXIT</code></p><table><thead><tr><th>Signal</th><th>Description</th></tr></thead><tbody><tr><td>INT</td><td>Interrupt – this signal is sent when someone kills the script by pressing <code>ctrl-c</code></td></tr><tr><td>TERM</td><td>Terminate – this signal is sent when someone sends the TERM signal using the kill command</td></tr><tr><td>EXIT</td><td>Exit – this is a pseudo-signal and is triggered when your script exits, either through reaching the end of the script, an exit command or by a command failing when using <code>set -e</code></td></tr></tbody></table><p>一般情况下，我们在操作对应的共享区之前先创建文件锁：</p><pre><code>if [ ! -e $lockfile ]; then
+    touch $lockfile
+    critical-section
+    rm $lockfile
+else
+    echo &quot;critical-section is already running&quot;
+fi
+</code></pre><p>但是当Shell脚本操作对应的共享区的时候有人手动Kill掉对应的Shell脚本进程，这个时候文件锁的存在会导致Shell脚本不能再次操作对应的共享区。使用trap我们可以捕捉到对应的Kill信号并做相应的恢复操作：</p><pre><code>if [ ! -e $lockfile ]; then
+    trap &quot;rm -f $lockfile; exit&quot; INT TErm EXIT
+    touch $lockfile
+    $lockfile
+    rm $lockfile
+    trap - INT TErm EXIT
+else
+    echo &quot;critical-section is already running&quot;
+fi
+</code></pre><p>有了上面这段trap命令，即使当Shell脚本操作对应的共享区的时候有人手动Kill掉对应的Shell脚本进程，文件锁也会被清理干净。需要注意的是，我们在捕捉到Kill信号之后删除完文件锁之后直接退出而不是继续执行。</p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
     container: document.getElementById('article')
   });</script><script>hljs.initHighlightingOnLoad();
   
