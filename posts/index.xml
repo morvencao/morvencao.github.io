@@ -6,10 +6,24 @@
     <description>Recent content in Posts on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 12 Apr 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 18 Apr 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>章台柳</title>
+      <link>https://morven.life/posts/poem_for_someone/</link>
+      <pubDate>Thu, 18 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/posts/poem_for_someone/</guid>
+      <description> 章台柳，章台柳；昔日青青今在否？
+东风恶，欢情薄；一怀愁绪，几年离索。
+而今却悔当时错，当时错；万事休休休莫莫。
+一夜湘君白发多，无人能唱采莲歌。
+夜长人奈何？人成各，今非昨。
+ </description>
+    </item>
     
     <item>
       <title>MacBookPro开启HiDPI</title>
@@ -29,20 +43,6 @@ HiDPI 何为HiDPI
   打开终端并输入csrutil status，如果结果为enabled则表明SIP为开启状态 关机之后再按电源键后长按command + R直至出现苹果LOGO 在Utils-&amp;gt;Terminal打开终端，并输入csrutil disable，之后关掉终端 重启并正常开机 打开终端并输入csrutil status，确保结果是disable  运行设置脚本  Note: 为了简化配置过程，我们使用自动脚本来开启HiDPI，如果想手动来配置，请访问：https://comsysto.github.io/Display-Override-PropertyList-File-Parser-and-Generator-with-HiDPI-Support-For-Scaled-Resolutions/
   输入curl -o ~/enable-HiDPI.sh https://raw.githubusercontent.com/syscl/Enable-HiDPI-OSX/master/enable-HiDPI.sh 输入chmod +x ~/enable-HiDPI.sh 输入~/enable-HiDPI.sh 输入你想设置的分辨率比如1920x1080   Note: 设置分辨率的时候请务必使用x(乘号)，不能使用*(星号)
  开启SIP  关机之后再次按电源键开机，并长按Command + R直至出现苹果LOGO 在Utils-&amp;gt;Terminal打开终端，并输入csrutil enable之后关掉终端 重启并正常开机 打开终端并输入csrutil status，确保结果是enable  使用RDM切换分辨率 RDM是一个用来切换分辨率的开源软件，使用方法也很简单，其中带⚡️标志的才是开启了HiDPI的分辨率。</description>
-    </item>
-    
-    <item>
-      <title>章台柳</title>
-      <link>https://morven.life/posts/poem_for_someone/</link>
-      <pubDate>Sat, 16 Mar 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://morven.life/posts/poem_for_someone/</guid>
-      <description> 章台柳，章台柳；昔日青青今在否？
-东风恶，欢情薄；一怀愁绪，几年离索。
-而今却悔当时错，当时错；万事休休休莫莫。
-一夜湘君白发多，无人能唱采莲歌。
-夜长人奈何？人成各，今非昨。
- </description>
     </item>
     
     <item>
