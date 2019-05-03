@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.4"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/"><link rel="canonical" href="https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.5"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/"><link rel="canonical" href="https://morven.life/en/posts/diving_into_kubernetes_mutating_admission_webhook/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -268,44 +268,44 @@ NAME                                   AGE       REQUESTOR                      
 sidecar-injector-webhook-svc.default   0s        https://mycluster.icp:9443/oidc/endpoint/OP#admin   Pending
 certificatesigningrequest &quot;sidecar-injector-webhook-svc.default&quot; approved
 secret &quot;sidecar-injector-webhook-certs&quot; created
-</code></pre><h3 id="create-the-sidecar-injector-deployment-and-service">Create the Sidecar Injector Deployment and Service</h3><p>The <code>deployment</code> brings up 1 pod in which the <code>sidecar-injector</code> container is running. The container starts with special arguments:</p><ul><li><code>sidecarCfgFile</code> pointing to the sidecar injector configuration file mounted from <code>sidecar-injector-webhook-configmap</code> ConfigMap created above.</li><li><code>tlsCertFile</code> and <code>tlsKeyFile</code> are <code>cert/key</code> pair mounted from <code>sidecar-injector-webhook-certs</code> Secret create by script above.</li><li><code>alsologtostderr</code> <code>v=4</code> and <code>2&gt;&amp;1</code> are logging arguments.</li></ul><pre><code>apiVersion: extensions/v1beta1
+</code></pre><h3 id="create-the-sidecar-injector-deployment-and-service">Create the Sidecar Injector Deployment and Service</h3><p>The <code>deployment</code> brings up 1 pod in which the <code>sidecar-injector</code> container is running. The container starts with special arguments:</p><ul><li><code>sidecarCfgFile</code> pointing to the sidecar injector configuration file mounted from <code>sidecar-injector-webhook-configmap</code> ConfigMap created above.</li><li><code>tlsCertFile</code> and <code>tlsKeyFile</code> are <code>cert/key</code> pair mounted from <code>sidecar-injector-webhook-certs</code> Secret create by script above.</li><li><p><code>alsologtostderr</code> <code>v=4</code> and <code>2&gt;&amp;1</code> are logging arguments.</p><pre><code>apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: sidecar-injector-webhook-deployment
+name: sidecar-injector-webhook-deployment
+labels:
+app: sidecar-injector
+spec:
+replicas: 1
+template:
+metadata:
   labels:
     app: sidecar-injector
 spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: sidecar-injector
-    spec:
-      containers:
-        - name: sidecar-injector
-          image: morvencao/sidecar-injector:v1
-          imagePullPolicy: IfNotPresent
-          args:
-            - -sidecarCfgFile=/etc/webhook/config/sidecarconfig.yaml
-            - -tlsCertFile=/etc/webhook/certs/cert.pem
-            - -tlsKeyFile=/etc/webhook/certs/key.pem
-            - -alsologtostderr
-            - -v=4
-            - 2&gt;&amp;1
-          volumeMounts:
-            - name: webhook-certs
-              mountPath: /etc/webhook/certs
-              readOnly: true
-            - name: webhook-config
-              mountPath: /etc/webhook/config
-      volumes:
+  containers:
+    - name: sidecar-injector
+      image: morvencao/sidecar-injector:v1
+      imagePullPolicy: IfNotPresent
+      args:
+        - -sidecarCfgFile=/etc/webhook/config/sidecarconfig.yaml
+        - -tlsCertFile=/etc/webhook/certs/cert.pem
+        - -tlsKeyFile=/etc/webhook/certs/key.pem
+        - -alsologtostderr
+        - -v=4
+        - 2&gt;&amp;1
+      volumeMounts:
         - name: webhook-certs
-          secret:
-            secretName: sidecar-injector-webhook-certs
+          mountPath: /etc/webhook/certs
+          readOnly: true
         - name: webhook-config
-          configMap:
-            name: sidecar-injector-webhook-configmap
-</code></pre><p>The <code>service</code> exposes the pod defined above labeled by <code>app=sidecar-injector</code> to make it accessible in cluster. This service will be referred by the <code>MutatingWebhookConfiguration</code> in <code>clientConfig</code> section and by default spec.ports.port should be <strong>443</strong>(default https port).</p><pre><code>apiVersion: v1
+          mountPath: /etc/webhook/config
+  volumes:
+    - name: webhook-certs
+      secret:
+        secretName: sidecar-injector-webhook-certs
+    - name: webhook-config
+      configMap:
+        name: sidecar-injector-webhook-configmap
+</code></pre></li></ul><p>The <code>service</code> exposes the pod defined above labeled by <code>app=sidecar-injector</code> to make it accessible in cluster. This service will be referred by the <code>MutatingWebhookConfiguration</code> in <code>clientConfig</code> section and by default spec.ports.port should be <strong>443</strong>(default https port).</p><pre><code>apiVersion: v1
 kind: Service
 metadata:
   name: sidecar-injector-webhook-svc
