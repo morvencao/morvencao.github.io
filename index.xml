@@ -17,11 +17,11 @@
       <pubDate>Thu, 02 May 2019 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/the_go_context/</guid>
-      <description>从go1.7开始，正式将context(golang.org/x/net/context)，即“上下文”包引入官方标准库。事实上，我们经常见到它，不论是在简单的服务器代码还是在复杂的并发处理程序中，它都起到很重要的作用。今天，我们就来深入研究一下它的实现以及最佳实践。
+      <description>从go1.7开始，正式将context(golang.org/x/net/context)，即“上下文”包引入官方标准库。事实上，我们经常见到它，不论是在一般的服务器代码还是在复杂的并发处理程序中，它都起到很重要的作用。今天，我们就来深入研究一下它的实现以及最佳实践。
 官方文档对于context包的解释是：
  Package context defines the Context type, which carries deadlines, cancelation signals, and other request-scoped values across API boundaries and between processes.
  简单来说，context包是专门用来简化处理针对单个请求的多个goroutine与请求截止时间、取消信号以及请求域的数据等相关操作。一个简单的例子是在典型的go服务器程序中，每个网络请求都需要创建单独的goroutine进行处理，这些goroutine有可能涉及多个API的调用，进而可能会开启其他的goroutine；由于这些goroutine都是在处理同一个网络请求，所以它们往往需要访问一些共享的资源，比如用户认证token、请求截止时间等；而且如果请求超时或者被取消后，所有的goroutine都应该马上退出并且释放相关的资源。使用context，即“上下文”，可以让go开发者方便地实现这些多个goroutine之间的交互操作，跟踪并控制这些goroutine，并传递request相关的数据、取消goroutine的signal或截止日期等。
-Context结构 context包中核心的数据结构是一种嵌套的结构或者说是单向的继承关系的结构。基于最初的context（根context），开发者可以根据使用场景的不同定义自己的方法和数据来继承根context；正是context这种分层的组织结构，可以在每一层context都定义一些不同的特性，这种层级式的组织也使得context易于扩展，职责清晰。
+Context结构 context包中核心的数据结构是一种嵌套的结构或者说是单向继承的结构。基于最初的context（根context），开发者可以根据使用场景的不同定义自己的方法和数据来继承根context；正是context这种分层的组织结构，允许开发者在每一层context都定义一些不同的特性，这种层级式的组织也使得context易于扩展，职责清晰。
 context包中的最基础的数据结构是一个Context接口：
 type Context interface { // Done returns a channel that is closed when this Context is canceled // or times out. Done() &amp;lt;-chan struct{} // Err indicates why this context was canceled, after the Done channel // is closed. Err() error // Deadline returns the time when this Context will be canceled, if any.</description>
     </item>
