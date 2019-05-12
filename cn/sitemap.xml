@@ -30,8 +30,13 @@
   </url>
   
   <url>
+    <loc>https://morven.life/posts/enable_hidpi_for_external_monitor/</loc>
+    <lastmod>2019-04-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://morven.life/posts/</loc>
-    <lastmod>2019-04-18T00:00:00+00:00</lastmod>
+    <lastmod>2019-04-12T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
@@ -43,16 +48,6 @@
                 hreflang="cn"
                 href="https://morven.life/posts/"
                 />
-  </url>
-  
-  <url>
-    <loc>https://morven.life/posts/poem_for_someone/</loc>
-    <lastmod>2019-04-18T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://morven.life/posts/enable_hidpi_for_external_monitor/</loc>
-    <lastmod>2019-04-12T00:00:00+00:00</lastmod>
   </url>
   
   <url>
