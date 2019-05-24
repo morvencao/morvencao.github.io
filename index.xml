@@ -102,10 +102,10 @@ $ curl http://localhost &amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html&amp;gt; &amp;
       <pubDate>Fri, 24 Aug 2018 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/the_go_template/</guid>
-      <description>随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言没多少人在用了。但是在Go语言中，模板渲染技术不只局限于服务端HTML页面的渲染，经常用来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染速度超过正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
-运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合。再详细的讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（&amp;quot;.&amp;quot;表示当前的作用域）标识当前位置的元素。
+      <description>随着近几年Restful架构的盛行，前后端分离大行其道，模板渲染也由后端转移到了前端，后端只需要提供资源数据即可，这样导致类似于JSP和PHP的传统服务端模板脚本语言几乎问人问津了。但是在Go语言中，模板渲染技术不只局限于服务端标记语言（如HTML页面）的渲染，事实上，GO语言经常使用模版语言来处理譬如插入特定数据的文本转化等，虽然没有正则表达式那么灵活，但是渲染效率远优于正则表达式，而且使用起来也更简单。对于某些云计算的场景十分友好。今天，我们就来详细聊一聊Go Template的技术细节。
+运行机制 模板的渲染技术本质上都是一样的，一句话来说明就是字串模板和结构化数据的结合，再详细地讲就是将定义好的模板应用于结构化的数据，使用注解语法引用数据结构中的元素（例如Struct中的特定feild，Map中的key）并显示它们的值。模板在执行过程中遍历数据结构并且设置当前光标（&amp;quot;.&amp;quot;表示当前的作用域）标识当前位置的元素。
 类似于Python的jinja，Node的jade等模版引擎，Go语言模板引擎的运行机制也是类似：
- 创建模板对象 解析模板字串 加载数据渲染模板  Go模板核心包 Go提供了两个标准库用来处理模板渲染text/template和html/template，它们的接口一致，但处理的模板数据不同。其中text/template用来处理普通文本的模板渲染，而html/template专门用来渲染格式化html字符串。
+ 创建模板对象 解析模板字串 加载数据渲染模板  Go模板核心包 Go提供了两个标准库用来处理模板渲染text/template和html/template，它们的接口几乎一摸一样，但处理的模板数据不同。其中text/template用来处理普通文本的模板渲染，而html/template专门用来渲染格式化html字符串。
 下面的例子我们使用text/template来处理普通文本模板的渲染：
 package main import ( &amp;quot;os&amp;quot; &amp;quot;text/template&amp;quot; ) type Student struct { ID uint Name string } func main() { stu := Student{0, &amp;quot;jason&amp;quot;} tmpl, err := template.New(&amp;quot;test&amp;quot;).Parse(&amp;quot;The name for student {{.ID}} is {{.Name}}&amp;quot;) if err != nil { panic(err) } err = tmpl.Execute(os.Stdout, stu) if err != nil { panic(err) } }  上述代码第4行引入text/template来处理普通文本模板渲染，第14行定义一个模板对象test来解析变量&amp;quot;The name for student {{.</description>
     </item>
