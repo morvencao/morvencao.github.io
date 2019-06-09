@@ -6,31 +6,41 @@
     <description>Recent content on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 01 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 08 Jun 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>从零开始认识iptables</title>
-      <link>https://morven.life/notes/the_knowledge_of_iptables/</link>
-      <pubDate>Sat, 01 Jun 2019 00:00:00 +0000</pubDate>
+      <title>芯片战争</title>
+      <link>https://morven.life/posts/the_war_of_chips/</link>
+      <pubDate>Sat, 08 Jun 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/the_knowledge_of_iptables/</guid>
-      <description>在使用Linux的过程中，很多人和我一样经常接触iptables，但却只知道它是用来设置Linux防火墙的工具，不知道它具体是怎么工作的。今天，我们就从零开始认识一下Linux下iptables的具体工作原理。
-iptables是Linux上常用的防火墙软件netfilter项目的一部分，所以要讲清楚iptables，我们先理一理什么是防火墙？
-什么是防火墙 简单来说，防火墙是一种网络隔离工具，部署于主机或者网络的边缘，目标是对于进出主机或者本地网络的网络报文根据事先定义好的规则做匹配检测，规则匹配成功则对相应的网络报文做定义好的处理（允许，拒绝，转发，丢弃等）。防火墙根据其管理的范围来分可以将其划分为主机防火墙和网络防火墙；根据其工作机制来区分又可分为包过滤型防火墙（netfilter）和代理服务器（Proxy）。我们接下来在这篇笔记中主要说说**包过滤型防火墙（netfilter）。
- Note: 也有人将tcp_warrpers也划分为防火墙的一种，它是根据服务程序软件的名称来处理网络数据包的工具。
- 包过滤型防火墙的工作原理 包过滤型防火墙主要依赖于Linux内核软件netfilter，它是一个Linux内核“安全框架”，而iptables是内核软件netfilter的配置工具，工作于用户空间。iptables/netfilter组合就是Linux平台下的过滤型防火墙，并且这个防火墙软件是免费的，可以用来替代商业防火墙软件，来完成网络数据包的过滤，修改，重定向以及网络地址转换（nat）等功能。
- Note: 在有些Linux发行版上，我们可以使用systemctl start iptables来启动iptables服务，但需要指出的是，iptables 并不是也不依赖于守护进程，它只是利用Linux内核提供的功能。
- Linux网络管理员通过配置iptables规则以及对应的网路数据包处理逻辑，当网络数据包符合这样的规则时，就做执行预先定义好的相应的处理逻辑。可以简单的总结为：
-IF network_pkg match rule; THEN handler FI  其中规则可以包括匹配数据报文的源地址，目的地址，传输层协议（TCP/UDP/ICMP/..）以及应用层协议（HTTP/FTP/SMTP/..）等，处理逻辑就是根据规则所定义的方法来处理这些数据包，如放行（accept），拒绝（reject），丢弃（drop）等。
-而netfilter是工作于内核空间当中的一系列网络（TCP/IP）协议栈的钩子（hook），为内核模块在网络协议栈中的不同位置注册回调函数（callback）。也就是说，在数据包经过网络协议栈的不同位置时做相应的由iptables配置好的处理逻辑。 netfilter中的五个钩子（这里也称为五个关卡）PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，网络数据包的流向图如下图所示：
- 当主机/网络服务器网卡收到一个数据包之后进入内核空间的TCP/IP协议栈进行层层解封装 刚刚进入网络层的数据包通过PRE_ROUTING关卡时，要进行一次路由选择，当目标地址为本机地址时，数据进入INPUT，非本地的目标地址进入FORWARD（需要本机内核支持IP_FORWARD），所以目标地址转换通常在这个关卡进行 INPUT：经过路由之后送往本地的数据包经过此关卡，所以过滤INPUT包在此点关卡进行 FORWARD：经过路由选择之后要转发的数据包经过此关卡，所以网络防火墙通常在此关卡配置 OUTPUT：由本地用户空间应用进程产生的数据包过此关卡，所以OUTPUT包过滤在此关卡进行 POST_ROUTING：刚刚通过FORWARD和OUTPUT关卡的数据包要通过一次路由选择由哪个接口送往网络中，经过路由之后的数据包要通过POST_ROUTING此关卡，源地址转换通常在此点进行  上面提到的这些处于网络（TCP/IP）协议栈的“关卡”，在iptables的术语里叫做“链（chain）”，内置的链包括上面提到的5个：
- PreRouting Forward Input Output PostRouting  一般的场景里面，数据包的流向基本是：
- 到本主机某进程的报文：PreRouting -&amp;gt; Input -&amp;gt; Process -&amp;gt; Output -&amp;gt; PostRouting 由本主机转发的报文：PreRouting -&amp;gt; Forward -&amp;gt; PostRouting  iptables的四表五链 iptables默认有五条链（chain），分别对应上面提到的五个关卡，PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，这五个关卡分别由netfilter的五个钩子函数来触发。但是，为什么叫做“链”呢？ 我们知道，iptables/netfilter防火墙对经过的数据包进行“规则”匹配，然后执行相应的“处理”。当报文经过某一个关卡时，这个关卡上的“规则”不止一条，很多条规则会按照顺序逐条匹配，将在此关卡的所有规则组织称“链”就很适合，对于经过的数据包按照顺序逐条匹配“规则”。
-另外一个问题是，每一条“链”上的一串规则里面有些功能是相似的，比如，A类规则都是对IP或者端口进行过滤，B类规则都是修改报文，我们考虑能否将这些功能相似的规则放到一起，这样管理iptables规则会更方便。iptables把具有相同功能的规则集合叫做“表”，并且定一个四种表：
- filter：负责过滤功能；与之对应的内核模块是iptables_filter nat：Network Address Translation，网络地址转换功能，典型的比如SNAT，DNAT；与之对应的内核模块是iptables_nat mangle：解包报文，修改并封包；与之对应的内核模块是iptables_mangle raw：关闭nat表上启用的连接追踪机制；与之对应的内核模块是iptables_raw  这样，Linux网络管理员所定义的iptables“规则”都存在于这四张表中。</description>
+      <guid>https://morven.life/posts/the_war_of_chips/</guid>
+      <description>最近，愈演愈烈的华为事件又出现了新的变数。知名芯片设计公司ARM已经暂停和华为所有的业务往来，同时也命令员工不得与华为及其子公司展开技术讨论。
+你可能会怀疑，为什么ARM这一家远离硅谷，接受日本收购的的英国公司要遵循美国的商业禁令呢？
+这是因为ARM的芯片设计方案中包含了来自于美国出口的技术，依照禁令规定，一家位于美国本土之外的公司，只要有25%的原料或技术源自美国，那么就会受到管制影响。
+事实上，在如今的全球化分工现状下，没有任何一家公司能够包揽芯片设计生产分发的所有环节。ARM本质上只是设计芯片架构的公司，本身并不参与生产，而是将架构设计以商业授权的形式卖给芯片开发商。为什么这样做呢？这就不得不提一下ARM公司的历史。
+ARM公司的起源 1978年12月5日，物理学家赫尔曼·豪泽（Hermann Hauser）和工程师Chris Curry，在英国剑桥创办了CPU（Cambridge Processing Unit）公司，主要业务是为当地市场供应电子设备。次年，CPU公司决定改名为Acorn计算机公司。起初，Acorn公司打算使用摩托罗拉公司的16位芯片，但是发现这种芯片太慢也太贵。“一台售价500英镑的机器，不可能使用价格100英镑的CPU！”他们转而向Intel公司索求80286芯片的设计资料，但是遭到拒绝，于是被迫自行研发。
+1985年，Roger Wilson和Steve Furber设计了他们自己的第一代32位、6MHz的处理器，用它做出了一台RISC指令集的计算机，简称ARM（Acorn RISC Machine），这就是ARM这个名字的由来。
+什么是RISC？
+RISC的全称是&amp;rdquo;精简指令集计算机&amp;rdquo;（reduced instruction set computer），它支持的指令比较简单，所以功耗小、价格便宜，特别合适移动设备。早期使用ARM芯片的典型设备，就是苹果公司的牛顿PDA。
+1990年11月27日，Acorn公司正式改组为ARM计算机公司。苹果公司出资150万英镑，芯片厂商VLSI出资25万英镑，Acorn本身则以150万英镑的知识产权和12名工程师入股。公司的办公地点非常简陋，就是一个谷仓。
+公司成立后，业务一度很不景气，工程师们人心惶惶，担心将要失业。由于缺乏资金，ARM做出了一个意义深远的决定：自己不制造芯片，只将芯片的设计方案授权（licensing）给其他公司，由它们来生产。正是这个决定，最终使得ARM芯片遍地开花。
+ARM vs Intel 20世纪90年代，ARM公司的业绩平平，芯片的出货量徘徊不前。但是进入21世纪之后，由于手机的快速发展，出货量呈现爆炸式增长，ARM处理器几乎垄断了全球手机市场。2004年，全球ARM芯片出货量为13亿片，2015年达到150亿片。
+到如今，只要制造手机，你就无法忽略这家芯片公司。甚至你正在使用的智能手机、智能手表或是数码相机等设备，或是一些你想不到的消费电子领域，其实都有ARM的身影。
+ARM掌握着不少电子设备「大脑」中最核心的部分 - CPU芯片里的指令集，它是一颗处理器所能执行的所有指令的总和，也是处理器运行的关键。而除了指令集，生产一颗CPU芯片自然也会有对应的硬件规格，它被称为「指令集架构」，而ARM带来的就是「ARM 架构」了。
+另一家拥有指令集设计能力公司是我们耳熟能详的Intel（英特尔）。如今PC市场中大部分笔记本或台式机设备，都使用来自Intel的处理器，同样是因为Intel掌控了这些芯片的核心，即「X86 架构」。
+但是与ARM不同的是，Intel不止参与PC芯片的设计部分，还包揽了芯片的生产和销售的环节，直接推出成品 CPU，也就是说你只能通过Intel才能买到这个架构的芯片。对Intel而言，这不仅让它垄断了整个PC芯片市场，也能让自己获得最多的利润。
+而ARM不直接参与芯片制造，而是会把芯片设计方案、使用许可授权给其它公司使用，再赚取授权费用，意味着ARM并不掌控整个芯片生产流程。这也是ARM聪明的商业策略，简单理解就是「身为裁判员却不会下场踢球」，它只要管设计就行了，而不用耗巨资去建造晶圆厂，还得考虑市场销售问题。
+即使Intel成功地实施了Atom战略，将x86芯片的功耗和价格大大降低，它与ARM竞争也将非常吃力。因为ARM的商业模式是开放的，任何厂商都可以购买授权，所以未来并不是Intel vs ARM，而是Intel vs 世界上所有其他半导体公司。
+加上ARM架构拥有的低功耗特性，更适合现在的移动设备使用，所以高通、三星和联发科等芯片制造商生产的ARM架构芯片也获得了手机厂商们的支持，ARM等于间接拿下了一个远比传统PC市场庞大的领域。
+2016年，日本软银耗资约320亿美元收购了ARM，当时有分析师就认为，软银CEO孙正义看中的正是ARM在即将到来的物联网时代所具备的潜力，届时，它将被视为连接万物的通用接口而存在。
+华为的困境 与三星、高通一样，华为很早就获得了来自ARM授权，生产基于ARM指令集的处理器，同时也会用到ARM提供的架构技术。在2009年，华为海思麒麟发布了一颗名为K3V1芯片，当时采用的就是ARMv5的架构技术，这也是华为首颗面向智能手机的芯片。现在华为的旗舰手机搭载的麒麟980芯片，则是基于ARMv8架构开发的，是业内首颗商用7nm制程工艺芯片，整体水准已经可以媲美高通苹果的同类产品。除了运用在智能手机上的麒麟芯片外，华为还有面向5G终端使用的通信芯片，以及面向服务器设备的鲲鹏芯片等，也均涉及到ARM架构的使用。
+当然，ARM的授权形式也不尽相同。以高通最新的骁龙855芯片为例，它在CPU部分的Kyro架构，其实基于ARM Cortex-A76公版架构微调而来；而苹果只供自家使用的A系列芯片，则早已经脱离了公版架构，算是自己画图纸，但依旧支持ARM的指令集。至于目前华为的麒麟芯片，仍然基于ARM的公版架构进行设计生产。虽然这并不存在优劣之分，但非自研架构，意味着华为仍然要和ARM保持紧密联系，也很难绕过它进行调整。
+它就像是盖楼，如果连图纸都没有，地基也无从打起，之后的楼层搭建乃至是装修工作更是虚无缥缈。可这恰恰是现在华为所遭遇的问题。ARM选择了「断供」，华为就需要从指令集和架构开始设计芯片，可这不是短时间就能办到的事。这相当于是告诉可口可乐，不允许它使用碳酸水原料一样。
+事情并非毫无转机。不排除在美国的90天临时许可之下，ARM是否会选择暂停或是延缓这项决策的执行。另外，有消息透露华为已经购买了ARMv8的永久授权，所以华为仍可以自主生产基于该架构下的处理器芯片，不受本次「断供」的影响。
+至于未来怎样，现在很难断言。我们只能寄希望于华为可以在部分环节找到同等品质下的替代方案，但无论如何，供应链条的调整需要重新投入成本，自研技术的开发也需要时间。</description>
     </item>
     
     <item>
@@ -194,6 +204,28 @@ func subTask() { i := 0 for { i++ fmt.Printf(&amp;quot;new goroutine: i = %d\n&a
 毕业这两年，我一直就职于同一家公司，两年前的今天，我期待着可以顺风顺水地“大干一番”，毕竟公司肯定期待纯粹的技术出生，坚持技术路线的新鲜血液。的确，我投入了极大的热情，也获得了良好的发展。但是由于某种原因，公司一直处于”不稳定期“，自己也努力适应公司公司的转变策略。这样的好处是很明显的，经过几次的变化，虽然职位再三调整，但自己已经适应公司工作环境，也接触了目前各个产品线上的研发同事，合作也非常愉快，显然，公司需要这样能跟着公司战略转变的员工。然而，经过几轮的变化，自己心态早已从之前的“主动学习”，“积极探索”转变到“随波追流”，追求“完成自己分内工作就行”。我不知道这种变化是一种普遍现象，还是我自己开始濒临堕落边缘。
 对工作没有了开始时的热情，问题到底处在哪里？整个而言，我现在仍然处于一个迷茫期，前路漫漫，不知所以。
 虽然很多的事还没有想清楚，但并不意味着活得糊涂。我这两年虽然让自己的一些有点沉寂了，但是很多东西，我依然在坚持。坚持对善的向往，坚持对独立人格的向往，坚持读书学习思考，时刻保持着对人生观与价值观的自信。暂时得不到太多，只能好好坚持一些自认为可贵的东西，唯有坚持，才有改变的可能。</description>
+    </item>
+    
+    <item>
+      <title>从零开始认识iptables</title>
+      <link>https://morven.life/notes/the_knowledge_of_iptables/</link>
+      <pubDate>Sat, 20 May 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/the_knowledge_of_iptables/</guid>
+      <description>在使用Linux的过程中，很多人和我一样经常接触iptables，但却只知道它是用来设置Linux防火墙的工具，不知道它具体是怎么工作的。今天，我们就从零开始认识一下Linux下iptables的具体工作原理。
+iptables是Linux上常用的防火墙软件netfilter项目的一部分，所以要讲清楚iptables，我们先理一理什么是防火墙？
+什么是防火墙 简单来说，防火墙是一种网络隔离工具，部署于主机或者网络的边缘，目标是对于进出主机或者本地网络的网络报文根据事先定义好的规则做匹配检测，规则匹配成功则对相应的网络报文做定义好的处理（允许，拒绝，转发，丢弃等）。防火墙根据其管理的范围来分可以将其划分为主机防火墙和网络防火墙；根据其工作机制来区分又可分为包过滤型防火墙（netfilter）和代理服务器（Proxy）。我们接下来在这篇笔记中主要说说**包过滤型防火墙（netfilter）。
+ Note: 也有人将tcp_warrpers也划分为防火墙的一种，它是根据服务程序软件的名称来处理网络数据包的工具。
+ 包过滤型防火墙的工作原理 包过滤型防火墙主要依赖于Linux内核软件netfilter，它是一个Linux内核“安全框架”，而iptables是内核软件netfilter的配置工具，工作于用户空间。iptables/netfilter组合就是Linux平台下的过滤型防火墙，并且这个防火墙软件是免费的，可以用来替代商业防火墙软件，来完成网络数据包的过滤，修改，重定向以及网络地址转换（nat）等功能。
+ Note: 在有些Linux发行版上，我们可以使用systemctl start iptables来启动iptables服务，但需要指出的是，iptables 并不是也不依赖于守护进程，它只是利用Linux内核提供的功能。
+ Linux网络管理员通过配置iptables规则以及对应的网路数据包处理逻辑，当网络数据包符合这样的规则时，就做执行预先定义好的相应的处理逻辑。可以简单的总结为：
+IF network_pkg match rule; THEN handler FI  其中规则可以包括匹配数据报文的源地址，目的地址，传输层协议（TCP/UDP/ICMP/..）以及应用层协议（HTTP/FTP/SMTP/..）等，处理逻辑就是根据规则所定义的方法来处理这些数据包，如放行（accept），拒绝（reject），丢弃（drop）等。
+而netfilter是工作于内核空间当中的一系列网络（TCP/IP）协议栈的钩子（hook），为内核模块在网络协议栈中的不同位置注册回调函数（callback）。也就是说，在数据包经过网络协议栈的不同位置时做相应的由iptables配置好的处理逻辑。 netfilter中的五个钩子（这里也称为五个关卡）PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，网络数据包的流向图如下图所示：
+ 当主机/网络服务器网卡收到一个数据包之后进入内核空间的TCP/IP协议栈进行层层解封装 刚刚进入网络层的数据包通过PRE_ROUTING关卡时，要进行一次路由选择，当目标地址为本机地址时，数据进入INPUT，非本地的目标地址进入FORWARD（需要本机内核支持IP_FORWARD），所以目标地址转换通常在这个关卡进行 INPUT：经过路由之后送往本地的数据包经过此关卡，所以过滤INPUT包在此点关卡进行 FORWARD：经过路由选择之后要转发的数据包经过此关卡，所以网络防火墙通常在此关卡配置 OUTPUT：由本地用户空间应用进程产生的数据包过此关卡，所以OUTPUT包过滤在此关卡进行 POST_ROUTING：刚刚通过FORWARD和OUTPUT关卡的数据包要通过一次路由选择由哪个接口送往网络中，经过路由之后的数据包要通过POST_ROUTING此关卡，源地址转换通常在此点进行  上面提到的这些处于网络（TCP/IP）协议栈的“关卡”，在iptables的术语里叫做“链（chain）”，内置的链包括上面提到的5个：
+ PreRouting Forward Input Output PostRouting  一般的场景里面，数据包的流向基本是：
+ 到本主机某进程的报文：PreRouting -&amp;gt; Input -&amp;gt; Process -&amp;gt; Output -&amp;gt; PostRouting 由本主机转发的报文：PreRouting -&amp;gt; Forward -&amp;gt; PostRouting  iptables的四表五链 iptables默认有五条链（chain），分别对应上面提到的五个关卡，PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，这五个关卡分别由netfilter的五个钩子函数来触发。但是，为什么叫做“链”呢？ 我们知道，iptables/netfilter防火墙对经过的数据包进行“规则”匹配，然后执行相应的“处理”。当报文经过某一个关卡时，这个关卡上的“规则”不止一条，很多条规则会按照顺序逐条匹配，将在此关卡的所有规则组织称“链”就很适合，对于经过的数据包按照顺序逐条匹配“规则”。
+另外一个问题是，每一条“链”上的一串规则里面有些功能是相似的，比如，A类规则都是对IP或者端口进行过滤，B类规则都是修改报文，我们考虑能否将这些功能相似的规则放到一起，这样管理iptables规则会更方便。iptables把具有相同功能的规则集合叫做“表”，并且定一个四种表：
+ filter：负责过滤功能；与之对应的内核模块是iptables_filter nat：Network Address Translation，网络地址转换功能，典型的比如SNAT，DNAT；与之对应的内核模块是iptables_nat mangle：解包报文，修改并封包；与之对应的内核模块是iptables_mangle raw：关闭nat表上启用的连接追踪机制；与之对应的内核模块是iptables_raw  这样，Linux网络管理员所定义的iptables“规则”都存在于这四张表中。</description>
     </item>
     
     <item>

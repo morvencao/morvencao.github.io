@@ -6,32 +6,10 @@
     <description>Recent content in Notes on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 01 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 02 May 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>从零开始认识iptables</title>
-      <link>https://morven.life/notes/the_knowledge_of_iptables/</link>
-      <pubDate>Sat, 01 Jun 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://morven.life/notes/the_knowledge_of_iptables/</guid>
-      <description>在使用Linux的过程中，很多人和我一样经常接触iptables，但却只知道它是用来设置Linux防火墙的工具，不知道它具体是怎么工作的。今天，我们就从零开始认识一下Linux下iptables的具体工作原理。
-iptables是Linux上常用的防火墙软件netfilter项目的一部分，所以要讲清楚iptables，我们先理一理什么是防火墙？
-什么是防火墙 简单来说，防火墙是一种网络隔离工具，部署于主机或者网络的边缘，目标是对于进出主机或者本地网络的网络报文根据事先定义好的规则做匹配检测，规则匹配成功则对相应的网络报文做定义好的处理（允许，拒绝，转发，丢弃等）。防火墙根据其管理的范围来分可以将其划分为主机防火墙和网络防火墙；根据其工作机制来区分又可分为包过滤型防火墙（netfilter）和代理服务器（Proxy）。我们接下来在这篇笔记中主要说说**包过滤型防火墙（netfilter）。
- Note: 也有人将tcp_warrpers也划分为防火墙的一种，它是根据服务程序软件的名称来处理网络数据包的工具。
- 包过滤型防火墙的工作原理 包过滤型防火墙主要依赖于Linux内核软件netfilter，它是一个Linux内核“安全框架”，而iptables是内核软件netfilter的配置工具，工作于用户空间。iptables/netfilter组合就是Linux平台下的过滤型防火墙，并且这个防火墙软件是免费的，可以用来替代商业防火墙软件，来完成网络数据包的过滤，修改，重定向以及网络地址转换（nat）等功能。
- Note: 在有些Linux发行版上，我们可以使用systemctl start iptables来启动iptables服务，但需要指出的是，iptables 并不是也不依赖于守护进程，它只是利用Linux内核提供的功能。
- Linux网络管理员通过配置iptables规则以及对应的网路数据包处理逻辑，当网络数据包符合这样的规则时，就做执行预先定义好的相应的处理逻辑。可以简单的总结为：
-IF network_pkg match rule; THEN handler FI  其中规则可以包括匹配数据报文的源地址，目的地址，传输层协议（TCP/UDP/ICMP/..）以及应用层协议（HTTP/FTP/SMTP/..）等，处理逻辑就是根据规则所定义的方法来处理这些数据包，如放行（accept），拒绝（reject），丢弃（drop）等。
-而netfilter是工作于内核空间当中的一系列网络（TCP/IP）协议栈的钩子（hook），为内核模块在网络协议栈中的不同位置注册回调函数（callback）。也就是说，在数据包经过网络协议栈的不同位置时做相应的由iptables配置好的处理逻辑。 netfilter中的五个钩子（这里也称为五个关卡）PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，网络数据包的流向图如下图所示：
- 当主机/网络服务器网卡收到一个数据包之后进入内核空间的TCP/IP协议栈进行层层解封装 刚刚进入网络层的数据包通过PRE_ROUTING关卡时，要进行一次路由选择，当目标地址为本机地址时，数据进入INPUT，非本地的目标地址进入FORWARD（需要本机内核支持IP_FORWARD），所以目标地址转换通常在这个关卡进行 INPUT：经过路由之后送往本地的数据包经过此关卡，所以过滤INPUT包在此点关卡进行 FORWARD：经过路由选择之后要转发的数据包经过此关卡，所以网络防火墙通常在此关卡配置 OUTPUT：由本地用户空间应用进程产生的数据包过此关卡，所以OUTPUT包过滤在此关卡进行 POST_ROUTING：刚刚通过FORWARD和OUTPUT关卡的数据包要通过一次路由选择由哪个接口送往网络中，经过路由之后的数据包要通过POST_ROUTING此关卡，源地址转换通常在此点进行  上面提到的这些处于网络（TCP/IP）协议栈的“关卡”，在iptables的术语里叫做“链（chain）”，内置的链包括上面提到的5个：
- PreRouting Forward Input Output PostRouting  一般的场景里面，数据包的流向基本是：
- 到本主机某进程的报文：PreRouting -&amp;gt; Input -&amp;gt; Process -&amp;gt; Output -&amp;gt; PostRouting 由本主机转发的报文：PreRouting -&amp;gt; Forward -&amp;gt; PostRouting  iptables的四表五链 iptables默认有五条链（chain），分别对应上面提到的五个关卡，PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，这五个关卡分别由netfilter的五个钩子函数来触发。但是，为什么叫做“链”呢？ 我们知道，iptables/netfilter防火墙对经过的数据包进行“规则”匹配，然后执行相应的“处理”。当报文经过某一个关卡时，这个关卡上的“规则”不止一条，很多条规则会按照顺序逐条匹配，将在此关卡的所有规则组织称“链”就很适合，对于经过的数据包按照顺序逐条匹配“规则”。
-另外一个问题是，每一条“链”上的一串规则里面有些功能是相似的，比如，A类规则都是对IP或者端口进行过滤，B类规则都是修改报文，我们考虑能否将这些功能相似的规则放到一起，这样管理iptables规则会更方便。iptables把具有相同功能的规则集合叫做“表”，并且定一个四种表：
- filter：负责过滤功能；与之对应的内核模块是iptables_filter nat：Network Address Translation，网络地址转换功能，典型的比如SNAT，DNAT；与之对应的内核模块是iptables_nat mangle：解包报文，修改并封包；与之对应的内核模块是iptables_mangle raw：关闭nat表上启用的连接追踪机制；与之对应的内核模块是iptables_raw  这样，Linux网络管理员所定义的iptables“规则”都存在于这四张表中。</description>
-    </item>
     
     <item>
       <title>理解Go Context</title>
@@ -92,6 +70,28 @@ Concurrency is about dealing with lots of things at once. Parallelism is about d
  Go Routine Go Routine是Go语言并行编程的核心概念之一，有人将它称作为“协程”，是比Thread更轻量级的并发单元，最小Go Routine只需极少的栈内存(大约是4~5KB)，这样十几个Go Routine的规模可能体现在底层就是五六个线程的大小，最高同时运行成千上万个并发任务；同时，Go语言内部实现了Go Routine之间的内存共享使得它比Thread更高效，更易用，我们不必再使用类似于晦涩难用的线程安全的队列库来同步数据。
 创建Go Routine 要创建一个Go Routine，我们只需要在函数调⽤语句前添加go关键字，Go语言的调度器会自动将其安排到合适的系统线程上执行。实际上，我们在并发编程的过程中经常将一个大的任务分成好几块可以并行的小任务，为每一个小任务创建一个Go Routine。当一个程序启动时，其主函数即在一个单独的Go Routine中运行，我们叫它main routine，然后在主函数中使用go关键字来创建其他的Go Routine：
 func subTask() { i := 0 for { i++ fmt.Printf(&amp;quot;new goroutine: i = %d\n&amp;quot;, i) time.Sleep(1 * time.Second) } } func main() { go subTask() // Create go rountine to execute sub task i := 0 // main goroutine for { i++ fmt.</description>
+    </item>
+    
+    <item>
+      <title>从零开始认识iptables</title>
+      <link>https://morven.life/notes/the_knowledge_of_iptables/</link>
+      <pubDate>Sat, 20 May 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/the_knowledge_of_iptables/</guid>
+      <description>在使用Linux的过程中，很多人和我一样经常接触iptables，但却只知道它是用来设置Linux防火墙的工具，不知道它具体是怎么工作的。今天，我们就从零开始认识一下Linux下iptables的具体工作原理。
+iptables是Linux上常用的防火墙软件netfilter项目的一部分，所以要讲清楚iptables，我们先理一理什么是防火墙？
+什么是防火墙 简单来说，防火墙是一种网络隔离工具，部署于主机或者网络的边缘，目标是对于进出主机或者本地网络的网络报文根据事先定义好的规则做匹配检测，规则匹配成功则对相应的网络报文做定义好的处理（允许，拒绝，转发，丢弃等）。防火墙根据其管理的范围来分可以将其划分为主机防火墙和网络防火墙；根据其工作机制来区分又可分为包过滤型防火墙（netfilter）和代理服务器（Proxy）。我们接下来在这篇笔记中主要说说**包过滤型防火墙（netfilter）。
+ Note: 也有人将tcp_warrpers也划分为防火墙的一种，它是根据服务程序软件的名称来处理网络数据包的工具。
+ 包过滤型防火墙的工作原理 包过滤型防火墙主要依赖于Linux内核软件netfilter，它是一个Linux内核“安全框架”，而iptables是内核软件netfilter的配置工具，工作于用户空间。iptables/netfilter组合就是Linux平台下的过滤型防火墙，并且这个防火墙软件是免费的，可以用来替代商业防火墙软件，来完成网络数据包的过滤，修改，重定向以及网络地址转换（nat）等功能。
+ Note: 在有些Linux发行版上，我们可以使用systemctl start iptables来启动iptables服务，但需要指出的是，iptables 并不是也不依赖于守护进程，它只是利用Linux内核提供的功能。
+ Linux网络管理员通过配置iptables规则以及对应的网路数据包处理逻辑，当网络数据包符合这样的规则时，就做执行预先定义好的相应的处理逻辑。可以简单的总结为：
+IF network_pkg match rule; THEN handler FI  其中规则可以包括匹配数据报文的源地址，目的地址，传输层协议（TCP/UDP/ICMP/..）以及应用层协议（HTTP/FTP/SMTP/..）等，处理逻辑就是根据规则所定义的方法来处理这些数据包，如放行（accept），拒绝（reject），丢弃（drop）等。
+而netfilter是工作于内核空间当中的一系列网络（TCP/IP）协议栈的钩子（hook），为内核模块在网络协议栈中的不同位置注册回调函数（callback）。也就是说，在数据包经过网络协议栈的不同位置时做相应的由iptables配置好的处理逻辑。 netfilter中的五个钩子（这里也称为五个关卡）PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，网络数据包的流向图如下图所示：
+ 当主机/网络服务器网卡收到一个数据包之后进入内核空间的TCP/IP协议栈进行层层解封装 刚刚进入网络层的数据包通过PRE_ROUTING关卡时，要进行一次路由选择，当目标地址为本机地址时，数据进入INPUT，非本地的目标地址进入FORWARD（需要本机内核支持IP_FORWARD），所以目标地址转换通常在这个关卡进行 INPUT：经过路由之后送往本地的数据包经过此关卡，所以过滤INPUT包在此点关卡进行 FORWARD：经过路由选择之后要转发的数据包经过此关卡，所以网络防火墙通常在此关卡配置 OUTPUT：由本地用户空间应用进程产生的数据包过此关卡，所以OUTPUT包过滤在此关卡进行 POST_ROUTING：刚刚通过FORWARD和OUTPUT关卡的数据包要通过一次路由选择由哪个接口送往网络中，经过路由之后的数据包要通过POST_ROUTING此关卡，源地址转换通常在此点进行  上面提到的这些处于网络（TCP/IP）协议栈的“关卡”，在iptables的术语里叫做“链（chain）”，内置的链包括上面提到的5个：
+ PreRouting Forward Input Output PostRouting  一般的场景里面，数据包的流向基本是：
+ 到本主机某进程的报文：PreRouting -&amp;gt; Input -&amp;gt; Process -&amp;gt; Output -&amp;gt; PostRouting 由本主机转发的报文：PreRouting -&amp;gt; Forward -&amp;gt; PostRouting  iptables的四表五链 iptables默认有五条链（chain），分别对应上面提到的五个关卡，PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，这五个关卡分别由netfilter的五个钩子函数来触发。但是，为什么叫做“链”呢？ 我们知道，iptables/netfilter防火墙对经过的数据包进行“规则”匹配，然后执行相应的“处理”。当报文经过某一个关卡时，这个关卡上的“规则”不止一条，很多条规则会按照顺序逐条匹配，将在此关卡的所有规则组织称“链”就很适合，对于经过的数据包按照顺序逐条匹配“规则”。
+另外一个问题是，每一条“链”上的一串规则里面有些功能是相似的，比如，A类规则都是对IP或者端口进行过滤，B类规则都是修改报文，我们考虑能否将这些功能相似的规则放到一起，这样管理iptables规则会更方便。iptables把具有相同功能的规则集合叫做“表”，并且定一个四种表：
+ filter：负责过滤功能；与之对应的内核模块是iptables_filter nat：Network Address Translation，网络地址转换功能，典型的比如SNAT，DNAT；与之对应的内核模块是iptables_nat mangle：解包报文，修改并封包；与之对应的内核模块是iptables_mangle raw：关闭nat表上启用的连接追踪机制；与之对应的内核模块是iptables_raw  这样，Linux网络管理员所定义的iptables“规则”都存在于这四张表中。</description>
     </item>
     
     <item>
