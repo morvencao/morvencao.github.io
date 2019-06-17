@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_polymorphism_and_inheritance_in_go/"><link rel="canonical" href="https://morven.life/notes/the_polymorphism_and_inheritance_in_go/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_interface_and_composition_in_go/"><link rel="canonical" href="https://morven.life/notes/the_interface_and_composition_in_go/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -8,7 +8,7 @@
       "articleSection" : "notes",
       "name" : "GO语言的接口与组合",
       "headline" : "GO语言的接口与组合",
-      "description" : "Go语言多态的实现依赖于接口。\nGo语言接口与鸭子类型的关系 什么是“鸭子类型”？\n If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.\n 以上引用自维基百科的解释描述了什么是“鸭子类型”，所谓鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。\n传统的静态语言，如Java, C\x2b\x2b等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。\n举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：\ntype IGreeting interface { greeting() } func sayHello(i IGreeting) { i.greeting() }  接下来再定义两个结构体：\ntype A struct {} func (a A) greeting() { fmt.Println(\x26quot;Hi, I am A!\x26quot;) } type B struct {} func (b B) greeting() { fmt.Println(\x26quot;Hi, I am B!",
+      "description" : "Go语言接口与鸭子类型的关系 什么是“鸭子类型”？\n If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.\n 以上引用自维基百科的解释描述了什么是“鸭子类型”，所谓鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。\n传统的静态语言，如Java, C\x2b\x2b等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。\n举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：\ntype IGreeting interface { greeting() } func sayHello(i IGreeting) { i.greeting() }  接下来再定义两个结构体：\ntype A struct {} func (a A) greeting() { fmt.Println(\x26quot;Hi, I am A!\x26quot;) } type B struct {} func (b B) greeting() { fmt.Println(\x26quot;Hi, I am B!",
       "inLanguage" : "en-US",
       "author" : "Morven\x27s Life",
       "creator" : "Morven\x27s Life",
@@ -18,16 +18,15 @@
       "copyrightYear" : "2018",
       "datePublished": "2018-05-12 00:00:00 \x2b0000 UTC",
       "dateModified" : "2018-05-12 00:00:00 \x2b0000 UTC",
-      "url" : "https:\/\/morven.life\/notes\/the_polymorphism_and_inheritance_in_go\/",
+      "url" : "https:\/\/morven.life\/notes\/the_interface_and_composition_in_go\/",
       "keywords" : [  ]
-  }</script><title>GO语言的接口与组合 - Morven&#39;s Life</title><meta property="og:title" content="GO语言的接口与组合 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="Go语言多态的实现依赖于接口。
-Go语言接口与鸭子类型的关系 什么是“鸭子类型”？
+  }</script><title>GO语言的接口与组合 - Morven&#39;s Life</title><meta property="og:title" content="GO语言的接口与组合 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="Go语言接口与鸭子类型的关系 什么是“鸭子类型”？
  If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.
  以上引用自维基百科的解释描述了什么是“鸭子类型”，所谓鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。
 传统的静态语言，如Java, C&#43;&#43;等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。
 举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：
 type IGreeting interface { greeting() } func sayHello(i IGreeting) { i.greeting() }  接下来再定义两个结构体：
-type A struct {} func (a A) greeting() { fmt.Println(&quot;Hi, I am A!&quot;) } type B struct {} func (b B) greeting() { fmt.Println(&quot;Hi, I am B!"><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">GO语言的接口与组合</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2018-05-12 00:00:00 UTC">12 May 2018</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>Go语言多态的实现依赖于接口。</p><h3 id="go语言接口与鸭子类型的关系">Go语言接口与鸭子类型的关系</h3><p>什么是“鸭子类型”？</p><blockquote><p>If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.</p></blockquote><p>以上引用自维基百科的解释描述了什么是“鸭子类型”，所谓鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。</p><p>传统的静态语言，如Java, C++等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。</p><p>举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：</p><pre><code>type IGreeting interface {
+type A struct {} func (a A) greeting() { fmt.Println(&quot;Hi, I am A!&quot;) } type B struct {} func (b B) greeting() { fmt.Println(&quot;Hi, I am B!"><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">GO语言的接口与组合</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2018-05-12 00:00:00 UTC">12 May 2018</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><h3 id="go语言接口与鸭子类型的关系">Go语言接口与鸭子类型的关系</h3><p>什么是“鸭子类型”？</p><blockquote><p>If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.</p></blockquote><p>以上引用自维基百科的解释描述了什么是“鸭子类型”，所谓鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。</p><p>传统的静态语言，如Java, C++等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。</p><p>举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：</p><pre><code>type IGreeting interface {
     greeting()
 }
 
@@ -195,7 +194,7 @@ func interfaceTest() {
     rw1 = rw2
     rw2 = rw1
 }
-</code></pre><p>如果结构struct实现了接口interface要求的所有方法，所以可以将struct赋值给相应的该接口interface；而如果struct1如果组合的struct了，那么struct1也就实现了接口interface的所有方法的实现，所以可以将struct1赋值给该接口interface。Go语言正是通过这种组合来实现面向对象语言中继承的概念。</p><p>Go语言正是通过提供别样的结构体&amp;接口嵌入组合的机制，让一个结构体/结构包含另一个结构体/结构类型的匿名成员，这样就可以通过简单的点运算符<code>x.f</code>来访问匿名成员链中嵌套的<code>x.d.e.f</code>成员。同样的规则，内嵌匿名成员链的方法也会提升为外部类型的方法。</p><p>但是需要注意的是：</p><ol><li><p>嵌入组合一个类型，这个类型的方法就变成了外部类型的方法，但是当它被调用时，方法的接受者是内部类型(嵌入组合类型)，而非外部类型。</p><pre><code>type Job struct {
+</code></pre><p>如果结构struct实现了接口interface要求的所有方法，所以可以将struct赋值给相应的该接口interface；而如果struct1如果组合的struct了，那么struct1也就实现了接口interface的所有方法的实现，所以可以将struct1赋值给该接口interface。Go语言正是通过这种组合来实现面向对象语言中继承的概念。</p><p>Go语言正是通过提供别样的结构体&amp;接口组合的机制，让一个结构体/接口包含另一个结构体/接口类型的匿名成员，这样就可以通过简单的点运算符<code>x.f</code>来访问匿名成员链中嵌套的<code>x.d.e.f</code>成员。同样的规则，内嵌匿名成员链的方法也会提升为外部类型的方法。</p><p>但是需要注意的是：</p><ol><li><p>组合一个类型，这个内部类型的方法就变成了外部类型的方法，但是当它被调用时，方法的接受者是内部类型(被组合类型)，而非外部类型。</p><pre><code>type Job struct {
 Command string
 *log.Logger
 }
@@ -205,7 +204,7 @@ job.Log(&quot;starting now...&quot;)
 ...
 job.Log(&quot;started.&quot;)
 }
-</code></pre></li></ol><p>上面这个Job例子，即使组合后调用的方式变成了<code>job.Log(…)</code>，但<code>Log</code>方法的接收者仍然是<code>log.Logger</code>指针，因此在<code>Log</code>方法中也不可能访问到<code>job</code>的其他成员方法和变量。</p><ol><li>内嵌/组合类型不是基类</li></ol><p>如果对传统的面向对象语言中“类”中的继承比较熟悉的话，很可能会倾向于将&rdquo;内嵌/组合类型&rdquo;看作一个基类，而“外部类型”看作其子类或者继承类，或者将“外部类型”看作&rdquo;is a&rdquo;内嵌类型，但这样理解是错误的。</p><pre><code>type Point struct{ X, Y float64 }
+</code></pre></li></ol><p>上面这个Job例子，即使组合后调用的方式变成了<code>job.Log(…)</code>，但<code>Log</code>方法的接收者仍然是<code>log.Logger</code>指针，因此在<code>Log</code>方法中也不可能访问到<code>job</code>的其他成员方法和变量。</p><ol><li>被组合类型不是基类</li></ol><p>如果对传统的面向对象语言中“类”中的继承比较熟悉的话，很可能会倾向于将&rdquo;被组合类型&rdquo;看作一个基类，而“外部类型”看作其子类或者继承类，或者将“外部类型”看作&rdquo;is a&rdquo;被组合类型，但这样理解是错误的：</p><pre><code>type Point struct{ X, Y float64 }
 
 type ColoredPoint struct {
     Point
@@ -225,7 +224,7 @@ var q = ColoredPoint{Point{5, 4}, blue}
 fmt.Println(p.Distance(q.Point)) // &quot;5&quot;
 
 p.Distance(q) // compile error: cannot use q (ColoredPoint) as Point
-</code></pre><p>请注意上面例子中对<code>Distance</code>方法的调用。<code>Distance</code>方法有一个参数是<code>Point</code>类型，但<code>q</code>并不是一个<code>Point</code>类，所以尽管<code>q</code>有着<code>Point</code>这个内嵌类型，我们也必须要显式地选择它，尝试直接传<code>q</code>的话会报错：</p><p>实际上，从实现的角度来考虑问题，内嵌字段会指导编译器去生成额外的包装方法来委托已经声明好的方法，和下面的形式是等价的：</p><pre><code>func (p ColoredPoint) Distance(q Point) float64 {
+</code></pre><p>请注意上面例子中对<code>Distance</code>方法的调用，<code>Distance</code>方法有一个参数是<code>Point</code>类型，但<code>q</code>并不是一个<code>Point</code>类，所以尽管<code>q</code>有着<code>Point</code>这个被组合类型，我们也必须要显式地选择它，尝试直接传<code>q</code>的话会报错：</p><p>实际上，从实现的角度来考虑问题，内嵌字段会指导编译器去生成额外的包装方法来委托已经声明好的方法，和下面的形式是等价的：</p><pre><code>func (p ColoredPoint) Distance(q Point) float64 {
     return p.Point.Distance(q)
 }
 </code></pre><p>当<code>Point.Distance()</code>被以上编译器生成的包装方法调用时，它的接收器值是<code>p.Point</code>，而非<code>p</code>。</p><ol><li>匿名冲突(duplicate field) 和隐式名字</li></ol><p>匿名成员也有一个隐式的名字，以其类型名称（去掉包名部分）作为成员变量的名字。因此不能同一级同时包含两个类型相同的匿名成员，这会导致名字冲突。</p><pre><code>type Logger struct {
