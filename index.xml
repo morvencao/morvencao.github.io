@@ -471,7 +471,7 @@ X.509是定义了公钥证书结构的基本标准，是目前非常通用的证
       <guid>https://morven.life/notes/the_digital_signature_and_digital_certificate/</guid>
       <description>在之前的密码学笔记主要是介绍密码学的基础知识，包括两种加密算法的原理，引入在非对称加密算法中数字证书（Digital Certificate）的概念。这篇笔记将继续探讨什么是数字证书，不过在了解它之前，先得知道什么是数字签名（Digital Signature）。
 关于数字签名和数字证书的概念，有一篇非常经典的文章，本文的大部分内容来自于那篇文章，喜欢读英文原版的请移步至：http://www.youdzone.com/signature.html
-Bob生成了自己的（公钥，私钥）对，将私钥自己保存，并将公钥分发给了他的朋友们：Pat，Susan，Daug，
+Bob生成了自己的（公钥，私钥）对，将私钥自己保存，并将公钥分发给了他的朋友们：Pat，Susan，Daug
 Susan要给Bob写一封保密的信件，写完后用Bob的公钥加密，就可以达到保密的效果。Bob收到信件之后用自己的私钥来解密，就可以看到信件的内容。这里假设Bob的私钥没有泄露（私钥是十分敏感的信息，一定要注意保管，泄露私钥那么文章里很多假设都不成立），即使信件被别人截获，信件内容也无法解密，也就是说这封信的内容不会有第三个人知道。
 Bob给Susan回信，决定采用&amp;rdquo;数字签名&amp;rdquo;：他写完后先用Hash函数，生成信件的摘要（Digest），然后，在使用自己的私钥，对这个摘要进行加密，生成&amp;rdquo;数字签名&amp;rdquo;（Digital Signature）。
 Bob将这个数字签名，附在信件里面，一起发给Susan。
