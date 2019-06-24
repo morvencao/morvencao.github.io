@@ -36,10 +36,10 @@ Istio架构设计 让我们再次简化一下上面的架构设计，这次我�
  Galley: 用来验证用户编写的Istio API配置；未来的版本中Galley将接管Istio获取配置、 处理和分配组件的顶级责任，从而将其他的Istio组件与从底层平台（例如Kubernetes）获取用户配置的细节中隔离开来；
   最终，Istio的架构设计如下图所示：
 Istio快速上手 部署Istio控制平面
- Note: Istio可以用来运行在多种不同的环境里面，包括Kubernetes、Docker、Consul甚至Bare Mental（物理机上），文本以Kubernetes环境为例来演示Istio。
+ Note: Istio可以用来运行在多种不同的环境里面，包括Kubernetes、Docker、Consul甚至BareMental（物理机上），文本以Kubernetes环境为例来演示Istio的多种特性。
  在部署使用Istio之前，我们需要准备一个Kubernetes的环境，如果只是试用Istio的话，推荐试用Minikube或者Kind来快速搭建Kubernetes环境。
-有了Kubernetes环境并且配置好kubectl之后，我们就可以开始了。
- 下载并解压最新的Istio发布版本（截至发布本文是的最新Istio版为为1.2.0）
+有了Kubernetes环境并且配置好kubectl之后，我们就可以正式开始了。
+ 下载并解压最新的Istio发布版本（截至发布本文时的最新Istio版为为1.2.0）
  root@mcdev1:~# curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.2.0 sh - % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 100 2140 100 2140 0 0 1787 0 0:00:01 0:00:01 --:--:-- 1787 Downloading istio-1.</description>
     </item>
     
