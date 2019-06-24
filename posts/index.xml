@@ -6,10 +6,42 @@
     <description>Recent content in Posts on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 08 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 23 Jun 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>一份好吃的Istio入门餐</title>
+      <link>https://morven.life/posts/getting_started_istio/</link>
+      <pubDate>Sun, 23 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/posts/getting_started_istio/</guid>
+      <description>前两天Istio正式发布1.2版本，至此，Istio社区再次回归每3个月一个大版本+每一个月一个小版本更新的传统。从Istio1.0发布以来，社区在对改进Istio的一些非功能性的需求（例如性能与扩展性）方面的努力是大家有目共睹的。我觉得是时候写一篇通俗易懂的Istio入门文章，让更多的人去体验一下Istio在云时代所带来的各种益处。
+为什么需要Istio 说到Istio，就不得不提到另外一个名词：Service Mesh，中文名为服务网格。
+相信很多人对于传统的单体应用以及它所面临的问题很熟悉，一种显而易见的方案是将其分解为多个微服务。这确实能简化微服务的开发，但是不得不说，也带来非常多的挑战，比如对于成百上千的微服务的通信、监控以及安全性的管理并不是一件简单的事。目前为止，针对这些问题确实有一些解决方案（比如Spring Cloud），但基本都是通过类似于类库或者定制化脚本的方式将为服务串联在一起，附带很高的维护升级成本。
+Service Mesh的出现正是为了解决这一问题。它是位于底层网络与上层服务之间的一层基础设施，提供了一种透明的、与编程语言无关的方式，使网络配置、安全配置以及遥测等操作能够灵活而简便地实现自动化。从本质上说，它解耦了服务的开发与运维工作。如果你是一名开发者，那么部署升级服务的时候不需要担心这些操作会对整个分布式系统带来哪些运维层面的影响；与之对应，如果你是运维人员，那么也可以放心大胆的服务之间的运维结构进行变更，而不需要修改服务的源代码。
+而Istio真正地将Service Mesh的概念发扬光大。它创新性地将控制平面（Control Plane）与数据平面（Data Plane）解耦，通过独立的控制平面可以对Mesh获得全局性的可观测性（Observability）和可控制性（Controllability），从而让Service Mesh有机会上升到平台的高度，这对于对于希望提供面向微服务架构基础设施的厂商，或是企业内部需要赋能业务团队的平台部门都具有相当大的吸引力。
+为什么会需要这样的设计呢？
+我们先来看一个单独的一个微服务，正常情况下不管单个微服务部署在一个物理机上，亦或一个容器里，甚至一个k8s的pod里面，它的基本数据流向不外乎所有的Inbound流量作为实际业务逻辑的输入，经过微服务处理的输出作为Outbound流量：
+随着应用的衍进与扩展，微服务的数量快速增长，整个分布式系统变得“失控”，没有一种通用可行的方案来监控、跟踪这些独立、自治、松耦合的微服务组件的通信；对于服务发现和负载均衡，虽说像k8s这样的平台提供了通过kube-proxy下发iptables规则来实现的基本的服务发现和转发能力，不能满足高并发应用下的高级的服务特性；至于更加复杂的熔断、限流、降级等需求，看起来不通过应用侵入式编程几乎不可能实现。
+但是，真的是这样吗？我们来换一个思路，想象一下，如果我们在部署微服务的同时部署一个sidecar，这个sidecar充当代理的功能，它会拦截所有流向微服务业务逻辑的流量，做一些预处理（解网络包然后抽取、添加或者修改特定字段）之后在将流量转发给微服务，微服务处理的输出也要经过sidecar拦截做一些后处理（解网络包然后抽取、删除或者修改特定字段），最后将流量分发给外部：
+随着微服务数量的增长，整个分布式应用看起来类似于这样：
+这样的架构也有问题，数量少的情况下，sidecar的配置简单，我们可以简单应对，但是sidecar的数量会随着微服务的数量不断增长，sidecar需要又一个能集中管理控制模块根据整个分布式系统的架构变动动态下发sidecar配置，这里我们把随着分布式应用一起部署的sidecar成为数据平面（Data Plane），而集中是的管理模块成为控制平面（Control Plane）。现在整个架构看起来会像是这样：
+Istio架构设计 让我们再次简化一下上面的架构设计，这次我们将关注点放在数据平面里面的两个部署sidecar的微服务，它们的直接通信的所有流量都要被sidecar拦截，经过预处理之后转发给对应的应用逻辑：
+这基本就是Istio的设计原型，只不过Istio默认使用Envoy作为sidecar代理（Istio利用了Envoy内建的大量特性，例如服务发现与负载均衡、流量拆分、故障注入、熔断器以及分阶段发布等功能），而在控制层面Istio也分为四个主要模块：
+ Pilot: 为Envoy sidecar提供服务发现功能，为智能路由（例如A/B测试、金丝雀部署等）和弹性（超时、重试、熔断器等）提供流量管理功能；它将控制流量行为的高级路由规则转换为特定于Envoy的配置，并在运行时将它们传播到sidecar；
+ Mixer: 负责在服务网格上执行访问控制和使用策略，并从Envoy代理和其他服务收集遥测数据；代理提取请求级属性，发送到Mixer进行评估；
+ Citadel: 通过内置身份和凭证管理赋能强大的服务间和最终用户身份验证；可用于升级服务网格中未加密的流量，并为运维人员提供基于服务标识而不是网络控制的强制执行策略的能力；
+ Galley: 用来验证用户编写的Istio API配置；未来的版本中Galley将接管Istio获取配置、 处理和分配组件的顶级责任，从而将其他的Istio组件与从底层平台（例如Kubernetes）获取用户配置的细节中隔离开来；
+  最终，Istio的架构设计如下图所示：
+Istio快速上手 部署Istio控制平面
+ Note: Istio可以用来运行在多种不同的环境里面，包括Kubernetes、Docker、Consul甚至Bare Mental（物理机上），文本以Kubernetes环境为例来演示Istio。
+ 在部署使用Istio之前，我们需要准备一个Kubernetes的环境，如果只是试用Istio的话，推荐试用Minikube或者Kind来快速搭建Kubernetes环境。
+有了Kubernetes环境并且配置好kubectl之后，我们就可以开始了。
+ 下载并解压最新的Istio发布版本（截至发布本文是的最新Istio版为为1.2.0）
+ root@mcdev1:~# curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.2.0 sh - % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 100 2140 100 2140 0 0 1787 0 0:00:01 0:00:01 --:--:-- 1787 Downloading istio-1.</description>
+    </item>
     
     <item>
       <title>芯片战争</title>
