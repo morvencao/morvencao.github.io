@@ -6,25 +6,10 @@
     <description>Recent content in Notes on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 02 May 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 13 Nov 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>理解Go Context</title>
-      <link>https://morven.life/notes/the_go_context/</link>
-      <pubDate>Thu, 02 May 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://morven.life/notes/the_go_context/</guid>
-      <description>从go1.7开始，正式将context(golang.org/x/net/context)，即“上下文”包引入官方标准库。事实上，我们经常见到它，不论是在一般的服务器代码还是在复杂的并发处理程序中，它都起到很重要的作用。今天，我们就来深入研究一下它的实现以及最佳实践。
-官方文档对于context包的解释是：
- Package context defines the Context type, which carries deadlines, cancelation signals, and other request-scoped values across API boundaries and between processes.
- 简单来说，context包是专门用来简化处理针对单个请求的多个goroutine与请求截止时间、取消信号以及请求域的数据等相关操作。一个简单的例子是在典型的go服务器程序中，每个网络请求都需要创建单独的goroutine进行处理，这些goroutine有可能涉及多个API的调用，进而可能会开启其他的goroutine；由于这些goroutine都是在处理同一个网络请求，所以它们往往需要访问一些共享的资源，比如用户认证token、请求截止时间等；而且如果请求超时或者被取消后，所有的goroutine都应该马上退出并且释放相关的资源。使用context，即“上下文”，可以让go开发者方便地实现这些多个goroutine之间的交互操作，跟踪并控制这些goroutine，并传递request相关的数据、取消goroutine的signal或截止日期等。
-Context结构 context包中核心的数据结构是一种嵌套的结构或者说是单向继承的结构。基于最初的context（根context），开发者可以根据使用场景的不同定义自己的方法和数据来继承根context；正是context这种分层的组织结构，允许开发者在每一层context都定义一些不同的特性，这种层级式的组织也使得context易于扩展，职责清晰。
-context包中的最基础的数据结构是一个Context接口：
-type Context interface { // Done returns a channel that is closed when this Context is canceled // or times out. Done() &amp;lt;-chan struct{} // Err indicates why this context was canceled, after the Done channel // is closed. Err() error // Deadline returns the time when this Context will be canceled, if any.</description>
-    </item>
     
     <item>
       <title>Docker知识点拾遗</title>
@@ -44,7 +29,7 @@ $ curl http://localhost &amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html&amp;gt; &amp;
     </item>
     
     <item>
-      <title>深入理解Go Template</title>
+      <title>5分钟系列 -「Go Template」</title>
       <link>https://morven.life/notes/the_go_template/</link>
       <pubDate>Fri, 24 Aug 2018 00:00:00 +0000</pubDate>
       
@@ -58,24 +43,24 @@ package main import ( &amp;quot;os&amp;quot; &amp;quot;text/template&amp;quot; )
     </item>
     
     <item>
-      <title>GO语言的接口与组合</title>
-      <link>https://morven.life/notes/the_interface_and_composition_in_go/</link>
-      <pubDate>Sat, 12 May 2018 00:00:00 +0000</pubDate>
+      <title>5分钟系列 -「Go Context」</title>
+      <link>https://morven.life/notes/the_go_context/</link>
+      <pubDate>Tue, 12 Jun 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/the_interface_and_composition_in_go/</guid>
-      <description>Go语言接口与鸭子类型的关系 什么是“鸭子类型”？
- If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.
- 以上引用自维基百科的解释描述了什么是“鸭子类型”，所谓鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。
-传统的静态语言，如Java, C++等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。
-举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：
-type IGreeting interface { greeting() } func sayHello(i IGreeting) { i.greeting() }  接下来再定义两个结构体：
-type A struct {} func (a A) greeting() { fmt.Println(&amp;quot;Hi, I am A!&amp;quot;) } type B struct {} func (b B) greeting() { fmt.Println(&amp;quot;Hi, I am B!</description>
+      <guid>https://morven.life/notes/the_go_context/</guid>
+      <description>从go1.7开始，正式将context(golang.org/x/net/context)，即“上下文”包引入官方标准库。事实上，我们经常见到它，不论是在一般的服务器代码还是在复杂的并发处理程序中，它都起到很重要的作用。今天，我们就来深入研究一下它的实现以及最佳实践。
+官方文档对于context包的解释是：
+ Package context defines the Context type, which carries deadlines, cancelation signals, and other request-scoped values across API boundaries and between processes.
+ 简单来说，context包是专门用来简化处理针对单个请求的多个goroutine与请求截止时间、取消信号以及请求域的数据等相关操作。一个简单的例子是在典型的go服务器程序中，每个网络请求都需要创建单独的goroutine进行处理，这些goroutine有可能涉及多个API的调用，进而可能会开启其他的goroutine；由于这些goroutine都是在处理同一个网络请求，所以它们往往需要访问一些共享的资源，比如用户认证token、请求截止时间等；而且如果请求超时或者被取消后，所有的goroutine都应该马上退出并且释放相关的资源。使用context，即“上下文”，可以让go开发者方便地实现这些多个goroutine之间的交互操作，跟踪并控制这些goroutine，并传递request相关的数据、取消goroutine的signal或截止日期等。
+Context结构 context包中核心的数据结构是一种嵌套的结构或者说是单向继承的结构。基于最初的context（根context），开发者可以根据使用场景的不同定义自己的方法和数据来继承根context；正是context这种分层的组织结构，允许开发者在每一层context都定义一些不同的特性，这种层级式的组织也使得context易于扩展，职责清晰。
+context包中的最基础的数据结构是一个Context接口：
+type Context interface { // Done returns a channel that is closed when this Context is canceled // or times out. Done() &amp;lt;-chan struct{} // Err indicates why this context was canceled, after the Done channel // is closed. Err() error // Deadline returns the time when this Context will be canceled, if any.</description>
     </item>
     
     <item>
-      <title>Go Routine &amp; Channel</title>
+      <title>5分钟系列 -「Go Routine &amp; Channel」</title>
       <link>https://morven.life/notes/the_go_channel/</link>
-      <pubDate>Mon, 12 Feb 2018 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 26 Apr 2018 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/the_go_channel/</guid>
       <description>说到Go语言，不得不提一下Go语言的并发编程。Go从语言层面增加了对并发编程的良好支持，不像Python、Java等其他语言使用Thread库来新建线程，同时使用线程安全队列库来共享数据。Go语言对于并发编程的支持依赖于Go语言的两个基础概念：Go Routine和Go Channel。
@@ -85,6 +70,21 @@ Concurrency is about dealing with lots of things at once. Parallelism is about d
  Go Routine Go Routine是Go语言并行编程的核心概念之一，有人将它称作为“协程”，是比Thread更轻量级的并发单元，最小Go Routine只需极少的栈内存(大约是4~5KB)，这样十几个Go Routine的规模可能体现在底层就是五六个线程的大小，最高同时运行成千上万个并发任务；同时，Go语言内部实现了Go Routine之间的内存共享使得它比Thread更高效，更易用，我们不必再使用类似于晦涩难用的线程安全的队列库来同步数据。
 创建Go Routine 要创建一个Go Routine，我们只需要在函数调⽤语句前添加go关键字，Go语言的调度器会自动将其安排到合适的系统线程上执行。实际上，我们在并发编程的过程中经常将一个大的任务分成好几块可以并行的小任务，为每一个小任务创建一个Go Routine。当一个程序启动时，其主函数即在一个单独的Go Routine中运行，我们叫它main routine，然后在主函数中使用go关键字来创建其他的Go Routine：
 func subTask() { i := 0 for { i++ fmt.Printf(&amp;quot;new goroutine: i = %d\n&amp;quot;, i) time.Sleep(1 * time.Second) } } func main() { go subTask() // Create go rountine to execute sub task i := 0 // main goroutine for { i++ fmt.</description>
+    </item>
+    
+    <item>
+      <title>5分钟系列 -「Go Interface &amp; Composition」</title>
+      <link>https://morven.life/notes/the_go_interface_and_composition/</link>
+      <pubDate>Mon, 26 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/the_go_interface_and_composition/</guid>
+      <description>Go语言接口与鸭子类型的关系 什么是“鸭子类型”？
+ If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck.
+ 以上引用自维基百科的解释描述了什么是“鸭子类型”，所谓鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。
+传统的静态语言，如Java, C++等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。
+举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：
+type IGreeting interface { greeting() } func sayHello(i IGreeting) { i.greeting() }  接下来再定义两个结构体：
+type A struct {} func (a A) greeting() { fmt.Println(&amp;quot;Hi, I am A!&amp;quot;) } type B struct {} func (b B) greeting() { fmt.Println(&amp;quot;Hi, I am B!</description>
     </item>
     
     <item>
@@ -111,10 +111,10 @@ IF network_pkg match rule; THEN handler FI  其中规则可以包括匹配数据
     
     <item>
       <title>JSON WEB令牌</title>
-      <link>https://morven.life/notes/the_quick_start_of_jwt/</link>
+      <link>https://morven.life/notes/the_jwt_quick_start/</link>
       <pubDate>Thu, 20 Apr 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/the_quick_start_of_jwt/</guid>
+      <guid>https://morven.life/notes/the_jwt_quick_start/</guid>
       <description>近几年，前后端分离大行其道。在典型的前后端分离的应用架构中，后端主要作为Model层，为前端提供数据访问API。前后端之间的通信需要在不可信（Zero Trust）的异构网络之间进行，为了保证数据安全可靠地在客户端与服务端之间传输，实现服务端的客户端认证就显得非常重要。而HTTP协议本身是无状态的，实现服务端的客户端认证的基础是记录客户端和服务端的对话状态。
 我们最熟悉的服务端认证客户端的方式就是基于Session/Cookie的状态记录方式，服务端在第一次请求时声生成对应的Session发送给客户端保存在Cookie中，同时Session信息还会保存在服务器端，然后客户端之后对于服务器端的每次请求都需要带上Cookie，服务器端取出相应Session并与保存的Session信息进行对比，以实现身份的认证。
 这种模式最大的问题是，没有分布式架构，无法支持横向扩展。如果使用一个服务器，该模式完全没有问题。但是，如果它是服务器群集或面向服务的跨域体系结构的话，则需要一个统一的session数据库库来保存会话数据实现共享，这样负载均衡下的每个服务器才可以正确的验证用户身份。
@@ -122,11 +122,9 @@ IF network_pkg match rule; THEN handler FI  其中规则可以包括匹配数据
 一种解决方案是使用听过持久化Session的基础设施（如Redis），写入Session数据到持久层。收到新的客户端请求后，服务端从从持久层查找对应的Session信息。这种方案的优点在于架构清晰，而缺点是架构修改比较费劲，整个服务的验证逻辑层都需要重写，工作量相对较大。而且由于依赖于持久层的数据库或者问题系统，会有单点风险，如果持久层失败，整个认证体系都会挂掉。
 儿JWT另辟蹊径，基于Token（令牌）认证客户端，也就是说只需要在每次客户端的请求的HTTP头部附上 对应的Token，由服务器端去检查Token的签名来确保Token没有被篡改，这样通过客户端保存数据，而服务器根本不保存会话数据，每个请求都被发送回服务器端认证。
 什么是JWT(JSON Web Token) 根据官方的定义，JWT是一套开放的标准（RFC 7519），它定义了一套简洁（compact）且安全（URL-safe）的方案，可以在客户端和服务器之间传输JSON格式的Token信息。
-JWT工作原理 ![]()
-JWT服务端认证的基本原理是在服务器身份验证之后，将生成一个JSON对象并将其发送回用户，如下所示。
+JWT工作原理 JWT服务端认证的基本原理是在服务器身份验证之后，将生成一个JSON对象并将其发送回用户，如下所示。
 { &amp;quot;username&amp;quot;: &amp;quot;morvencao&amp;quot;, &amp;quot;role&amp;quot;: &amp;quot;Admin&amp;quot;, &amp;quot;expire&amp;quot;: &amp;quot;2017-02-08 12:45:43&amp;quot; }  之后，当客户端与服务器端通信时，客户端需要在请求中发回这个JSON对象。服务器仅依赖于这个JSON对象的内容来认证客户端。为了防止中间人（man-in-middle）篡改数据，服务器将在生成JSON对象时添加签名。但服务器不保存任何会话数据，即服务器变为无状态，使其更容易扩展。
 JWT的数据结构 一个典型的JWT的数据结构看起来如下图所示：
-![]()
 JWT对象为一个很长的字符串，字符之间通过&amp;rdquo;.&amp;ldquo;分隔符分为三个子串，各字串之间也没有换行符。每一个子串表示了一个功能块，总共有以下三个部分：
  JWT头  JWT头部分是一个描述JWT元数据的JSON对象，通常如下所示：
 { &amp;quot;alg&amp;quot;: &amp;quot;HS256&amp;quot;, &amp;quot;typ&amp;quot;: &amp;quot;JWT&amp;quot; }  在上面的代码片段中，alg属性表示签名使用的算法，默认为HMAC SHA256（HS256）；typ属性表示令牌的类型，JWT令牌统一写为JWT；最后，使用Base64URL算法将上述JSON对象转换为字符串保存。
