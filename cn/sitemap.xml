@@ -116,11 +116,6 @@
   </url>
   
   <url>
-    <loc>https://morven.life/notes/the_jwt_quick_start/</loc>
-    <lastmod>2017-04-20T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://morven.life/notes/writing-robust-shell-scripts/</loc>
     <lastmod>2017-02-06T00:00:00+00:00</lastmod>
   </url>
@@ -143,6 +138,11 @@
   <url>
     <loc>https://morven.life/posts/the_data_compression_in_pied_pier/</loc>
     <lastmod>2016-06-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morven.life/notes/the_jwt_quick_start/</loc>
+    <lastmod>2016-04-20T00:00:00+00:00</lastmod>
   </url>
   
   <url>

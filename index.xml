@@ -309,30 +309,6 @@ IF network_pkg match rule; THEN handler FI  其中规则可以包括匹配数据
     </item>
     
     <item>
-      <title>JSON WEB令牌</title>
-      <link>https://morven.life/notes/the_jwt_quick_start/</link>
-      <pubDate>Thu, 20 Apr 2017 00:00:00 +0000</pubDate>
-      
-      <guid>https://morven.life/notes/the_jwt_quick_start/</guid>
-      <description>近几年，前后端分离大行其道。在典型的前后端分离的应用架构中，后端主要作为Model层，为前端提供数据访问API。前后端之间的通信需要在不可信（Zero Trust）的异构网络之间进行，为了保证数据安全可靠地在客户端与服务端之间传输，实现服务端的客户端认证就显得非常重要。而HTTP协议本身是无状态的，实现服务端的客户端认证的基础是记录客户端和服务端的对话状态。
-我们最熟悉的服务端认证客户端的方式就是基于Session/Cookie的状态记录方式，服务端在第一次请求时声生成对应的Session发送给客户端保存在Cookie中，同时Session信息还会保存在服务器端，然后客户端之后对于服务器端的每次请求都需要带上Cookie，服务器端取出相应Session并与保存的Session信息进行对比，以实现身份的认证。
-这种模式最大的问题是，没有分布式架构，无法支持横向扩展。如果使用一个服务器，该模式完全没有问题。但是，如果它是服务器群集或面向服务的跨域体系结构的话，则需要一个统一的session数据库库来保存会话数据实现共享，这样负载均衡下的每个服务器才可以正确的验证用户身份。
-举例来说，某企业同时有两个不同的网站A和网站B提供服务，如何做到用户只需要登录其中一个网站，然后它就会自动登录到另一个网站？
-一种解决方案是使用听过持久化Session的基础设施（如Redis），写入Session数据到持久层。收到新的客户端请求后，服务端从从持久层查找对应的Session信息。这种方案的优点在于架构清晰，而缺点是架构修改比较费劲，整个服务的验证逻辑层都需要重写，工作量相对较大。而且由于依赖于持久层的数据库或者问题系统，会有单点风险，如果持久层失败，整个认证体系都会挂掉。
-儿JWT另辟蹊径，基于Token（令牌）认证客户端，也就是说只需要在每次客户端的请求的HTTP头部附上 对应的Token，由服务器端去检查Token的签名来确保Token没有被篡改，这样通过客户端保存数据，而服务器根本不保存会话数据，每个请求都被发送回服务器端认证。
-什么是JWT(JSON Web Token) 根据官方的定义，JWT是一套开放的标准（RFC 7519），它定义了一套简洁（compact）且安全（URL-safe）的方案，可以在客户端和服务器之间传输JSON格式的Token信息。
-JWT工作原理 JWT服务端认证的基本原理是在服务器身份验证之后，将生成一个JSON对象并将其发送回用户，如下所示。
-{ &amp;quot;username&amp;quot;: &amp;quot;morvencao&amp;quot;, &amp;quot;role&amp;quot;: &amp;quot;Admin&amp;quot;, &amp;quot;expire&amp;quot;: &amp;quot;2017-02-08 12:45:43&amp;quot; }  之后，当客户端与服务器端通信时，客户端需要在请求中发回这个JSON对象。服务器仅依赖于这个JSON对象的内容来认证客户端。为了防止中间人（man-in-middle）篡改数据，服务器将在生成JSON对象时添加签名。但服务器不保存任何会话数据，即服务器变为无状态，使其更容易扩展。
-JWT的数据结构 一个典型的JWT的数据结构看起来如下图所示：
-JWT对象为一个很长的字符串，字符之间通过&amp;rdquo;.&amp;ldquo;分隔符分为三个子串，各字串之间也没有换行符。每一个子串表示了一个功能块，总共有以下三个部分：
- JWT头  JWT头部分是一个描述JWT元数据的JSON对象，通常如下所示：
-{ &amp;quot;alg&amp;quot;: &amp;quot;HS256&amp;quot;, &amp;quot;typ&amp;quot;: &amp;quot;JWT&amp;quot; }  在上面的代码片段中，alg属性表示签名使用的算法，默认为HMAC SHA256（HS256）；typ属性表示令牌的类型，JWT令牌统一写为JWT；最后，使用Base64URL算法将上述JSON对象转换为字符串保存。
- 有效载荷  有效载荷部分，是JWT的主体内容部分，也是一个JSON对象，包含需要传递的数据。JWT指定七个默认字段供选择：
-iss：发行人 exp：到期时间 sub：主题 aud：用户 nbf：在此之前不可用 iat：发布时间 jti：JWT ID用于标识该JWT  除以上默认字段外，我们还可以自定义私有字段，如下例所示：
-{ &amp;quot;sub&amp;quot;: &amp;quot;xxxxxxxxx&amp;quot;, &amp;quot;username&amp;quot;: &amp;quot;morvencao&amp;quot;, &amp;quot;role&amp;quot;: &amp;quot;Admin&amp;quot;, &amp;quot;expire&amp;quot;: &amp;quot;2017-02-08 12:45:43&amp;quot; }   Note: 默认情况下JWT是未加密的，任何人都可以解读其内容，因此不要构建隐私信息字段，存放保密信息，以防止信息泄露。</description>
-    </item>
-    
-    <item>
       <title>编写健壮的Shell脚本</title>
       <link>https://morven.life/notes/writing-robust-shell-scripts/</link>
       <pubDate>Mon, 06 Feb 2017 00:00:00 +0000</pubDate>
@@ -434,6 +410,30 @@ N是一个基于压缩的数据确定的数字，我们很自然地想知道，�
 = ∑ pn*log2(1/pn)
 = E( log2(1/p) )
  结果是每个字符所占用的二进制位的数学期望等于概率倒数的对数的数学期望。</description>
+    </item>
+    
+    <item>
+      <title>JSON WEB令牌</title>
+      <link>https://morven.life/notes/the_jwt_quick_start/</link>
+      <pubDate>Wed, 20 Apr 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/the_jwt_quick_start/</guid>
+      <description>近几年，前后端分离大行其道。在典型的前后端分离的应用架构中，后端主要作为Model层，为前端提供数据访问API。前后端之间的通信需要在不可信（Zero Trust）的异构网络之间进行，为了保证数据安全可靠地在客户端与服务端之间传输，实现服务端的客户端认证就显得非常重要。而HTTP协议本身是无状态的，实现服务端的客户端认证的基础是记录客户端和服务端的对话状态。
+我们最熟悉的服务端认证客户端的方式就是基于Session/Cookie的状态记录方式，服务端在第一次请求时声生成对应的Session发送给客户端保存在Cookie中，同时Session信息还会保存在服务器端，然后客户端之后对于服务器端的每次请求都需要带上Cookie，服务器端取出相应Session并与保存的Session信息进行对比，以实现身份的认证。
+这种模式最大的问题是，没有分布式架构，无法支持横向扩展。如果使用一个服务器，该模式完全没有问题。但是，如果它是服务器群集或面向服务的跨域体系结构的话，则需要一个统一的session数据库库来保存会话数据实现共享，这样负载均衡下的每个服务器才可以正确的验证用户身份。
+举例来说，某企业同时有两个不同的网站A和网站B提供服务，如何做到用户只需要登录其中一个网站，然后它就会自动登录到另一个网站？
+一种解决方案是使用听过持久化Session的基础设施（如Redis），写入Session数据到持久层。收到新的客户端请求后，服务端从从持久层查找对应的Session信息。这种方案的优点在于架构清晰，而缺点是架构修改比较费劲，整个服务的验证逻辑层都需要重写，工作量相对较大。而且由于依赖于持久层的数据库或者问题系统，会有单点风险，如果持久层失败，整个认证体系都会挂掉。
+儿JWT另辟蹊径，基于Token（令牌）认证客户端，也就是说只需要在每次客户端的请求的HTTP头部附上 对应的Token，由服务器端去检查Token的签名来确保Token没有被篡改，这样通过客户端保存数据，而服务器根本不保存会话数据，每个请求都被发送回服务器端认证。
+什么是JWT(JSON Web Token) 根据官方的定义，JWT是一套开放的标准（RFC 7519），它定义了一套简洁（compact）且安全（URL-safe）的方案，可以在客户端和服务器之间传输JSON格式的Token信息。
+JWT工作原理 JWT服务端认证的基本原理是在服务器身份验证之后，将生成一个JSON对象并将其发送回用户，如下所示。
+{ &amp;quot;username&amp;quot;: &amp;quot;morvencao&amp;quot;, &amp;quot;role&amp;quot;: &amp;quot;Admin&amp;quot;, &amp;quot;expire&amp;quot;: &amp;quot;2017-02-08 12:45:43&amp;quot; }  之后，当客户端与服务器端通信时，客户端需要在请求中发回这个JSON对象。服务器仅依赖于这个JSON对象的内容来认证客户端。为了防止中间人（man-in-middle）篡改数据，服务器将在生成JSON对象时添加签名。但服务器不保存任何会话数据，即服务器变为无状态，使其更容易扩展。
+JWT的数据结构 一个典型的JWT的数据结构看起来如下图所示：
+JWT对象为一个很长的字符串，字符之间通过&amp;rdquo;.&amp;ldquo;分隔符分为三个子串，各字串之间也没有换行符。每一个子串表示了一个功能块，总共有以下三个部分：
+ JWT头  JWT头部分是一个描述JWT元数据的JSON对象，通常如下所示：
+{ &amp;quot;alg&amp;quot;: &amp;quot;HS256&amp;quot;, &amp;quot;typ&amp;quot;: &amp;quot;JWT&amp;quot; }  在上面的代码片段中，alg属性表示签名使用的算法，默认为HMAC SHA256（HS256）；typ属性表示令牌的类型，JWT令牌统一写为JWT；最后，使用Base64URL算法将上述JSON对象转换为字符串保存。
+ 有效载荷  有效载荷部分，是JWT的主体内容部分，也是一个JSON对象，包含需要传递的数据。JWT指定七个默认字段供选择：
+iss：发行人 exp：到期时间 sub：主题 aud：用户 nbf：在此之前不可用 iat：发布时间 jti：JWT ID用于标识该JWT  除以上默认字段外，我们还可以自定义私有字段，如下例所示：
+{ &amp;quot;sub&amp;quot;: &amp;quot;xxxxxxxxx&amp;quot;, &amp;quot;username&amp;quot;: &amp;quot;morvencao&amp;quot;, &amp;quot;role&amp;quot;: &amp;quot;Admin&amp;quot;, &amp;quot;expire&amp;quot;: &amp;quot;2017-02-08 12:45:43&amp;quot; }   Note: 默认情况下JWT是未加密的，任何人都可以解读其内容，因此不要构建隐私信息字段，存放保密信息，以防止信息泄露。</description>
     </item>
     
     <item>
