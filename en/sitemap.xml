@@ -10,6 +10,7 @@
   <url>
     <loc>https://morven.life/en/</loc>
     <lastmod>2019-03-18T00:00:00+00:00</lastmod>
+    <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
@@ -25,6 +26,7 @@
   <url>
     <loc>https://morven.life/en/posts/</loc>
     <lastmod>2019-03-18T00:00:00+00:00</lastmod>
+    <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
@@ -44,6 +46,7 @@
   
   <url>
     <loc>https://morven.life/en/categories/</loc>
+    <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
@@ -58,6 +61,7 @@
   
   <url>
     <loc>https://morven.life/en/tags/</loc>
+    <priority>0</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="cn"
