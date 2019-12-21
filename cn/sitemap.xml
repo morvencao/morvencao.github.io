@@ -4,7 +4,7 @@
   
   <url>
     <loc>https://morven.life/</loc>
-    <lastmod>2019-10-26T00:00:00+00:00</lastmod>
+    <lastmod>2019-12-21T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
@@ -20,7 +20,7 @@
   
   <url>
     <loc>https://morven.life/posts/</loc>
-    <lastmod>2019-10-26T00:00:00+00:00</lastmod>
+    <lastmod>2019-12-21T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
@@ -32,6 +32,11 @@
                 hreflang="cn"
                 href="https://morven.life/posts/"
                 />
+  </url>
+  
+  <url>
+    <loc>https://morven.life/posts/the_year_of_2019/</loc>
+    <lastmod>2019-12-21T00:00:00+00:00</lastmod>
   </url>
   
   <url>
