@@ -13,10 +13,10 @@
     
     <item>
       <title>Linux网络数据包的接收与发送过程</title>
-      <link>https://morven.life/notes/networking-1-linux-virtual-device/</link>
+      <link>https://morven.life/notes/networking-1-linux-pkg-snd-rcv/</link>
       <pubDate>Mon, 27 Jan 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://morven.life/notes/networking-1-linux-virtual-device/</guid>
+      <guid>https://morven.life/notes/networking-1-linux-pkg-snd-rcv/</guid>
       <description>早在农历新年之前，就构思着将近半年重拾的网络基础整理成成一个系列，正好赶上武汉疫情在春节假期爆发，闲来无事，于是开始这一系列的笔记。
 我的整体思路是：
  第一篇笔记会简单介绍Linux网络数据包接收和发送过程，但不涉及TCP/IP协议栈的细节知识，如果有需要了解这些基础知识的读者，我推荐去阅读阮一峰老师的互联网协议的系列文章。 接下来，我会总结常用的Linux虚拟设备，同时会结合Linux自带的新网络工具包iproute2来操作这些常用的网络设备。 有了前面的基础知识，我们再来了解几种常用的容器网络实现远离。 最后，我们深入探讨一下K8s平台中主流的网络实现。  其实，严格上来说，这种学习思路其实很“急功近利”，但是，对于不太了解网络基础知识和Linux内核原理的人来说，这反而是一种很有效的学习方式。但是，私以为学习过程不只应该由浅入深，更应该螺旋向前迭代，温故而知新，才能获益良多。
