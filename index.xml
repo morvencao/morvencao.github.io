@@ -6,10 +6,22 @@
     <description>Recent content on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 28 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 29 Jan 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>IPIP隧道实践</title>
+      <link>https://morven.life/notes/networking-3-ipip/</link>
+      <pubDate>Wed, 29 Jan 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/networking-3-ipip/</guid>
+      <description>上一篇笔记中，我们在介绍TUN/TAP网络设备的时候介绍了一种典型的VPN实现拓扑，但是并没有实践TUN/TAP虚拟网络设备具体在linux中怎么发挥实际的功能。这篇笔记我们就来看看在云计算领域中一种非常典型的IPIP隧道试图和通过TUN设备来实现。
+IPIP隧道 上一篇笔记中我们也提到了，TUN设备能将三层（IP）网络包封装在另外一个三层网络包之中，看起来通过TUN设备发送出来的数据包会像会这样：
+MAC: xx:xx:xx:xx:xx:xx IP Header: &amp;lt;new destination IP&amp;gt; IP Body: IP: &amp;lt;original destination IP&amp;gt; TCP: stuff HTTP: stuff  这就是典型的IPIP隧道数据包的结构。Linux原生支持好几种不同的IPIP隧道类型，但都依赖于TUN虚拟网络设备，我们可以通过命令ip tunnel help来查看IPIP隧道的相关类型以及操作：
+# ip tunnel help Usage: ip tunnel { add | change | del | show | prl | 6rd } [ NAME ] [ mode { ipip | gre | sit | isatap | vti } ] [ remote ADDR ] [ local ADDR ] [ [i|o]seq ] [ [i|o]key KEY ] [ [i|o]csum ] [ prl-default ADDR ] [ prl-nodefault ADDR ] [ prl-delete ADDR ] [ 6rd-prefix ADDR ] [ 6rd-relay_prefix ADDR ] [ 6rd-reset ] [ ttl TTL ] [ tos TOS ] [ [no]pmtudisc ] [ dev PHYS_DEV ] Where: NAME := STRING ADDR := { IP_ADDRESS | any } TOS := { STRING | 00.</description>
+    </item>
     
     <item>
       <title>Linux虚拟网络设备</title>
@@ -34,7 +46,7 @@ TUN/TAP TUN/TAP虚拟网络设备一端连着协议栈，另外一端不是物�
     </item>
     
     <item>
-      <title>Linux网络数据包的接收与发送过程</title>
+      <title>Linux数据包的接收与发送过程</title>
       <link>https://morven.life/notes/networking-1-linux-pkg-snd-rcv/</link>
       <pubDate>Mon, 27 Jan 2020 00:00:00 +0000</pubDate>
       
