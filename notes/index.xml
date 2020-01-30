@@ -6,10 +6,29 @@
     <description>Recent content in Notes on Morven&#39;s Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 29 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 30 Jan 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://morven.life/notes/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>主流容器网络总结与实践</title>
+      <link>https://morven.life/notes/networking-4-docker/</link>
+      <pubDate>Thu, 30 Jan 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://morven.life/notes/networking-4-docker/</guid>
+      <description>所谓容器网络需要结局的两大核心问题是：
+ 容器IP地址的管理 容器之间的相互通信  其中，容器IP地址的管理包括容器IP地址的分配与回收，而容器之间的相互通信包括同一主机容器之间和跨主机容器之间通信两种场景。这两个问题也不能完全分开来看，因为不同的解决方案往往要同时考虑以上两点，我们在这篇笔记中将重点关注第二个问题。另外容器网络的发展已经相对成熟，也有很多相关的理论介绍文章，所以这篇笔记会尝试从实践的角度主流的容器网络实现原理。
+关于容器网络，Docker与Kubernetes采用了不同的网络模型：
+ Docker采用的CNM(Container Network Model) Kunernetes支持的CNI模型(Container Network Interface)  Docker通过libnetwork实现了CNM，是Docker自带的网络模型，可以通过docker命令直接管理。而CNI并不是Docker原生的，它是为容器技术设计的通用型网络接口，因此CNI接口可以很容易地从高层向底层调用，但从底层到高层却不是很方便，所以一些常见的CNI插件很难在Docker层面激活。这两个模型全都支持插件化，也就是说我们每个人都可以按照这两套网络规范来编写自己的具体网络实现。
+我们省去这两套规范的具体介绍，直接从要解决的网络问题出发，来看看主流的容器网络实现原理。
+host网络 不管是对外暴露容器内的服务还是容器之间的跨主机通信，我们能想到的最直观的解决方案就是直接使用宿主机host网络，这时，容器完全复用复用宿主机的网络设备以及协议栈，容器的IP就是主机的IP，这样，只要宿主机主机能通信，容器也就自然能通信。但是，这样做的问题也很大，最直接问题就是端口管理混乱，端口冲突。
+docker原生支持的网络模式可以通过docker network ls来看：
+# docker network ls NETWORK ID NAME DRIVER SCOPE f559b082c95f bridge bridge local 5f11ccbbf488 host host local 97aedfe8792d none null local  可以看到三种网络模型，在创建容器的时候可以通过--network来指定要使用的模型。其中bridge是默认的网络模型，我们后面将会模拟实现bridge模型；nono不创建任何网络，host网络模型是我们即将要验证的，它不会创建新的netns网络命名空间。
+在开始实验之前，我们需要确定宿主机上没有其他进程在监听80端口：
+# lsof -i tcp:80  然后我们创建容器运行一个nginx实例，并通过--network来指定要使用的host模型：
+# docker run -d --name mynginx --network host nginx:latest 87f1e766410c4bd2644a007115628462751f779fc95252fffb3d7183bb59747c # lsof -i tcp:80 COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME nginx 29804 root 6u IPv4 109710 0t0 TCP *:http (LISTEN) nginx 29839 systemd-resolve 6u IPv4 109710 0t0 TCP *:http (LISTEN) # ls /var/run/docker/netns/ default  可以看到，宿主机的80端口在容器启动之后就打开了，并确定宿主机网络中没有新的netns网络命名空间创建出来。</description>
+    </item>
     
     <item>
       <title>IPIP隧道实践</title>
