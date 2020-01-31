@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/networking-2-linux-virtual-devices/"><link rel="canonical" href="https://morven.life/notes/networking-2-linux-virtual-devices/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/networking-2-virtual-devices/"><link rel="canonical" href="https://morven.life/notes/networking-2-virtual-devices/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -18,7 +18,7 @@
       "copyrightYear" : "2020",
       "datePublished": "2020-01-28 00:00:00 \x2b0000 UTC",
       "dateModified" : "2020-01-28 00:00:00 \x2b0000 UTC",
-      "url" : "https:\/\/morven.life\/notes\/networking-2-linux-virtual-devices\/",
+      "url" : "https:\/\/morven.life\/notes\/networking-2-virtual-devices\/",
       "keywords" : [  ]
   }</script><title>Linux虚拟网络设备 - Morven&#39;s Life</title><meta property="og:title" content="Linux虚拟网络设备 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="随着容器逐步取代虚拟机，成为现在云基础架构的标准，这些容器的网络管理模块都离不开Linux虚拟网络设备。事实上，了解常用的Linux虚拟网络设备对于我们理解容器网络以及其他依赖于容器的基础架构网络实现都大有裨益。现在开始，我们就来看看常见的Linux虚拟网络设备有哪些以及它们的使用场景。
 虚拟网络设备 通过上一篇笔记我们也知道，网络设备的驱动程序并不直接与内核中的协议栈交互，而是通过内核的网络设备管理模块。这样做的好处是，驱动程序不需要了解协议栈的细节，协议栈也不需要针对特定驱动处理数据包。

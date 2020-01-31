@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/networking-4-docker-summary/"><link rel="canonical" href="https://morven.life/notes/networking-4-docker-summary/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/networking-4-docker/"><link rel="canonical" href="https://morven.life/notes/networking-4-docker/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -18,7 +18,7 @@
       "copyrightYear" : "2020",
       "datePublished": "2020-01-30 00:00:00 \x2b0000 UTC",
       "dateModified" : "2020-01-30 00:00:00 \x2b0000 UTC",
-      "url" : "https:\/\/morven.life\/notes\/networking-4-docker-summary\/",
+      "url" : "https:\/\/morven.life\/notes\/networking-4-docker\/",
       "keywords" : [  ]
   }</script><title>容器网络(一) - Morven&#39;s Life</title><meta property="og:title" content="容器网络(一) - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="所谓容器网络需要结局的两大核心问题是：
  容器IP地址的管理 容器之间的相互通信  其中，容器IP地址的管理包括容器IP地址的分配与回收，而容器之间的相互通信包括同一主机容器之间和跨主机容器之间通信两种场景。这两个问题也不能完全分开来看，因为不同的解决方案往往要同时考虑以上两点。容器网络的发展已经相对成熟，这篇笔记先对主流容器网络模型做一些概述，然后将进一步对典型的容器网络模型展开实践。
