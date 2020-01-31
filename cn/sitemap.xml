@@ -4,7 +4,7 @@
   
   <url>
     <loc>https://morven.life/</loc>
-    <lastmod>2020-01-30T00:00:00+00:00</lastmod>
+    <lastmod>2020-01-31T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
@@ -20,12 +20,17 @@
   
   <url>
     <loc>https://morven.life/notes/</loc>
-    <lastmod>2020-01-30T00:00:00+00:00</lastmod>
+    <lastmod>2020-01-31T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://morven.life/notes/networking-4-docker/</loc>
+    <loc>https://morven.life/notes/networking-5-docker-multi-hosts/</loc>
+    <lastmod>2020-01-31T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morven.life/notes/networking-4-docker-sigle-host/</loc>
     <lastmod>2020-01-30T00:00:00+00:00</lastmod>
   </url>
   
