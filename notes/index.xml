@@ -38,14 +38,12 @@
 CNM vs CNI 关于容器网络，Docker与Kubernetes分别提出了不同的规范标准：
  Docker采用的CNM(Container Network Model) Kunernetes支持的CNI模型(Container Network Interface)  CNM基于libnetwork，是Docker内置的模型规范，它的总体架构如下图所示：
 可以看到，CNM规范主要定义了以下三个组件：
- Sandbox: 每个Sandbox包一个容器网络栈(network stack)的配置：容器的网口、路由表和DNS设置等，Sanbox可以通过Linux网络命名空间netns来实现 Endpoint: 每个Sandbox通过Endpoint加入到一个Network里，Endpoint可以通过Linux虚拟网络设备veth对来实现 Network: 一组能相互直接通信的Endpoint，Network可以通过Linux网桥设备bridge，VLAN等实现  可以看到，底层实现原理还是我们之前介绍过的Linux虚拟网络设备，网络命名空间等。但是，为什么Kubernetes没有采用CNM规范标准；而是选择CNI，感兴趣的话可以去看看Kubernetes的文章Why Kubernetes doesn’t use libnetwork，总的来说，不使用CNM最关键的一点是，是因为Kubernetes考虑到CNM在一定程度上和container runtime耦合度太高，因此以Kubernetes为领导的其他一些组织开始制定新的CNI规范。CNI并不是Docker原生支持的，它是为容器技术设计的通用型网络接口，因此CNI接口可以很容易地从高层向底层调用，但从底层到高层却不是很方便，所以一些常见的CNI插件很难在Docker层面激活。但是这两个模型全都支持插件化，也就是说我们每个人都可以按照这两套网络规范来编写自己的具体网络实现。
-我们省去这两套规范的具体介绍，直接从要解决的网络问题出发，先来看看单一主机上容器网络互通的实现原理。
-docker原生支持的网络模式可以通过docker network ls来看：
+ Sandbox: 每个Sandbox包一个容器网络栈(network stack)的配置：容器的网口、路由表和DNS设置等，Sanbox可以通过Linux网络命名空间netns来实现 Endpoint: 每个Sandbox通过Endpoint加入到一个Network里，Endpoint可以通过Linux虚拟网络设备veth对来实现 Network: 一组能相互直接通信的Endpoint，Network可以通过Linux网桥设备bridge，VLAN等实现  可以看到，底层实现原理还是我们之前介绍过的Linux虚拟网络设备，网络命名空间等。CNM规范的典型场景是这样的：用户可以创建一个或多个Network，一个容器Sandbox可以通过Endpoint加入到一个或多个Network，同一个Network中容器Sanbox可以通信，不同Network中的容器Sandbox隔离。这样就可以实现从容器与网络的解耦，也就是锁，在创建容器之前，可以先创建网络，然后决定让容器加入哪个网络。
+但是，为什么Kubernetes没有采用CNM规范标准，而是选择CNI，感兴趣的话可以去看看Kubernetes的官方博客文章Why Kubernetes doesn’t use libnetwork，总的来说，不使用CNM最关键的一点是，是因为Kubernetes考虑到CNM在一定程度上和container runtime耦合度太高，因此以Kubernetes为领导的其他一些组织开始制定新的CNI规范。CNI并不是Docker原生支持的，它是为容器技术设计的通用型网络接口，因此CNI接口可以很容易地从高层向底层调用，但从底层到高层却不是很方便，所以一些常见的CNI插件很难在Docker层面激活。但是这两个模型全都支持插件化，也就是说我们每个人都可以按照这两套网络规范来编写自己的具体网络实现。
+docker通过libnetwork原生支持的网络模式可以通过docker network ls来看：
 # docker network ls NETWORK ID NAME DRIVER SCOPE f559b082c95f bridge bridge local 5f11ccbbf488 host host local 97aedfe8792d none null local  可以看到三种网络模型，在创建容器的时候可以通过--network来指定要使用的模型。其中bridge是默认的网络模型，我们接下来将会介绍并模拟实现bridge模型；nono不创建任何网络，host网络模型即使用主机网络，它不会创建新的netns网络命名空间。
-bridge网络 bridge桥接网络是docker默认的网络模型，如果我们在创建容器的时候不指定网络模型，则默认使用bridge。bridge网络模型可以解决单宿主机上的容器之间的通信以及容器服务对外的暴露，实现原理也很简单：
-可以看到，bridge网络模型主要依赖于大名鼎鼎的docker0网桥以及veth虚拟网络设备对实现，通过之前笔记对于linux虚拟网络设备的了解，我们知道veth设备对对于从一个设备发出的数据包，会直接出现在另一个网络设备上，即使不在一个netns网络命名空间中，所以将veth设备对实际上是连接不同netns网络命名空间的”网线”，docker0网桥设备充当不同容器网络的网关。事实上，我们一旦而当以bridge网络模式创建容器时，会自动创建相应的veth设备对，其中一端连接到docker0网桥，另外一端连接到容器网络的eth0虚拟网卡。
-首先我们在安装了docker的宿主机上查看网桥设备docker0和路由规则：
-# ip link show docker0 4: docker0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default link/ether 02:42:59:c8:67:c0 brd ff:ff:ff:ff:ff:ff # ip route ls .</description>
+ Note: 如果enable了docker swarm，那么你还会看到overlay网络模型，后面我们会详细介绍docker原生overlay网络模型的实现原理。
+ bridge网络 bridge桥接网络是docker默认的网络模型，如果我们在创建容器的时候不指定网络模型，则默认使用bridge。bridge网络模型可以解决单宿主机上的容器之间的通信以及容器服务对外的暴露，实现原理也很简单：</description>
     </item>
     
     <item>
