@@ -1,0 +1,110 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/from-container-to-pod/"><link rel="canonical" href="https://morven.life/notes/from-container-to-pod/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/morven.life\/"
+      },
+      "articleSection" : "notes",
+      "name" : "从docker容器到pod",
+      "headline" : "从docker容器到pod",
+      "description" : "很多人应该像我一样，第一次接触docker的概念，都会听到过：docker技术比虚拟机技术更为轻便、快捷，docker容器本质上是进程，甚至我们或多或少接受了docker技术基于linux内核中两个非常重要的特性，namespace和cgroup。那么，namespace和cgroup到底是怎么来隔离docker容器进程的呢？今天我们就来一探究竟。\ndocker容器 在了解docker容器进程怎么隔离之前，我们先来看看linux内核中的namespace和cgroup到底是什么。\nnamespace 如果让我们自己实现一种类似于vm一样的虚拟技术，我们首先会想到的是怎么解决每个vm的进程与宿主机进程的隔离问题。2008年发布的linux内核v2.6.24带来的linux namespace特性使得我们可以对linux做各种各样的隔离。\n熟悉chroot命令的想哦同学都应该大体能猜到linux namespace是如何发挥作用的，在linux系统中，系统默认的目录结构都是以根目录\/开始的，chroot命令用来以指定的位置作为\/来运行指令。与此类似，了解linux启动流程的人都知道在linux启动的时候又一个Pid为1的init进程，其他所有的进程都由此衍生而来，init和其他衍生而来的进程形成以init进程为根节点树状结构，在同一个进程树里的进程只有有足够的权限就可以审查甚至终止其他进程，这样，显然会带来安全性问题。而PID namespace（linux namespace的一种）允许我们创建单独的进程树，新进程树里面有自己的PID为1的进程，该进程一般为创建新进程树的时候指定。PID namespace使得不同进程树里面的进程相互直接不能直接访问，提供了进程间的隔离，甚至可以创建嵌套的进程树：\n在linux中，创建namespace很简单，只需要通过unshare命令并且指定创建的namespace的类型以及其他参数，比如下面的命令就会创建新的pid namespace并且在其中运行zsh：\n# unshare --fork --pid --mount-proc zsh  因为zsh是交互式的shell，所以你会发现自己进入了一个新的世界(pid namespace)，我们可以在新的世界里再运行新的进程sleep：\n# ps aux USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND root 1 8.4 0.0 42676 5684 pts\/1 S 04:06 0:00 zsh root 23 0.0 0.0 39084 3252 pts\/1 R\x2b 04:06 0:00 ps aux # sleep 100000  启动sleep进程前只有两个个进程在运行，zsh和ps，而且zsh进程的pid为1，所有其他进程都是它的子进程。但是，如果你打开新的终端并且查看此zsh进程会发现它的pid并不是1：\n# ps -ef | grep zsh root 7180 7179 0 04:06 pts\/1 00:00:00 zsh .",
+      "inLanguage" : "en-US",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
+      "copyrightYear" : "2020",
+      "datePublished": "2020-02-03 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2020-02-03 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/from-container-to-pod\/",
+      "keywords" : [  ]
+  }</script><title>从docker容器到pod - Morven&#39;s Life</title><meta property="og:title" content="从docker容器到pod - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="很多人应该像我一样，第一次接触docker的概念，都会听到过：docker技术比虚拟机技术更为轻便、快捷，docker容器本质上是进程，甚至我们或多或少接受了docker技术基于linux内核中两个非常重要的特性，namespace和cgroup。那么，namespace和cgroup到底是怎么来隔离docker容器进程的呢？今天我们就来一探究竟。
+docker容器 在了解docker容器进程怎么隔离之前，我们先来看看linux内核中的namespace和cgroup到底是什么。
+namespace 如果让我们自己实现一种类似于vm一样的虚拟技术，我们首先会想到的是怎么解决每个vm的进程与宿主机进程的隔离问题。2008年发布的linux内核v2.6.24带来的linux namespace特性使得我们可以对linux做各种各样的隔离。
+熟悉chroot命令的想哦同学都应该大体能猜到linux namespace是如何发挥作用的，在linux系统中，系统默认的目录结构都是以根目录/开始的，chroot命令用来以指定的位置作为/来运行指令。与此类似，了解linux启动流程的人都知道在linux启动的时候又一个Pid为1的init进程，其他所有的进程都由此衍生而来，init和其他衍生而来的进程形成以init进程为根节点树状结构，在同一个进程树里的进程只有有足够的权限就可以审查甚至终止其他进程，这样，显然会带来安全性问题。而PID namespace（linux namespace的一种）允许我们创建单独的进程树，新进程树里面有自己的PID为1的进程，该进程一般为创建新进程树的时候指定。PID namespace使得不同进程树里面的进程相互直接不能直接访问，提供了进程间的隔离，甚至可以创建嵌套的进程树：
+在linux中，创建namespace很简单，只需要通过unshare命令并且指定创建的namespace的类型以及其他参数，比如下面的命令就会创建新的pid namespace并且在其中运行zsh：
+# unshare --fork --pid --mount-proc zsh  因为zsh是交互式的shell，所以你会发现自己进入了一个新的世界(pid namespace)，我们可以在新的世界里再运行新的进程sleep：
+# ps aux USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND root 1 8.4 0.0 42676 5684 pts/1 S 04:06 0:00 zsh root 23 0.0 0.0 39084 3252 pts/1 R&#43; 04:06 0:00 ps aux # sleep 100000  启动sleep进程前只有两个个进程在运行，zsh和ps，而且zsh进程的pid为1，所有其他进程都是它的子进程。但是，如果你打开新的终端并且查看此zsh进程会发现它的pid并不是1：
+# ps -ef | grep zsh root 7180 7179 0 04:06 pts/1 00:00:00 zsh ."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">从docker容器到pod</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2020-02-03 00:00:00 UTC">03 Feb 2020</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>很多人应该像我一样，第一次接触docker的概念，都会听到过：docker技术比虚拟机技术更为轻便、快捷，docker容器本质上是进程，甚至我们或多或少接受了docker技术基于linux内核中两个非常重要的特性，namespace和cgroup。那么，namespace和cgroup到底是怎么来隔离docker容器进程的呢？今天我们就来一探究竟。</p><h2 id="docker容器">docker容器</h2><p>在了解docker容器进程怎么隔离之前，我们先来看看linux内核中的namespace和cgroup到底是什么。</p><h3 id="namespace">namespace</h3><p>如果让我们自己实现一种类似于vm一样的虚拟技术，我们首先会想到的是怎么解决每个vm的进程与宿主机进程的隔离问题。2008年发布的linux内核v2.6.24带来的linux namespace特性使得我们可以对linux做各种各样的隔离。</p><p>熟悉<code>chroot</code>命令的想哦同学都应该大体能猜到linux namespace是如何发挥作用的，在linux系统中，系统默认的目录结构都是以根目录<code>/</code>开始的，<code>chroot</code>命令用来以指定的位置作为<code>/</code>来运行指令。与此类似，了解<a href="https://morven.life/notes/the_knowledge_of_linux/">linux启动流程</a>的人都知道在linux启动的时候又一个Pid为1的<code>init</code>进程，其他所有的进程都由此衍生而来，<code>init</code>和其他衍生而来的进程形成以<code>init</code>进程为根节点树状结构，在同一个进程树里的进程只有有足够的权限就可以审查甚至终止其他进程，这样，显然会带来安全性问题。而PID namespace（linux namespace的一种）允许我们创建单独的进程树，新进程树里面有自己的PID为<code>1</code>的进程，该进程一般为创建新进程树的时候指定。PID namespace使得不同进程树里面的进程相互直接不能直接访问，提供了进程间的隔离，甚至可以创建嵌套的进程树：</p><p><img src="https://i.loli.net/2020/02/04/34f2VPtHXoTKcjw.jpg" alt="pid-namespace.jpg"></p><p>在linux中，创建namespace很简单，只需要通过<code>unshare</code>命令并且指定创建的namespace的类型以及其他参数，比如下面的命令就会创建新的pid namespace并且在其中运行<code>zsh</code>：</p><pre><code># unshare --fork --pid --mount-proc zsh
+</code></pre><p>因为<code>zsh</code>是交互式的shell，所以你会发现自己进入了一个新的世界(pid namespace)，我们可以在新的世界里再运行新的进程<code>sleep</code>：</p><pre><code># ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  8.4  0.0  42676  5684 pts/1    S    04:06   0:00 zsh
+root        23  0.0  0.0  39084  3252 pts/1    R+   04:06   0:00 ps aux
+# sleep 100000
+
+</code></pre><p>启动<code>sleep</code>进程前只有两个个进程在运行，<code>zsh</code>和<code>ps</code>，而且<code>zsh</code>进程的pid为<code>1</code>，所有其他进程都是它的子进程。但是，如果你打开新的终端并且查看此<code>zsh</code>进程会发现它的pid并不是<code>1</code>：</p><pre><code># ps -ef | grep zsh
+root      7180  7179  0 04:06 pts/1    00:00:00 zsh
+...
+# ps -ef | grep sleep
+root      7851  7180  0 04:10 pts/1    00:00:00 sleep 100000
+...
+</code></pre><p>有此可见，通过父进程树是可以看到子进程树里面的进程的，但是子进程树里面看不到父进程树里面的进程。</p><p>事实上，除了pid namespace，linux内核有提供了很多不同类型的namespace：</p><ul><li>Mount(mnt): Mount namespace可以在不影响宿主机文件系统的基础上挂载或者取消挂载文件系统</li><li>PID(Process ID): 在一个pid namespace中，第一个进程的pid为1，所有在此namespace中的其他进程都是此进程的子进程。操作系统级别的其他进程不需要在此进程中</li><li>network(netns): network namespace会虚拟出新的内核协议栈，每个network namespace包括自己的网络设备，路由表等</li><li>IPC(Interprocess Communication): 用来隔离处于不同IPC namespace的进程间的通信资源，如共享内存等</li><li>UTS: UTS namespace用于隔离hostname与domainname</li></ul><p>如果运行的linux环境提供<a href="https://en.wikipedia.org/wiki/Util-linux">util-linux</a>，那么就可以通过它提供的<code>lsns</code>命令来查看当前的linux namespace：</p><pre><code># lsns -t pid -o NS,PID,PATH
+        NS   PID PATH
+4026531836     1 /proc/1/ns/pid
+4026532445  7180 /proc/7180/ns/pid
+</code></pre><p>想要进入到某个linux namespace，需要使用<code>nsenter</code>命令，是不是和<code>docker exec</code>有点儿类似？</p><pre><code># nsenter --pid=/proc/7180/ns/pid echo $SHELL
+/bin/bash
+</code></pre><p>不对啊，应该是<code>bash</code>才对啊，为什么会这样呢？仔细看了doc才明白原来是<code>nsenter</code>只是进入到目标namespace，但是<code>SHELL</code>环境变量依赖于上下文，也就是说<code>nsenter</code>只是切换了namespace，但并没有切换程序运行的上下文环境。与之对应的<code>docker exec</code>会完整的切换namespace和运行上下文，所以我们能够使用<code>docker exec</code>进行各种debug操作。</p><h3 id="cgroup">cgroup</h3><p>上面提到一个进程树里面的进程不能与其他进程树里的进程交互，其实这是不完全对的。举例来说，一个进程树里面的进程会占有宿主机的资源(CPU/Memory/NetworkIO/DisIO&hellip;)，这样有可能导致其他的进程得不到足够的资源。linux内核通过<a href="https://en.wikipedia.org/wiki/Cgroups">cgroup</a>来限制进程能占用的资源数量，这些资源包括CPU，内存，网络带宽，磁盘IO等。需要说明的是namespace和sgroup是两个不同的特性，上面提到的各种namespace有可能只用到其中的一种或者两种，namespace和cgroup可以一起合作来完成对一组进程的管理。</p><p>让我们开始创建一个cgroup：</p><pre><code># useradd morven
+# cgcreate -a morven -g memory:mycgrp
+</code></pre><p>通过以上命令我们创建了名为<code>memory:mycgrp</code>的cgroup，owner设为<code>morven</code>用户，我们来看看对于<code>memory:mycgrp</code>默认的资源限制：</p><pre><code># ls -l /sys/fs/cgroup/memory/mycgrp/
+total 0
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 cgroup.clone_children
+--w--w--w- 1 morven root 0 Feb  4 05:02 cgroup.event_control
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 cgroup.procs
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.failcnt
+--w------- 1 morven root 0 Feb  4 05:02 memory.force_empty
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.failcnt
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.limit_in_bytes
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.max_usage_in_bytes
+-r--r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.slabinfo
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.tcp.failcnt
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.tcp.limit_in_bytes
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.tcp.max_usage_in_bytes
+-r--r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.tcp.usage_in_bytes
+-r--r--r-- 1 morven root 0 Feb  4 05:02 memory.kmem.usage_in_bytes
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.limit_in_bytes
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.max_usage_in_bytes
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.move_charge_at_immigrate
+-r--r--r-- 1 morven root 0 Feb  4 05:02 memory.numa_stat
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.oom_control
+---------- 1 morven root 0 Feb  4 05:02 memory.pressure_level
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.soft_limit_in_bytes
+-r--r--r-- 1 morven root 0 Feb  4 05:02 memory.stat
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.swappiness
+-r--r--r-- 1 morven root 0 Feb  4 05:02 memory.usage_in_bytes
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 memory.use_hierarchy
+-rw-r--r-- 1 morven root 0 Feb  4 05:02 notify_on_release
+-rw-r--r-- 1 root   root 0 Feb  4 05:02 tasks
+</code></pre><p>默认是以<code>bytes</code>为单位，我们来限制<code>memory:mycgrp</code>最多使用<code>10MB</code>的内存：</p><pre><code># echo 10000000 &gt; /sys/fs/cgroup/memory/mycgrp/memory.limit_in_bytes
+</code></pre><p>接下来，我们使用<code>memory:mycgrp</code>这个cgroup创建进程运行java程序：</p><pre><code>cgexec -g memory:mycgrp java -jar test.jar
+error: Could not execute process `java -jar test.jar` (never executed)
+
+Caused by:
+  Cannot allocate memory (os error 12)
+</code></pre><p>可以看到，内存的限制导致我们不能在<code>memory:mycgrp</code>这个cgroup运行消耗内存比较大的java程序。</p><p>实际上，除了限制进程对宿主机各种资源的消耗大小，有时候我们还需要限制进程可以进行哪些系统调用，比如说，我们要限制特性的应用程序不能访问网络，那么就需要linux内核提供的另外一个功能<a href="https://en.wikipedia.org/wiki/Seccomp">seccomp-bpf</a>，在此就不展开来说。</p><h3 id="组合成docker容器">组合成docker容器</h3><p>有了上面介绍的知识，我们很容易想到docker会为每一个容器创建namespace和cgroup的组合来实现隔离：</p><p><img src="https://i.loli.net/2020/02/04/j27FwnWPNZaU9fe.jpg" alt="docker-namespace-cgroup.jpg"></p><p>除了需要挂载宿主机的文件系统或者与宿主机做端口映射之外，每个容器实际上都是独立的namespace和cgroup的组合。但是，通过一些命令行参数，我们完全可以让多个容器使用同一个namespace：</p><pre><code>cat &lt;&lt;EOF &gt;&gt; nginx.conf
+error_log stderr;
+events { worker_connections  1024; }
+http {
+    access_log /dev/stdout combined;
+    server {
+        listen 80 default_server;
+        server_name example.com www.example.com;
+        location / {
+            proxy_pass http://127.0.0.1:2368;
+        }
+    }
+}
+EOF
+# docker run --ipc=shareable -d --name nginx -v `pwd`/nginx.conf:/etc/nginx/nginx.conf -p 8080:80 nginx
+</code></pre><p>接下来，我们启动一个容器运行<a href="https://github.com/TryGhost/Ghost">ghost</a>，但是我们添加了额外的参数保证<code>ghost</code>容器加入到<code>nginx</code>容器的namespace：</p><pre><code># docker run -d --name huge -v $(pwd):/src --net=container:nginx --ipc=container:nginx --pid=container:nginx ghost
+</code></pre><p>现在就可以访问<code>http://localhost:8080/</code>就可以看到ghost的页面，实际声这时候<code>nginx</code>容器可以将本地请求代理给<code>ghost</code>容器，通过指定namespace参数我们可以让多个容器运行在相同的namespace中：</p><p><img src="https://i.loli.net/2020/02/04/yUQSt8mrnLZIw9a.jpg" alt="docker-namespace-cgroup-share.jpg"></p><h2 id="pod">pod</h2><h2 id="参考">参考</h2><ul><li><a href="https://jvns.ca/blog/2016/10/10/what-even-is-a-container/">https://jvns.ca/blog/2016/10/10/what-even-is-a-container/</a></li><li><a href="https://www.toptal.com/linux/separation-anxiety-isolating-your-system-with-linux-namespaces">https://www.toptal.com/linux/separation-anxiety-isolating-your-system-with-linux-namespaces</a></li></ul></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+    container: document.getElementById('article')
+  });</script><script>hljs.initHighlightingOnLoad();
+  
+  var posts = document.getElementById('posts-list');
+  posts && quicklink({
+    el: posts,
+    priority: true,
+  });</script></body></html>
