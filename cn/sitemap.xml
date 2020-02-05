@@ -3,11 +3,6 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://morven.life/notes/networking-6-k8s-summary/</loc>
-    <lastmod>2020-02-03T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://morven.life/</loc>
     <lastmod>2020-02-03T00:00:00+00:00</lastmod>
     <priority>0</priority>
