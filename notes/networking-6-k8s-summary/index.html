@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/networking-6-k8s-summary/"><link rel="canonical" href="https://morven.life/notes/networking-6-k8s-summary/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/morven.life\/"
+      },
+      "articleSection" : "notes",
+      "name" : "Kubernetes网络",
+      "headline" : "Kubernetes网络",
+      "description" : "通过前面的一些列笔记，我们对各种容器网络模型的实现原理已经有了基本的认识，然而真正将容器技术发扬光大的Kubernetes，它通过整合规模庞大的容器实例形成集群，这些容器实例可能运行在异构的底层网络环境中，如何保证这些容器间的互通是实际生产环境中首要考虑的问题。\nKubernetes网络基本要求 Kubernetes对容器技术做了更多的抽象，其中最重要的一点是提出pod的概念，pod是Kubernetes资源调度的基本单元，我们可以简单地认为pod是容器的一种延伸扩展，从网络的角度来看，pod必须满足以下条件：\n 每一个Pod都有一个独特的IP地址，所有pod都在一个可以直接连通的、扁平的网络空间中 同一个pod内的所有容器共享同一个netns网络命名空间  基于这样的基本要求，我们可以知道：\n 同一个pod内的所有容器之间共享端口，可直接通过localhost\x2b端口来访问 由于每个pod有单独的IP，所以不需要考虑容器端口与主机端口映射以及端口冲突问题  事实上，Kubernetes进一步确定了对一个合格集群网络的基本要求：\n 任意两个pod之间其实是可以直接通信的，无需显式地使用NAT进行地址的转换； 任意集群节点node与任意pod之间是可以直接通信的，无需使用明显的地址转换，反之亦然； 任意pod看到自己的IP跟别人看见它所用的IP是一样的，中间不能经过地址转换；  也就是说，必须同时满足以上三点的网络模型才能适用于kubernetes，事实上，在早期的Kubernetes中，并没有什么网络标准，只是提出了以上基本要求，只有满足这些要求的网络才可以部署Kubernetes，基于这样的底层网络假设，Kubernetes设计了pod-deployment-service的经典三层服务访问机制。直到1.1发布，Kubernetes才开始采用全新的CNI(Container Network Interface)网络标准。\nCNI 其实，我们在前面介绍容器网络的时候，就提到了CNI网络规范，CNI相对于CNM(Container Network Model)对开发者的约束更少，更开放，不依赖于Docker。事实上，CNI规范确实非常简单，详见：https:\/\/github.com\/containernetworking\/cni\/blob\/master\/SPEC.md\n实现一个CNI网络插件只需要一个配置文件和一个可执行的文件：\n 配置文件描述插件的版本、名称、描述等基本信息 可执行文件会被上层的容器管理平台调用，一个CNI可执行文件自需要实现将容器加入到网络的ADD操作以及将容器从网络中删除的DEL操作（以及一个可选的VERSION查看版本操作）  Kubernetes使用CNI网络插件的基本工作流程：\n kubelet先创建pause容器生成对应的netns网络命名空间 根据配置调用具体的CNI插件，可以配置成CNI插件链来进行链式调用 当CNI插件被调用时，它根据环境变量以及命令行参数来获得网络命名空间netns、容器的网络设备等必要信息，然后执行ADD操作 CNI插件给pause容器配置正确的网络，pod中其他的容器都是用pause容器的网络  如果不清楚什么是pause容器，它在pod中处于什么样的位置，请查看之前的笔记：https:\/\/morven.life\/notes\/from-container-to-pod\/\npod网络模型 要了解kubernetes网络模型的实现原理，我们就要从单个pod入手，事实上，一旦熟悉了单个pod的网络模型，就会发现kubernetes网络模型基本遵循和容器网络模型一样的原理。\n通过前面的笔记从docker容器到pod，我们知道pod启动的时候先创建pause容器生成对应的netns网络命名空间，然后其他容器共享pause容器创建的网络命名空间。而对于单个容器的网络模型我们之前也介绍过，主要就是通过docker0网桥设备与veth设备对连接不同的容器网络命名空间，由此，我们可以得到如下图所示的单个pod网络模型的创建过程：\n可以看到，同一个pod里面的其他容器共享pause容器创建的网络命名空间，也就是说，所有的容器共享相同的网络设备，路由表设置，服务端口等信息，仿佛是在同一台机器上运行的不同进程，所以这些容器之间可以直接通过localhost与对应的端口通信；对于集群外部的请求，则通过docker0网桥设备充当的网关，同时通过iptables做地址转换。我们会发现，这其实就是对当个容器的bridge网络模型的扩展。\n主流kubernetes网络方案 上一小节我们知道单个pod的网络模型是容器网络模型的扩展，但是pod与pod之间的是怎么相互通信的呢？这其实与容器之间相互通信非常类似，也分为同一个主机上的pod之间与跨主机的pod之间两种。\n如容器网络模型一样，对于统一主机上的pod之间，通过docker0网桥设备直接二层（数据链路层）网络上通过MAC地址直接通信：\n而跨主机的pod之间的相互通信也主要有以下两个思路：\n 修改底层网络设备配置，加入容器网络IP地址的管理，修改路由器网关等，该方式主要和SDN(Software define networking)结合。 完全不修改底层网络设备配置，复用原有的underlay平面网络，解决容器跨主机通信，主要有如下两种方式:\n 隧道传输(Overlay)： 将容器的数据包封装到原主机网络的三层或者四层数据包中，然后使用主机网络的IP或者TCP\/UDP传输到目标主机，目标主机拆包后再转发给目标容器。Overlay隧道传输常见方案包括Vxlan、ipip等，目前使用Overlay隧道传输技术的主流容器网络有Flannel等；     修改主机路由：把容器网络加到主机路由表中，把主机网络设备当作容器网关，通过路由规则转发到指定的主机，实现容器的三层互通。目前通过路由技术实现容器跨主机通信的网络如Flannel host-gw、Calico等；  下面简单介绍几种主流的方案：\n Flannel是目前使用最为普遍的方案，提供了多种网络backend，它支持多种数据路径，也适合于overlay\/underlay等多种场景。对于overlay的数据包封装，可以使用用户态的UDP，内核态的Vxlan(性能相对较好)，甚至在集群规模不大，且处于同一个二层域时可以采用host-gw的方式修改主机路由表； Weave工作模式与Flannel很相似的，它最早只提供了UDP（称为sleeve模式）的网络方式，后来又加上了fastpass方式（基于VxLAN），不过Weave消除了Flannel中用来存储网络地址的额外组件，自己集成了高可用的数据存储功能； Calico主要是采用了修改主机路由，节点之间采用BGP的协议去进行路由的同步。但是现实中的网络并不总是支持BGP路由的，因此Calico也支持内核中的IPIP模式，使用overlay的方式来传输数据；  下表是几种主流Kubernetes网络方案的对比：\n| A | Overlay-Network | Host-RouteTable | NetworkPolicy Support | Decentralized IP Allocation | | \x26ndash; | \x26mdash; | \x26mdash; | \x26mdash; | \x26mdash; | | Flannel | UDP\/VXLAN | Host-GW | N | N | | Weave | UDP\/VXLAN | N\/A | Y | Y | | Calico | IPIP | BGP | Y | N |",
+      "inLanguage" : "en-US",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
+      "copyrightYear" : "2020",
+      "datePublished": "2020-02-04 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2020-02-04 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/networking-6-k8s-summary\/",
+      "keywords" : [  ]
+  }</script><title>Kubernetes网络 - Morven&#39;s Life</title><meta property="og:title" content="Kubernetes网络 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="通过前面的一些列笔记，我们对各种容器网络模型的实现原理已经有了基本的认识，然而真正将容器技术发扬光大的Kubernetes，它通过整合规模庞大的容器实例形成集群，这些容器实例可能运行在异构的底层网络环境中，如何保证这些容器间的互通是实际生产环境中首要考虑的问题。
+Kubernetes网络基本要求 Kubernetes对容器技术做了更多的抽象，其中最重要的一点是提出pod的概念，pod是Kubernetes资源调度的基本单元，我们可以简单地认为pod是容器的一种延伸扩展，从网络的角度来看，pod必须满足以下条件：
+ 每一个Pod都有一个独特的IP地址，所有pod都在一个可以直接连通的、扁平的网络空间中 同一个pod内的所有容器共享同一个netns网络命名空间  基于这样的基本要求，我们可以知道：
+ 同一个pod内的所有容器之间共享端口，可直接通过localhost&#43;端口来访问 由于每个pod有单独的IP，所以不需要考虑容器端口与主机端口映射以及端口冲突问题  事实上，Kubernetes进一步确定了对一个合格集群网络的基本要求：
+ 任意两个pod之间其实是可以直接通信的，无需显式地使用NAT进行地址的转换； 任意集群节点node与任意pod之间是可以直接通信的，无需使用明显的地址转换，反之亦然； 任意pod看到自己的IP跟别人看见它所用的IP是一样的，中间不能经过地址转换；  也就是说，必须同时满足以上三点的网络模型才能适用于kubernetes，事实上，在早期的Kubernetes中，并没有什么网络标准，只是提出了以上基本要求，只有满足这些要求的网络才可以部署Kubernetes，基于这样的底层网络假设，Kubernetes设计了pod-deployment-service的经典三层服务访问机制。直到1.1发布，Kubernetes才开始采用全新的CNI(Container Network Interface)网络标准。
+CNI 其实，我们在前面介绍容器网络的时候，就提到了CNI网络规范，CNI相对于CNM(Container Network Model)对开发者的约束更少，更开放，不依赖于Docker。事实上，CNI规范确实非常简单，详见：https://github.com/containernetworking/cni/blob/master/SPEC.md
+实现一个CNI网络插件只需要一个配置文件和一个可执行的文件：
+ 配置文件描述插件的版本、名称、描述等基本信息 可执行文件会被上层的容器管理平台调用，一个CNI可执行文件自需要实现将容器加入到网络的ADD操作以及将容器从网络中删除的DEL操作（以及一个可选的VERSION查看版本操作）  Kubernetes使用CNI网络插件的基本工作流程：
+ kubelet先创建pause容器生成对应的netns网络命名空间 根据配置调用具体的CNI插件，可以配置成CNI插件链来进行链式调用 当CNI插件被调用时，它根据环境变量以及命令行参数来获得网络命名空间netns、容器的网络设备等必要信息，然后执行ADD操作 CNI插件给pause容器配置正确的网络，pod中其他的容器都是用pause容器的网络  如果不清楚什么是pause容器，它在pod中处于什么样的位置，请查看之前的笔记：https://morven.life/notes/from-container-to-pod/
+pod网络模型 要了解kubernetes网络模型的实现原理，我们就要从单个pod入手，事实上，一旦熟悉了单个pod的网络模型，就会发现kubernetes网络模型基本遵循和容器网络模型一样的原理。
+通过前面的笔记从docker容器到pod，我们知道pod启动的时候先创建pause容器生成对应的netns网络命名空间，然后其他容器共享pause容器创建的网络命名空间。而对于单个容器的网络模型我们之前也介绍过，主要就是通过docker0网桥设备与veth设备对连接不同的容器网络命名空间，由此，我们可以得到如下图所示的单个pod网络模型的创建过程：
+可以看到，同一个pod里面的其他容器共享pause容器创建的网络命名空间，也就是说，所有的容器共享相同的网络设备，路由表设置，服务端口等信息，仿佛是在同一台机器上运行的不同进程，所以这些容器之间可以直接通过localhost与对应的端口通信；对于集群外部的请求，则通过docker0网桥设备充当的网关，同时通过iptables做地址转换。我们会发现，这其实就是对当个容器的bridge网络模型的扩展。
+主流kubernetes网络方案 上一小节我们知道单个pod的网络模型是容器网络模型的扩展，但是pod与pod之间的是怎么相互通信的呢？这其实与容器之间相互通信非常类似，也分为同一个主机上的pod之间与跨主机的pod之间两种。
+如容器网络模型一样，对于统一主机上的pod之间，通过docker0网桥设备直接二层（数据链路层）网络上通过MAC地址直接通信：
+而跨主机的pod之间的相互通信也主要有以下两个思路：
+ 修改底层网络设备配置，加入容器网络IP地址的管理，修改路由器网关等，该方式主要和SDN(Software define networking)结合。 完全不修改底层网络设备配置，复用原有的underlay平面网络，解决容器跨主机通信，主要有如下两种方式:
+ 隧道传输(Overlay)： 将容器的数据包封装到原主机网络的三层或者四层数据包中，然后使用主机网络的IP或者TCP/UDP传输到目标主机，目标主机拆包后再转发给目标容器。Overlay隧道传输常见方案包括Vxlan、ipip等，目前使用Overlay隧道传输技术的主流容器网络有Flannel等；     修改主机路由：把容器网络加到主机路由表中，把主机网络设备当作容器网关，通过路由规则转发到指定的主机，实现容器的三层互通。目前通过路由技术实现容器跨主机通信的网络如Flannel host-gw、Calico等；  下面简单介绍几种主流的方案：
+ Flannel是目前使用最为普遍的方案，提供了多种网络backend，它支持多种数据路径，也适合于overlay/underlay等多种场景。对于overlay的数据包封装，可以使用用户态的UDP，内核态的Vxlan(性能相对较好)，甚至在集群规模不大，且处于同一个二层域时可以采用host-gw的方式修改主机路由表； Weave工作模式与Flannel很相似的，它最早只提供了UDP（称为sleeve模式）的网络方式，后来又加上了fastpass方式（基于VxLAN），不过Weave消除了Flannel中用来存储网络地址的额外组件，自己集成了高可用的数据存储功能； Calico主要是采用了修改主机路由，节点之间采用BGP的协议去进行路由的同步。但是现实中的网络并不总是支持BGP路由的，因此Calico也支持内核中的IPIP模式，使用overlay的方式来传输数据；  下表是几种主流Kubernetes网络方案的对比：
+| A | Overlay-Network | Host-RouteTable | NetworkPolicy Support | Decentralized IP Allocation | | &ndash; | &mdash; | &mdash; | &mdash; | &mdash; | | Flannel | UDP/VXLAN | Host-GW | N | N | | Weave | UDP/VXLAN | N/A | Y | Y | | Calico | IPIP | BGP | Y | N |"><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">Kubernetes网络</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2020-02-04 00:00:00 UTC">04 Feb 2020</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>通过前面的一些列笔记，我们对各种容器网络模型的实现原理已经有了基本的认识，然而真正将容器技术发扬光大的Kubernetes，它通过整合规模庞大的容器实例形成集群，这些容器实例可能运行在异构的底层网络环境中，如何保证这些容器间的互通是实际生产环境中首要考虑的问题。</p><h2 id="kubernetes网络基本要求">Kubernetes网络基本要求</h2><p>Kubernetes对容器技术做了更多的抽象，其中最重要的一点是提出pod的概念，pod是Kubernetes资源调度的基本单元，我们可以简单地认为<a href="https://morven.life/notes/from-container-to-pod/">pod是容器的一种延伸扩展</a>，从网络的角度来看，pod必须满足以下条件：</p><ol><li>每一个Pod都有一个独特的IP地址，所有pod都在一个可以直接连通的、扁平的网络空间中</li><li>同一个pod内的所有容器共享同一个netns网络命名空间</li></ol><p><img src="https://i.loli.net/2020/02/06/qjRy3SpGvOfxWIA.png" alt="pod-netns.png"></p><p>基于这样的基本要求，我们可以知道：</p><ol><li>同一个pod内的所有容器之间共享端口，可直接通过<code>localhost</code>+<code>端口</code>来访问</li><li>由于每个pod有单独的IP，所以不需要考虑容器端口与主机端口映射以及端口冲突问题</li></ol><p>事实上，Kubernetes进一步确定了对一个合格集群网络的基本要求：</p><ol><li>任意两个pod之间其实是可以直接通信的，无需显式地使用NAT进行地址的转换；</li><li>任意集群节点node与任意pod之间是可以直接通信的，无需使用明显的地址转换，反之亦然；</li><li>任意pod看到自己的IP跟别人看见它所用的IP是一样的，中间不能经过地址转换；</li></ol><p>也就是说，必须同时满足以上三点的网络模型才能适用于kubernetes，事实上，在早期的Kubernetes中，并没有什么网络标准，只是提出了以上基本要求，只有满足这些要求的网络才可以部署Kubernetes，基于这样的底层网络假设，Kubernetes设计了<code>pod-deployment-service</code>的经典三层服务访问机制。直到1.1发布，Kubernetes才开始采用全新的<a href="https://github.com/containernetworking/cni">CNI(Container Network Interface)</a>网络标准。</p><h2 id="cni">CNI</h2><p>其实，我们在前面介绍容器网络的时候，就提到了CNI网络规范，CNI相对于<a href="https://github.com/docker/libnetwork/blob/master/docs/design.md">CNM(Container Network Model)</a>对开发者的约束更少，更开放，不依赖于Docker。事实上，CNI规范确实非常简单，详见：<a href="https://github.com/containernetworking/cni/blob/master/SPEC.md">https://github.com/containernetworking/cni/blob/master/SPEC.md</a></p><p><img src="https://i.loli.net/2020/02/04/Iz3AwFR6lPdbcmp.jpg" alt="networking-cni.jpg"></p><p>实现一个CNI网络插件只需要<strong>一个配置文件</strong>和<strong>一个可执行的文件</strong>：</p><ul><li>配置文件描述插件的版本、名称、描述等基本信息</li><li>可执行文件会被上层的容器管理平台调用，一个CNI可执行文件自需要实现将容器加入到网络的ADD操作以及将容器从网络中删除的DEL操作（以及一个可选的VERSION查看版本操作）</li></ul><p>Kubernetes使用CNI网络插件的基本工作流程：</p><ol><li>kubelet先创建<code>pause</code>容器生成对应的netns网络命名空间</li><li>根据配置调用具体的CNI插件，可以配置成CNI插件链来进行链式调用</li><li>当CNI插件被调用时，它根据环境变量以及命令行参数来获得网络命名空间netns、容器的网络设备等必要信息，然后执行ADD操作</li><li>CNI插件给pause容器配置正确的网络，pod中其他的容器都是用pause容器的网络</li></ol><p>如果不清楚什么是<code>pause</code>容器，它在pod中处于什么样的位置，请查看之前的笔记：<a href="https://morven.life/notes/from-container-to-pod/">https://morven.life/notes/from-container-to-pod/</a></p><h2 id="pod网络模型">pod网络模型</h2><p>要了解kubernetes网络模型的实现原理，我们就要从单个pod入手，事实上，一旦熟悉了单个pod的网络模型，就会发现kubernetes网络模型基本遵循和容器网络模型一样的原理。</p><p>通过前面的笔记<a href="https://morven.life/notes/from-container-to-pod/">从docker容器到pod</a>，我们知道pod启动的时候先创建<code>pause</code>容器生成对应的netns网络命名空间，然后其他容器共享<code>pause</code>容器创建的网络命名空间。而对于单个容器的网络模型我们之前也介绍过，主要就是通过<code>docker0</code>网桥设备与veth设备对连接不同的容器网络命名空间，由此，我们可以得到如下图所示的单个pod网络模型的创建过程：</p><p><img src="https://i.loli.net/2020/02/06/oCnKZ1SrV3Fjpzx.jpg" alt="pod-pause-container-netns.jpg"></p><p>可以看到，同一个pod里面的其他容器共享<code>pause</code>容器创建的网络命名空间，也就是说，所有的容器共享相同的网络设备，路由表设置，服务端口等信息，仿佛是在同一台机器上运行的不同进程，所以这些容器之间可以直接通过<code>localhost</code>与对应的端口通信；对于集群外部的请求，则通过<code>docker0</code>网桥设备充当的网关，同时通过iptables做地址转换。我们会发现，这其实就是对当个容器的bridge网络模型的扩展。</p><h2 id="主流kubernetes网络方案">主流kubernetes网络方案</h2><p>上一小节我们知道单个pod的网络模型是容器网络模型的扩展，但是pod与pod之间的是怎么相互通信的呢？这其实与容器之间相互通信非常类似，也分为同一个主机上的pod之间与跨主机的pod之间两种。</p><p>如容器网络模型一样，对于统一主机上的pod之间，通过<code>docker0</code>网桥设备直接二层（数据链路层）网络上通过MAC地址直接通信：</p><p><img src="https://i.loli.net/2020/02/06/GHx9uAwfB1gIZby.gif" alt="networking-k8s-pod-single-node.gif"></p><p>而跨主机的pod之间的相互通信也主要有以下两个思路：</p><ol><li>修改底层网络设备配置，加入容器网络IP地址的管理，修改路由器网关等，该方式主要和SDN(Software define networking)结合。</li><li><p>完全不修改底层网络设备配置，复用原有的underlay平面网络，解决容器跨主机通信，主要有如下两种方式:</p><ul><li>隧道传输(Overlay)： 将容器的数据包封装到原主机网络的三层或者四层数据包中，然后使用主机网络的IP或者TCP/UDP传输到目标主机，目标主机拆包后再转发给目标容器。Overlay隧道传输常见方案包括Vxlan、ipip等，目前使用Overlay隧道传输技术的主流容器网络有Flannel等；<br></li></ul></li></ol><p><img src="https://i.loli.net/2020/02/06/U4hore5AYECQSpW.gif" alt="networking-k8s-vxlan.gif"></p><ul><li>修改主机路由：把容器网络加到主机路由表中，把主机网络设备当作容器网关，通过路由规则转发到指定的主机，实现容器的三层互通。目前通过路由技术实现容器跨主机通信的网络如Flannel host-gw、Calico等；</li></ul><p><img src="https://i.loli.net/2020/02/06/tl49uMmabT2fXpd.gif" alt="networking-k8s-route.gif"></p><p>下面简单介绍几种主流的方案：</p><ul><li><strong>Flannel</strong>是目前使用最为普遍的方案，提供了多种网络backend，它支持多种数据路径，也适合于overlay/underlay等多种场景。对于overlay的数据包封装，可以使用用户态的UDP，内核态的Vxlan(性能相对较好)，甚至在集群规模不大，且处于同一个二层域时可以采用host-gw的方式修改主机路由表；</li><li><strong>Weave</strong>工作模式与Flannel很相似的，它最早只提供了UDP（称为sleeve模式）的网络方式，后来又加上了fastpass方式（基于VxLAN），不过Weave消除了Flannel中用来存储网络地址的额外组件，自己集成了高可用的数据存储功能；</li><li><strong>Calico</strong>主要是采用了修改主机路由，节点之间采用BGP的协议去进行路由的同步。但是现实中的网络并不总是支持BGP路由的，因此Calico也支持内核中的IPIP模式，使用overlay的方式来传输数据；</li></ul><p>下表是几种主流Kubernetes网络方案的对比：</p><p>| A | Overlay-Network | Host-RouteTable | NetworkPolicy Support | Decentralized IP Allocation | | &ndash; | &mdash; | &mdash; | &mdash; | &mdash; | | Flannel | UDP/VXLAN | Host-GW | N | N | | Weave | UDP/VXLAN | N/A | Y | Y | | Calico | IPIP | BGP | Y | N |</p><h2 id="策略控制-network-policy">策略控制(Network Policy)</h2><p>Network Policy)是Kubernetes提供的基于策略的网络控制，用于隔离应用并提高安全性。它使用Kubernetes中常用的标签选择器模拟传统的分段网络，并通过策略控制它们之间的东西流量以及与外部交流的南北流量。</p><blockquote><p>Note: 确保使用的网络插件支持策略控制(Network Policy)，比如Flannel就没有实现Network Policy；</p></blockquote><p>下面的例子是配置一个典型的Network Policy的实例：</p><pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: test-network-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 172.17.0.0/16
+        except:
+        - 172.17.1.0/24
+    - namespaceSelector:
+        matchLabels:
+          project: myproject
+    - podSelector:
+        matchLabels:
+          role: frontend
+    ports:
+    - protocol: TCP
+      port: 6379
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.0.0.0/24
+    ports:
+    - protocol: TCP
+      port: 5978
+</code></pre><p>它使用标签选择器<code>namespaceSelector</code>与<code>posSelector</code>控制pod之间的流量，流量的行为模式主要由以下三个对象决定：</p><ol><li>控制对象：通过<code>spec.podSelector</code>筛选</li><li>流量方向：<code>ingress</code>控制入pod流量，<code>egress</code>控制出pod流量</li><li>流量特征：对端-IP-协议-端口</li></ol><p>通过使用Network Policy可以实现对进出流的精确控制，它采用各种选择器（标签或namespace），找到一组满足条件的pod，或者找到相当于通信的两端，然后通过流量的特征描述来决定它们之间是不是可以连通，可以理解为一个白名单的机制。</p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+    container: document.getElementById('article')
+  });</script><script>hljs.initHighlightingOnLoad();
+  
+  var posts = document.getElementById('posts-list');
+  posts && quicklink({
+    el: posts,
+    priority: true,
+  });</script></body></html>
