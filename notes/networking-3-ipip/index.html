@@ -114,7 +114,7 @@ C: 10.42.3.0/24
 </code></pre><p>C:</p><pre><code># ip link add name mybr0 type bridge
 # ip addr add 10.42.3.1/24 dev mybr0
 # ip link set dev mybr0 up
-</code></pre><p>我们的最终目标是在三个节点之间分别俩俩搭建IPIP隧道来保证这三个不同的子网直接能够互相通信，因此下一步是创建TUN网络设备并且设置路由信息。分别在A和B两台节点上：</p><ol><li>创建对应的TUN网络设备并启用</li><li>设置TUN网络设备的IP地址</li><li>设置到不同子网的路由，指明下一跳的地址</li></ol><p>对应的网关地址分别为我们即将创建的TUN网络设备 4. 启用TUN网络设备来创建IPIP隧道</p><blockquote><p>Note: TUN网络设备的IP地址是对应节点的子网地址，但是子网掩码是32位的，例如A节点上子网地址是<code>10.42.1.0/24</code>，A节点上的TUN网络设备的IP地址是<code>10.42.1.0/32</code>。这样做的原因是有时候同一个子网(例如<code>10.42.1.0/24</code>)的地址会分配相同的MAC地址，因此不能通过二层的链路层直接通信，而如果保证TUN网络设备的IP地址和任何地址都不在同一个子网，也就不存在二层的链路层直接通信了。关于这点请参考calico的实现原理，每个容器会有相同的MAC地址，后面我们有机会在深入探究。</p><p>Note: 好有一点需要注意的是给TUN网络设备设置路由的时候指定了<code>onlink</code>, 这样做的目的是保证下一跳是直接attach到该TUN网络设备的，这样保证即使节点之间不在同一个子网中也可以搭建IPIP隧道。</p></blockquote><p>A:</p><pre><code># modprobe ipip
+</code></pre><p>我们的最终目标是在三个节点之间分别俩俩搭建IPIP隧道来保证这三个不同的子网直接能够互相通信，因此下一步是创建TUN网络设备并且设置路由信息。分别在A和B两台节点上：</p><ol><li>创建对应的TUN网络设备并启用</li><li>设置TUN网络设备的IP地址</li><li>设置到不同子网的路由，指明下一跳的地址</li></ol><p>对应的网关地址分别为我们即将创建的TUN网络设备 4. 启用TUN网络设备来创建IPIP隧道</p><blockquote><p>Note: TUN网络设备的IP地址是对应节点的子网地址，但是子网掩码是32位的，例如A节点上子网地址是<code>10.42.1.0/24</code>，A节点上的TUN网络设备的IP地址是<code>10.42.1.0/32</code>。这样做的原因是有时候同一个子网(例如<code>10.42.1.0/24</code>)的地址会分配相同的MAC地址，因此不能通过二层的链路层直接通信，而如果保证TUN网络设备的IP地址和任何地址都不在同一个子网，也就不存在二层的链路层直接通信了。关于这点请参考calico的实现原理，每个容器会有相同的MAC地址，后面我们有机会在深入探究。</p><p>Note: 还有一点需要注意，给TUN网络设备设置路由的时候指定了<code>onlink</code>, 这样做的目的是保证下一跳是直接attach到该TUN网络设备的，这样保证即使节点之间不在同一个子网中也可以搭建IPIP隧道。</p></blockquote><p>A:</p><pre><code># modprobe ipip
 # ip tunnel add tunl0 mode ipip
 # ip link set tunl0 up
 # ip addr add 10.42.1.0/32 dev tunl0
