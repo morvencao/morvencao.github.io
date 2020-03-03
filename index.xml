@@ -57,7 +57,7 @@ namespace 如果让我们自己实现一种类似于vm一样的虚拟技术，�
     </item>
     
     <item>
-      <title>Docker容器网络(二)</title>
+      <title>容器网络(二)</title>
       <link>https://morven.life/notes/networking-5-docker-multi-hosts/</link>
       <pubDate>Fri, 31 Jan 2020 00:00:00 +0000</pubDate>
       
