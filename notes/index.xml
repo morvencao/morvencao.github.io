@@ -12,12 +12,12 @@
     
     
     <item>
-      <title>Kubernetes网络</title>
+      <title>浅聊Kubernetes网络模型</title>
       <link>https://morven.life/notes/networking-6-k8s-summary/</link>
       <pubDate>Tue, 04 Feb 2020 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/networking-6-k8s-summary/</guid>
-      <description>通过前面的一些列笔记，我们对各种容器网络模型的实现原理已经有了基本的认识，然而真正将容器技术发扬光大的Kubernetes，它通过整合规模庞大的容器实例形成集群，这些容器实例可能运行在异构的底层网络环境中，如何保证这些容器间的互通是实际生产环境中首要考虑的问题。
+      <description>通过前面的一些列笔记，我们对各种容器网络模型的实现原理已经有了基本的认识，然而真正将容器技术发扬光大的是Kubernetes容器编排平台。Kubernetes通过整合规模庞大的容器实例形成集群，这些容器实例可能运行在异构的底层网络环境中，如何保证这些容器间的互通是实际生产环境中首要考虑的问题之一。
 Kubernetes网络基本要求 Kubernetes对容器技术做了更多的抽象，其中最重要的一点是提出pod的概念，pod是Kubernetes资源调度的基本单元，我们可以简单地认为pod是容器的一种延伸扩展，从网络的角度来看，pod必须满足以下条件：
  每一个Pod都有一个独特的IP地址，所有pod都在一个可以直接连通的、扁平的网络空间中 同一个pod内的所有容器共享同一个netns网络命名空间  基于这样的基本要求，我们可以知道：
  同一个pod内的所有容器之间共享端口，可直接通过localhost+端口来访问 由于每个pod有单独的IP，所以不需要考虑容器端口与主机端口映射以及端口冲突问题  事实上，Kubernetes进一步确定了对一个合格集群网络的基本要求：
@@ -39,15 +39,15 @@ pod网络模型 要了解kubernetes网络模型的实现原理，我们就要从
     </item>
     
     <item>
-      <title>从docker容器到pod</title>
+      <title>从container到pod</title>
       <link>https://morven.life/notes/from-container-to-pod/</link>
       <pubDate>Mon, 03 Feb 2020 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/from-container-to-pod/</guid>
       <description>很多人应该像我一样，第一次接触docker的概念，都会听到过下面这句话：
  docker技术比虚拟机技术更为轻便、快捷，docker容器本质上是进程
- 甚至我们或多或少接受了docker技术基于linux内核中两个非常重要的特性，namespace和cgroup。那么，namespace和cgroup到底是怎么来隔离docker容器进程的呢？今天我们就来一探究竟。
-docker容器 在了解docker容器进程怎么隔离之前，我们先来看看linux内核中的namespace和cgroup到底是什么。
+ 甚至我们或多或少都在潜移默化中接受了container实现是基于linux内核中namespace和cgroup这两个非常重要的特性。那么，namespace和cgroup到底是怎么来隔离docker容器进程的呢？今天我们就来一探究竟。
+container 在了解docker容器进程怎么隔离之前，我们先来看看linux内核中的namespace和cgroup到底是什么。
 namespace 如果让我们自己实现一种类似于vm一样的虚拟技术，我们首先会想到的是怎么解决每个vm的进程与宿主机进程的隔离问题。2008年发布的linux内核v2.6.24带来的linux namespace特性使得我们可以对linux做各种各样的隔离。
 熟悉chroot命令的想哦同学都应该大体能猜到linux的namespace是如何发挥作用的，在linux系统中，系统默认的目录结构都是以根目录/开始的，chroot命令用来以指定的位置作为/来运行指令。与此类似，了解linux启动流程的人都知道在linux启动的时候又一个Pid为1的init进程，其他所有的进程都由此衍生而来，init和其他衍生而来的进程形成以init进程为根节点树状结构，在同一个进程树里的进程要有足够的权限就可以审查甚至终止其他进程，这样，显然会带来安全性问题。而PID namespace（linux namespace的一种）允许我们创建单独的进程树，新进程树里面有自己的PID为1的进程，该进程一般为创建新进程树的时候指定。PID namespace使得不同进程树里面的进程相互直接不能直接访问，提供了进程间的隔离，甚至可以创建嵌套的进程树：
 在linux中，创建namespace很简单，只需要通过unshare命令并且指定创建的namespace的类型以及其他参数，比如下面的命令就会创建新的pid namespace并且在其中运行zsh：
@@ -57,12 +57,12 @@ namespace 如果让我们自己实现一种类似于vm一样的虚拟技术，�
     </item>
     
     <item>
-      <title>容器网络(二)</title>
+      <title>Docker容器网络(二)</title>
       <link>https://morven.life/notes/networking-5-docker-multi-hosts/</link>
       <pubDate>Fri, 31 Jan 2020 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/networking-5-docker-multi-hosts/</guid>
-      <description>上一篇我们介绍的bridge网络模型主要用于解决同一主机间的容器相互访问以及容器对外暴露服务的问题，并没有涉及到怎么解决跨主机的容器之间怎么互相访问的问题。
+      <description>上一篇我们介绍的bridge网络模型主要用于解决同一主机间的容器相互访问以及容器对外暴露服务的问题，并没有涉及到怎么解决跨主机容器之间互相访问的问题。
 对于跨主机的容器间的相互访问问题，我们能想到的最直观的解决方案就是直接使用宿主机host网络，这时，容器完全复用复用宿主机的网络设备以及协议栈，容器的IP就是主机的IP，这样，只要宿主机主机能通信，容器也就自然能通信。但是这样，为了暴露容器服务，每个容器需要占用宿主机上的一个端口，通过这个端口和外界通信。所以，就需要手动维护端口的分配，不要使不同的容器服务运行在一个端口上，正因为如此，这种容器网络模型很难被推广到生产环境。
 因此解决跨主机通信的可行方案主要是让容器配置与宿主机不一样的IP地址，往往是在现有二层或三层网络之上再构建起来一个独立的overlay网络，这个网络通常会有自己独立的IP地址空间、交换或者路由的实现。但是由于容器有自己独立配置的IP地址，underlay平面的底层网络设备如交换机、路由器等完全不感知这些IP的存在，也就导致容器的IP不能直接路由出去实现跨主机通信。
 为了解决容器独立IP地址间的访问问题，主要有以下两个思路：
@@ -97,7 +97,7 @@ docker通过libnetwork原生支持的网络模式可以通过docker network ls�
       <pubDate>Wed, 29 Jan 2020 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/networking-3-ipip/</guid>
-      <description>上一篇笔记中，我们在介绍TUN/TAP网络设备的时候介绍了一种典型的VPN实现拓扑，但是并没有实践TUN/TAP虚拟网络设备具体在linux中怎么发挥实际的功能。这篇笔记我们就来看看在云计算领域中一种非常典型的IPIP隧道试图和通过TUN设备来实现。
+      <description>上一篇笔记中，我们在介绍网络设备的时候了解了一种典型的通过TUN/TAP设备来实现VPN的原理，但是并没有实践TUN/TAP虚拟网络设备具体在linux中怎么发挥实际的功能。这篇笔记我们就来看看在云计算领域中一种非常典型的IPIP隧道如何TUN设备来实现。
 IPIP隧道 上一篇笔记中我们也提到了，TUN设备能将三层（IP）网络包封装在另外一个三层网络包之中，看起来通过TUN设备发送出来的数据包会像会这样：
 MAC: xx:xx:xx:xx:xx:xx IP Header: &amp;lt;new destination IP&amp;gt; IP Body: IP: &amp;lt;original destination IP&amp;gt; TCP: stuff HTTP: stuff  这就是典型的IPIP隧道数据包的结构。Linux原生支持好几种不同的IPIP隧道类型，但都依赖于TUN虚拟网络设备，我们可以通过命令ip tunnel help来查看IPIP隧道的相关类型以及操作：
 # ip tunnel help Usage: ip tunnel { add | change | del | show | prl | 6rd } [ NAME ] [ mode { ipip | gre | sit | isatap | vti } ] [ remote ADDR ] [ local ADDR ] [ [i|o]seq ] [ [i|o]key KEY ] [ [i|o]csum ] [ prl-default ADDR ] [ prl-nodefault ADDR ] [ prl-delete ADDR ] [ 6rd-prefix ADDR ] [ 6rd-relay_prefix ADDR ] [ 6rd-reset ] [ ttl TTL ] [ tos TOS ] [ [no]pmtudisc ] [ dev PHYS_DEV ] Where: NAME := STRING ADDR := { IP_ADDRESS | any } TOS := { STRING | 00.</description>
@@ -109,7 +109,7 @@ MAC: xx:xx:xx:xx:xx:xx IP Header: &amp;lt;new destination IP&amp;gt; IP Body: IP
       <pubDate>Tue, 28 Jan 2020 00:00:00 +0000</pubDate>
       
       <guid>https://morven.life/notes/networking-2-virtual-devices/</guid>
-      <description>随着容器逐步取代虚拟机，成为现在云基础架构的标准，这些容器的网络管理模块都离不开Linux虚拟网络设备。事实上，了解常用的Linux虚拟网络设备对于我们理解容器网络以及其他依赖于容器的基础架构网络实现都大有裨益。现在开始，我们就来看看常见的Linux虚拟网络设备有哪些以及它们的使用场景。
+      <description>随着容器逐步取代虚拟机，成为现在云基础架构的标准，这些容器的网络管理模块都离不开Linux虚拟网络设备。事实上，了解常用的Linux虚拟网络设备对于我们理解容器网络以及其他依赖于容器的基础架构网络实现都大有裨益。现在开始，我们就来看看常见的Linux虚拟网络设备有哪些以及它们的典型使用场景。
 虚拟网络设备 通过上一篇笔记我们也知道，网络设备的驱动程序并不直接与内核中的协议栈交互，而是通过内核的网络设备管理模块。这样做的好处是，驱动程序不需要了解协议栈的细节，协议栈也不需要针对特定驱动处理数据包。
 对于内核网络设备管理模块来说，虚拟设备和物理设备没有区别，都是网络设备，都能配置IP，甚至从逻辑上来看，虚拟网络设备和物理网络设备并没有什么区别，它们都类似于管道，从任意一端接收到的数据将从另外一端发送出去。比如物理网卡的两端分别是协议栈于外面的物理网络，从外面物理网络接收到的数据包会转发给协议栈，相反，应用程序通过协议栈发送过来的数据包会通过物理网卡发送到外面的物理网络。但是对于具体将数据包发送到哪里，怎么发送，不同的网络设备有不同的驱动实现，与内核设备管理模块以及协议栈没什么关系。
 总的来说，虚拟网络设备与物理网络设备没有什么区别，它们的一端连接着内核协议栈，而另一端的行为是什么取决于不同虚拟网络设备的驱动实现。
@@ -133,7 +133,7 @@ TUN/TAP TUN/TAP虚拟网络设备一端连着协议栈，另外一端不是物�
       <guid>https://morven.life/notes/networking-1-pkg-snd-rcv/</guid>
       <description>早在农历新年之前，就构思着将近半年重拾的网络基础整理成成一个系列，正好赶上武汉疫情在春节假期爆发，闲来无事，于是开始这一系列的笔记。
 我的整体思路是：
- 第一篇笔记会简单介绍Linux网络数据包接收和发送过程，但不涉及TCP/IP协议栈的细节知识，如果有需要了解这些基础知识的读者，我推荐去阅读阮一峰老师的互联网协议的系列文章。 接下来，我会总结常用的Linux虚拟设备，同时会结合Linux自带的新网络工具包iproute2来操作这些常用的网络设备。 有了前面的基础知识，我们再来了解几种常用的容器网络实现远离。 最后，我们深入探讨一下K8s平台中主流的网络实现。  其实，严格上来说，这种学习思路其实很“急功近利”，但是，对于不太了解网络基础知识和Linux内核原理的人来说，这反而是一种很有效的学习方式。但是，私以为学习过程不只应该由浅入深，更应该螺旋向前迭代，温故而知新，才能获益良多。
+ 第一篇笔记会简单介绍Linux网络数据包接收和发送过程，但不涉及TCP/IP协议栈的细节知识，如果有需要了解这些基础知识的读者，我推荐去阅读阮一峰老师的互联网协议的系列文章。 接下来，我会总结常用的Linux虚拟设备，同时会结合Linux自带的新网络工具包iproute2来操作这些常用的网络设备。 有了前面的基础知识，我们再来了解几种常用的容器网络实现原理。 最后，我们将探讨一下K ubernetes平台中主流的网络模型实现。  其实，严格上来说，这种学习思路其实很“急功近利”，但是，对于不太了解网络基础知识和Linux内核原理的人来说，这反而是一种很有效的学习方式。但是，私以为学习过程不只应该由浅入深，更应该螺旋向前迭代，温故而知新，才能获益良多。
 数据包的接收过程 废话不多说，我们先开始第一篇笔记的内容。
 为了简化起见，我们以一个UDP数据包在物理网卡上处理流程来介绍Linux网络数据包的接收和发送过程，我会尽量忽略一些不相关的细节。
 从网卡到内存 我们知道，每个网络设备（网卡）需要有驱动才能工作，驱动需要在内核启动时加载到内核中才能工作。事实上，从逻辑上看，驱动是负责衔接网络设备和内核网络栈的中间模块，每当网络设备接收到新的数据包时，就会触发中断，而对应的中断处理程序正是加载到内核中的驱动程序。
