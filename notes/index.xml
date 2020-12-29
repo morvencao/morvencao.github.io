@@ -23,19 +23,19 @@ Kubernetes网络基本要求 Kubernetes对容器技术做了更多的抽象，�
  同一个pod内的所有容器之间共享端口，可直接通过localhost+端口来访问 由于每个pod有单独的IP，所以不需要考虑容器端口与主机端口映射以及端口冲突问题  事实上，Kubernetes进一步确定了对一个合格集群网络的基本要求：
  任意两个pod之间其实是可以直接通信的，无需显式地使用NAT进行地址的转换； 任意集群节点node与任意pod之间是可以直接通信的，无需使用明显的地址转换，反之亦然； 任意pod看到自己的IP跟别人看见它所用的IP是一样的，中间不能经过地址转换；  也就是说，必须同时满足以上三点的网络模型才能适用于kubernetes，事实上，在早期的Kubernetes中，并没有什么网络标准，只是提出了以上基本要求，只有满足这些要求的网络才可以部署Kubernetes，基于这样的底层网络假设，Kubernetes设计了pod-deployment-service的经典三层服务访问机制。直到1.1发布，Kubernetes才开始采用全新的CNI(Container Network Interface)网络标准。
 CNI 其实，我们在前面介绍容器网络的时候，就提到了CNI网络规范，CNI相对于CNM(Container Network Model)对开发者的约束更少，更开放，不依赖于Docker。事实上，CNI规范确实非常简单，详见：https://github.com/containernetworking/cni/blob/master/SPEC.md
-实现一个CNI网络插件只需要一个配置文件和一个可执行的文件：
+实现一个CNI网络插件只需要一个配置文件和一个可执行文件：
  配置文件描述插件的版本、名称、描述等基本信息 可执行文件会被上层的容器管理平台调用，一个CNI可执行文件自需要实现将容器加入到网络的ADD操作以及将容器从网络中删除的DEL操作（以及一个可选的VERSION查看版本操作）  Kubernetes使用CNI网络插件的基本工作流程：
  kubelet先创建pause容器生成对应的netns网络命名空间 根据配置调用具体的CNI插件，可以配置成CNI插件链来进行链式调用 当CNI插件被调用时，它根据环境变量以及命令行参数来获得网络命名空间netns、容器的网络设备等必要信息，然后执行ADD操作 CNI插件给pause容器配置正确的网络，pod中其他的容器都是用pause容器的网络  如果不清楚什么是pause容器，它在pod中处于什么样的位置，请查看之前的笔记：https://morven.life/notes/from-container-to-pod/
 pod网络模型 要了解kubernetes网络模型的实现原理，我们就要从单个pod入手，事实上，一旦熟悉了单个pod的网络模型，就会发现kubernetes网络模型基本遵循和容器网络模型一样的原理。
 通过前面的笔记从docker容器到pod，我们知道pod启动的时候先创建pause容器生成对应的netns网络命名空间，然后其他容器共享pause容器创建的网络命名空间。而对于单个容器的网络模型我们之前也介绍过，主要就是通过docker0网桥设备与veth设备对连接不同的容器网络命名空间，由此，我们可以得到如下图所示的单个pod网络模型的创建过程：
-可以看到，同一个pod里面的其他容器共享pause容器创建的网络命名空间，也就是说，所有的容器共享相同的网络设备，路由表设置，服务端口等信息，仿佛是在同一台机器上运行的不同进程，所以这些容器之间可以直接通过localhost与对应的端口通信；对于集群外部的请求，则通过docker0网桥设备充当的网关，同时通过iptables做地址转换。我们会发现，这其实就是对当个容器的bridge网络模型的扩展。
+可以看到，同一个pod里面的其他容器共享pause容器创建的网络命名空间，也就是说，所有的容器共享相同的网络设备，路由表设置，服务端口等信息，仿佛是在同一台机器上运行的不同进程，所以这些容器之间可以直接通过localhost与对应的端口通信；对于集群外部的请求，则通过docker0网桥设备充当的网关，同时通过iptables做地址转换。到这里我们就会发现，这其实就是对单个容器的bridge网络模型的扩展。
 主流kubernetes网络方案 上一小节我们知道单个pod的网络模型是容器网络模型的扩展，但是pod与pod之间的是怎么相互通信的呢？这其实与容器之间相互通信非常类似，也分为同一个主机上的pod之间与跨主机的pod之间两种。
 如容器网络模型一样，对于统一主机上的pod之间，通过docker0网桥设备直接二层（数据链路层）网络上通过MAC地址直接通信：
 而跨主机的pod之间的相互通信也主要有以下两个思路：
  修改底层网络设备配置，加入容器网络IP地址的管理，修改路由器网关等，该方式主要和SDN(Software define networking)结合。 完全不修改底层网络设备配置，复用原有的underlay平面网络，解决容器跨主机通信，主要有如下两种方式:
  隧道传输(Overlay)： 将容器的数据包封装到原主机网络的三层或者四层数据包中，然后使用主机网络的IP或者TCP/UDP传输到目标主机，目标主机拆包后再转发给目标容器。Overlay隧道传输常见方案包括Vxlan、ipip等，目前使用Overlay隧道传输技术的主流容器网络有Flannel等；     修改主机路由：把容器网络加到主机路由表中，把主机网络设备当作容器网关，通过路由规则转发到指定的主机，实现容器的三层互通。目前通过路由技术实现容器跨主机通信的网络如Flannel host-gw、Calico等；  下面简单介绍几种主流的方案：
  Flannel是目前使用最为普遍的方案，提供了多种网络backend，它支持多种数据路径，也适合于overlay/underlay等多种场景。对于overlay的数据包封装，可以使用用户态的UDP，内核态的Vxlan(性能相对较好)，甚至在集群规模不大，且处于同一个二层域时可以采用host-gw的方式修改主机路由表； Weave工作模式与Flannel很相似的，它最早只提供了UDP（称为sleeve模式）的网络方式，后来又加上了fastpass方式（基于VxLAN），不过Weave消除了Flannel中用来存储网络地址的额外组件，自己集成了高可用的数据存储功能； Calico主要是采用了修改主机路由，节点之间采用BGP的协议去进行路由的同步。但是现实中的网络并不总是支持BGP路由的，因此Calico也支持内核中的IPIP模式，使用overlay的方式来传输数据；  下表是几种主流Kubernetes网络方案的对比：
-| A | Overlay-Network | Host-RouteTable | NetworkPolicy Support | Decentralized IP Allocation | | &amp;ndash; | &amp;mdash; | &amp;mdash; | &amp;mdash; | &amp;mdash; | | Flannel | UDP/VXLAN | Host-GW | N | N | | Weave | UDP/VXLAN | N/A | Y | Y | | Calico | IPIP | BGP | Y | N |</description>
+   A Overlay-Network Host-RouteTable NetworkPolicy Support Decentralized IP Allocation     Flannel UDP/VXLAN Host-GW N N   Weave UDP/VXLAN N/A Y Y   Calico IPIP BGP Y N    策略控制(Network Policy) Network Policy是Kubernetes提供的基于策略的网络控制，用于隔离应用并提高安全性。它使用Kubernetes中常用的标签选择器模拟传统的分段网络，并通过策略控制它们之间的东西流量以及与外部交流的南北流量。</description>
     </item>
     
     <item>
@@ -96,7 +96,7 @@ MAC: xx:xx:xx:xx:xx:xx IP Header: &amp;lt;new destination IP&amp;gt; IP Body: IP
  甚至我们或多或少都在潜移默化中接受了container实现是基于linux内核中namespace和cgroup这两个非常重要的特性。那么，namespace和cgroup到底是怎么来隔离docker容器进程的呢？今天我们就来一探究竟。
 container 在了解docker容器进程怎么隔离之前，我们先来看看linux内核中的namespace和cgroup到底是什么。
 namespace 如果让我们自己实现一种类似于vm一样的虚拟技术，我们首先会想到的是怎么解决每个vm的进程与宿主机进程的隔离问题。2008年发布的linux内核v2.6.24带来的linux namespace特性使得我们可以对linux做各种各样的隔离。
-熟悉chroot命令的想哦同学都应该大体能猜到linux的namespace是如何发挥作用的，在linux系统中，系统默认的目录结构都是以根目录/开始的，chroot命令用来以指定的位置作为/来运行指令。与此类似，了解linux启动流程的人都知道在linux启动的时候又一个Pid为1的init进程，其他所有的进程都由此衍生而来，init和其他衍生而来的进程形成以init进程为根节点树状结构，在同一个进程树里的进程要有足够的权限就可以审查甚至终止其他进程，这样，显然会带来安全性问题。而PID namespace（linux namespace的一种）允许我们创建单独的进程树，新进程树里面有自己的PID为1的进程，该进程一般为创建新进程树的时候指定。PID namespace使得不同进程树里面的进程相互直接不能直接访问，提供了进程间的隔离，甚至可以创建嵌套的进程树：
+熟悉chroot命令的同学都应该大体能猜到linux的namespace是如何发挥作用的，在linux系统中，系统默认的目录结构都是以根目录/开始的，chroot命令用来以指定的位置作为/来运行指令。与此类似，了解linux启动流程的人都知道在linux启动的时候又一个Pid为1的init进程，其他所有的进程都由此衍生而来，init和其他衍生而来的进程形成以init进程为根节点树状结构，在同一个进程树里的进程要有足够的权限就可以审查甚至终止其他进程，这样，显然会带来安全性问题。而PID namespace（linux namespace的一种）允许我们创建单独的进程树，新进程树里面有自己的PID为1的进程，该进程一般为创建新进程树的时候指定。PID namespace使得不同进程树里面的进程相互直接不能直接访问，提供了进程间的隔离，甚至可以创建嵌套的进程树：
 在linux中，创建namespace很简单，只需要通过unshare命令并且指定创建的namespace的类型以及其他参数，比如下面的命令就会创建新的pid namespace并且在其中运行zsh：
 # unshare --fork --pid --mount-proc zsh  因为zsh是交互式的shell，所以你会发现自己进入了一个新的shell(pid namespace)，我们可以在新的世界里再运行新的进程sleep：
 # ps aux USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND root 1 8.4 0.0 42676 5684 pts/1 S 04:06 0:00 zsh root 23 0.0 0.0 39084 3252 pts/1 R+ 04:06 0:00 ps aux # sleep 100000 ...  启动sleep进程前只有两个进程在运行，zsh和ps，而且zsh进程的pid为1，所有其他进程都是它的子进程。但是，如果你打开新的终端也可以看到zsh进程会发现，但是发现它的pid并不是1：
