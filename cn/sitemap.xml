@@ -4,7 +4,7 @@
   
   <url>
     <loc>https://morven.life/</loc>
-    <lastmod>2020-04-10T00:00:00+00:00</lastmod>
+    <lastmod>2020-12-31T00:00:00+00:00</lastmod>
     <priority>0</priority>
     <xhtml:link
                 rel="alternate"
@@ -16,6 +16,27 @@
                 hreflang="cn"
                 href="https://morven.life/"
                 />
+  </url>
+  
+  <url>
+    <loc>https://morven.life/posts/</loc>
+    <lastmod>2020-12-31T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://morven.life/en/posts/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="cn"
+                href="https://morven.life/posts/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://morven.life/posts/the_answer_of_2020/</loc>
+    <lastmod>2020-12-31T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -57,22 +78,6 @@
   <url>
     <loc>https://morven.life/notes/networking-1-pkg-snd-rcv/</loc>
     <lastmod>2020-01-27T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://morven.life/posts/</loc>
-    <lastmod>2019-12-21T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://morven.life/en/posts/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="cn"
-                href="https://morven.life/posts/"
-                />
   </url>
   
   <url>
