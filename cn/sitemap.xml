@@ -101,6 +101,11 @@
   </url>
   
   <url>
+    <loc>https://morven.life/notes/the_go_language/</loc>
+    <lastmod>2019-02-26T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://morven.life/posts/build_the_smallest_possible_docker_image/</loc>
     <lastmod>2019-01-20T00:00:00+00:00</lastmod>
   </url>

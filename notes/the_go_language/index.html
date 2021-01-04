@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_go_language/"><link rel="canonical" href="https://morven.life/notes/the_go_language/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/morven.life\/"
+      },
+      "articleSection" : "notes",
+      "name" : "Go模块化编程",
+      "headline" : "Go模块化编程",
+      "description" : "Go语言从去年八月份发布的1.11版本增加了模块化编程的支持以及新的基于模块的依赖管理工具。Go语言的模块（module）是文件树中的包（package）的集合，其中模块根目录包含的go.mod文件定义了模块的导入路径（import path），Go语言版本以及模块的其他依赖性要求。每个模块依赖性要求被列为单独的一个模块路径并指定相应的模块版本，只有满足了所有依赖性要求的模块才能被成功构建。\n使用Go模块化编程之后，就不需要将Go语言的代码放入到$GOPATH\/src中，也就是过去的GOPATH模式，实际上，我们可以在$GOPATH\/src外的任何目录下使用go mod init创建Go项目并初始化Go模块。\n Note: 为了兼容性，在Go 1.11与1.12中，Go命令仍然在旧的GOPATH模式下运行，从Go 1.13开始，模块模式(GO111MODULE=on)将成为默认模式。\n GOPATH的前世今生 而Go语言支持模块化编程之前，一般我们的Go项目使用需要使用GOPATH模式，也就是说需要将Go语言的代码放入到$GOPATH\/src中。典型的GOPATH目录结构包含必须包含三个子文件夹，如下所示：\nGOPATH ├── bin \/\/ binaries ├── pkg \/\/ cache |── src \/\/ go source code ├── github.com ├── rsc.io ...  使用go get命令获取依赖也会自动下载到$GOPATH\/src中：\ngo get rsc.io\/quote # will be doloaded to $GOPATH\/src\/rsc.io\/quote  但是GOPATH模式存在问题，当我们go get获取某个依赖时没有指定版本，那么默认下载的依赖代码都会是最新版本，而且如果当项目A和项目B分别依赖项目C的两个不兼容版本时，GOPATH路径下只有一个版本的C将无法同时满足项目A和项目B的依赖需求。这是令人棘手的缺陷，实际上因而Go 1.13开始，官方就不再推荐使用GOPATH模式了。\n另外，随着Go语言的普及，依赖包也变得越来越丰富，依赖管理的问题逐渐成为开发人员的焦点。GOPATH模式衍生出了很多版本管理工具，但是他们的基本思路都是基于每个项目单独维护一份对应版本依赖的拷贝：\n 从最早Go官方在Go 1.5版本提出的vendor特性：为每个Go项目创建一个vendor\/目录来存放项目所需版本依赖的拷贝 社区则基于Go官方的vendor特性，开发出了各种版本管理工具。比较流行的如govendor，以及之前曾被官方认定的godep等  Go依赖管理工具虽然丰富了起来，但是不同版本工具之间存在不兼容的问题，而且各种工具还都有学习成本。这时候开发者迫切需要一个统一的版本管理工具来解决这种问题。于是Go社区提出了vgo方案，随着vgo的逐渐发展壮大，Go 1.11发布了基于改方案的Go module功能，并集成到了Go语言的官方工具中。\nGo模块化支持的相关环境变量 使用Go语言内置的模块化功能，开发者需要关心的6个环境变量，可以使用go env命令列出：\nGO111MODULE=\x26quot;auto\x26quot; GOPROXY=\x26quot;https:\/\/goproxy.io,direct\x26quot; GONOPROXY=\x26quot;\x26quot; GOSUMDB=\x26quot;sum.golang.org\x26quot; GONOSUMDB=\x26quot;\x26quot; GOPRIVATE=\x26quot;\x26quot;   GO111MODULE  该环境变量控制是否开启使用Go模块功能，可选的值以及说明如下表所示：",
+      "inLanguage" : "en-US",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
+      "copyrightYear" : "2019",
+      "datePublished": "2019-02-26 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2019-02-26 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/the_go_language\/",
+      "keywords" : [  ]
+  }</script><title>Go模块化编程 - Morven&#39;s Life</title><meta property="og:title" content="Go模块化编程 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="Go语言从去年八月份发布的1.11版本增加了模块化编程的支持以及新的基于模块的依赖管理工具。Go语言的模块（module）是文件树中的包（package）的集合，其中模块根目录包含的go.mod文件定义了模块的导入路径（import path），Go语言版本以及模块的其他依赖性要求。每个模块依赖性要求被列为单独的一个模块路径并指定相应的模块版本，只有满足了所有依赖性要求的模块才能被成功构建。
+使用Go模块化编程之后，就不需要将Go语言的代码放入到$GOPATH/src中，也就是过去的GOPATH模式，实际上，我们可以在$GOPATH/src外的任何目录下使用go mod init创建Go项目并初始化Go模块。
+ Note: 为了兼容性，在Go 1.11与1.12中，Go命令仍然在旧的GOPATH模式下运行，从Go 1.13开始，模块模式(GO111MODULE=on)将成为默认模式。
+ GOPATH的前世今生 而Go语言支持模块化编程之前，一般我们的Go项目使用需要使用GOPATH模式，也就是说需要将Go语言的代码放入到$GOPATH/src中。典型的GOPATH目录结构包含必须包含三个子文件夹，如下所示：
+GOPATH ├── bin // binaries ├── pkg // cache |── src // go source code ├── github.com ├── rsc.io ...  使用go get命令获取依赖也会自动下载到$GOPATH/src中：
+go get rsc.io/quote # will be doloaded to $GOPATH/src/rsc.io/quote  但是GOPATH模式存在问题，当我们go get获取某个依赖时没有指定版本，那么默认下载的依赖代码都会是最新版本，而且如果当项目A和项目B分别依赖项目C的两个不兼容版本时，GOPATH路径下只有一个版本的C将无法同时满足项目A和项目B的依赖需求。这是令人棘手的缺陷，实际上因而Go 1.13开始，官方就不再推荐使用GOPATH模式了。
+另外，随着Go语言的普及，依赖包也变得越来越丰富，依赖管理的问题逐渐成为开发人员的焦点。GOPATH模式衍生出了很多版本管理工具，但是他们的基本思路都是基于每个项目单独维护一份对应版本依赖的拷贝：
+ 从最早Go官方在Go 1.5版本提出的vendor特性：为每个Go项目创建一个vendor/目录来存放项目所需版本依赖的拷贝 社区则基于Go官方的vendor特性，开发出了各种版本管理工具。比较流行的如govendor，以及之前曾被官方认定的godep等  Go依赖管理工具虽然丰富了起来，但是不同版本工具之间存在不兼容的问题，而且各种工具还都有学习成本。这时候开发者迫切需要一个统一的版本管理工具来解决这种问题。于是Go社区提出了vgo方案，随着vgo的逐渐发展壮大，Go 1.11发布了基于改方案的Go module功能，并集成到了Go语言的官方工具中。
+Go模块化支持的相关环境变量 使用Go语言内置的模块化功能，开发者需要关心的6个环境变量，可以使用go env命令列出：
+GO111MODULE=&quot;auto&quot; GOPROXY=&quot;https://goproxy.io,direct&quot; GONOPROXY=&quot;&quot; GOSUMDB=&quot;sum.golang.org&quot; GONOSUMDB=&quot;&quot; GOPRIVATE=&quot;&quot;   GO111MODULE  该环境变量控制是否开启使用Go模块功能，可选的值以及说明如下表所示："><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">Go模块化编程</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2019-02-26 00:00:00 UTC">26 Feb 2019</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>Go语言从去年八月份发布的1.11版本增加了模块化编程的支持以及新的基于模块的依赖管理工具。Go语言的模块（module）是文件树中的包（package）的集合，其中模块根目录包含的<code>go.mod</code>文件定义了模块的导入路径（import path），Go语言版本以及模块的其他依赖性要求。每个模块依赖性要求被列为单独的一个模块路径并指定相应的模块版本，只有满足了所有依赖性要求的模块才能被成功构建。</p><p>使用Go模块化编程之后，就不需要将Go语言的代码放入到<code>$GOPATH/src</code>中，也就是过去的<code>GOPATH</code>模式，实际上，我们可以在<code>$GOPATH/src</code>外的任何目录下使用<code>go mod init</code>创建Go项目并初始化Go模块。</p><blockquote><p>Note: 为了兼容性，在Go 1.11与1.12中，Go命令仍然在旧的<code>GOPATH</code>模式下运行，从Go 1.13开始，模块模式(<code>GO111MODULE=on</code>)将成为默认模式。</p></blockquote><h2 id="gopath的前世今生">GOPATH的前世今生</h2><p>而Go语言支持模块化编程之前，一般我们的Go项目使用需要使用<code>GOPATH</code>模式，也就是说需要将Go语言的代码放入到<code>$GOPATH/src</code>中。典型的<code>GOPATH</code>目录结构包含必须包含三个子文件夹，如下所示：</p><pre><code>GOPATH
+├── bin              // binaries
+├── pkg              // cache
+|── src              // go source code
+    ├── github.com
+    ├── rsc.io
+    ...
+</code></pre><p>使用<code>go get</code>命令获取依赖也会自动下载到<code>$GOPATH/src</code>中：</p><pre><code>go get rsc.io/quote # will be doloaded to $GOPATH/src/rsc.io/quote
+</code></pre><p>但是<code>GOPATH</code>模式存在问题，当我们<code>go get</code>获取某个依赖时没有指定版本，那么默认下载的依赖代码都会是最新版本，而且如果当项目A和项目B分别依赖项目C的两个不兼容版本时，<code>GOPATH</code>路径下只有一个版本的C将无法同时满足项目A和项目B的依赖需求。这是令人棘手的缺陷，实际上因而Go 1.13开始，官方就不再推荐使用<code>GOPATH</code>模式了。</p><p>另外，随着Go语言的普及，依赖包也变得越来越丰富，依赖管理的问题逐渐成为开发人员的焦点。<code>GOPATH</code>模式衍生出了很多版本管理工具，但是他们的基本思路都是基于<strong>每个项目单独维护一份对应版本依赖的拷贝</strong>：</p><ol><li>从最早Go官方在Go 1.5版本提出的<code>vendor</code>特性：为每个Go项目创建一个<code>vendor/</code>目录来存放项目所需版本依赖的拷贝</li><li>社区则基于Go官方的<code>vendor</code>特性，开发出了各种版本管理工具。比较流行的如<a href="https://github.com/kardianos/govendor">govendor</a>，以及之前曾被官方认定的<a href="https://github.com/golang/dep">godep</a>等</li></ol><p>Go依赖管理工具虽然丰富了起来，但是不同版本工具之间存在不兼容的问题，而且各种工具还都有学习成本。这时候开发者迫切需要一个统一的版本管理工具来解决这种问题。于是Go社区提出了<a href="https://github.com/golang/go/wiki/vgo">vgo</a>方案，随着<code>vgo</code>的逐渐发展壮大，Go 1.11发布了基于改方案的Go module功能，并集成到了Go语言的官方工具中。</p><h2 id="go模块化支持的相关环境变量">Go模块化支持的相关环境变量</h2><p>使用Go语言内置的模块化功能，开发者需要关心的6个环境变量，可以使用<code>go env</code>命令列出：</p><pre><code>GO111MODULE=&quot;auto&quot;
+GOPROXY=&quot;https://goproxy.io,direct&quot;
+GONOPROXY=&quot;&quot;
+GOSUMDB=&quot;sum.golang.org&quot;
+GONOSUMDB=&quot;&quot;
+GOPRIVATE=&quot;&quot;
+</code></pre><ol><li>GO111MODULE</li></ol><p>该环境变量控制是否开启使用Go模块功能，可选的值以及说明如下表所示：</p><table><thead><tr><th>｜ 值</th><th>说明</th></tr></thead><tbody><tr><td>auto</td><td><code>$GOPATH/src</code>之中的项目继续使用<code>GOPATH</code>模式；<code>$GOPATH/src</code>之外的Go项目自动使用Go模块化模式 ｜</td></tr><tr><td>on</td><td>启用Go模块化模式，推荐使用 ｜</td></tr><tr><td>off</td><td>使用<code>GOPATH</code>模式，禁用Go模块化模式，不推荐设置 ｜</td></tr></tbody></table><p>开启Go模块化模式只需要设置<code>GO111MODULE</code>环境变量为<code>on</code>：</p><pre><code>$ go env -w GO111MODULE=on
+</code></pre><ol><li>GOPROXY</li></ol><p>该环境变量用于设置Go模块依赖下载的代理，这样Go在拉取模块依赖时直接通过代理站点来快速拉取。默认值是<code>https://proxy.golang.org,direct/</code>。由于国内无法访问，所以开启Go模块化模式需要设置代理地址。常用的国内镜像代理地址如下：</p><table><thead><tr><th>地址</th><th>简介</th></tr></thead><tbody><tr><td><code>https://goproxy.io</code></td><td>最早的Go模块镜像代理网站</td></tr><tr><td><code>https://mirrors.aliyun.com/goproxy/</code></td><td>阿里镜像代理网站</td></tr><tr><td><code>https://goproxy.cn</code></td><td>七牛云赞助支持的代理网站 ｜</td></tr></tbody></table><blockquote><p>Note: <code>GOPROXY</code>的值是一个以英文逗号<code>,</code>分割的Go模块代理列表，允许设置多个模块代理；如果想关闭代理，可以设置为<code>off</code></p></blockquote><p>默认值的逗号后面的<code>direct</code>用来告诉Go语言将直接从依赖的源地址进行下载（如GitHub），例如当值列表中的Go镜像代理返回<code>404</code>或<code>410</code>时，Go自动尝试列表中的下一个，如果下个值是<code>direct</code>则到源地址去下载依赖的模块。</p><p>设置Go模块化镜像代理：</p><pre><code>$ go env -w GOPROXY=https://mirrors.aliyun.com/goproxy/,direct
+</code></pre><ol><li>GOSUMDB</li></ol><p>该环境变量的全称是GO checkSUM DataBase，正如它的字面意思一样，它用于在拉取模块依赖时保证拉取到的模块版本数据未经过篡改，若发现不一致，则立即中止拉取并报错。 <code>GOSUMDB</code>环境变量的默认值为：<code>sum.golang.org</code>，在国内也是无法访问的，好在设置好可以访问的<code>GOPROXY</code>之后，<code>GOSUMDB</code>也可以访问。如果将它的值若设为<code>off</code>，就禁止Go在后续拉取模块依赖时进行校验，不推荐这样做。</p><ol><li>GONOPROXY &amp; GONOSUMDB &amp; GOPRIVATE</li></ol><p>这三个环境变量主要在Go项目依赖于私有模块时使用，比如有些依赖存在于私有的git仓库，直接使用<code>GOPROXY</code>设置的镜像代理或<code>GOSUMDB</code>设置的检验站点会无法访问对应的私有仓库。这时候就需要设置这些依赖模块不经过镜像代理站点直接拉取校验。实际上，对于私有的依赖模块，最佳实践是直接设置<code>GOPRIVATE</code>环境变量，它的值将作为<code>GONOPROXY</code>和<code>GONOSUMDB</code>的默认值。</p><p>它们的值都是一个以英文逗号<code>,</code>分割的模块路径前缀，也就是可以设置多个，例如：</p><pre><code>$ go env -w GOPRIVATE=&quot;*.my.com,github.com/eabc/def&quot;
+</code></pre><p>这项设置表示前缀为<code>*.my.com</code>和<code>github.com/eabc/def</code>的模块依赖都会被认为是私有模块，并不经过镜像代理站点直接拉取校验。</p><h2 id="go模块化操作命令">Go模块化操作命令</h2><ol><li><code>go mod init</code>创建一个新模块，初始化描述它的<code>go.mod</code>文件</li><li><code>go build</code> &amp; <code>go test</code>和其他程序包构建命令根据需要向<code>go.mod</code>添加新的依赖项</li><li><code>go list -m all</code>打印当前模块的所有依赖关系</li><li><code>go get</code>更改所需依赖的版本（或添加新的依赖）</li><li><code>go mod tidy</code>删除未使用的依赖项</li><li><p><code>go mod vendor</code>从模块依赖的正确版本拷贝到项目的vendor目录</p></li><li><p>初始化模块</p></li></ol><p>我们可以在<code>$GOPATH/src</code>外的任何目录下使用<code>go mod init</code>创建Go项目并初始化Go模块：</p><pre><code>$ go mod init example.com/greetings
+go: creating new go.mod: module example.com/greetings
+</code></pre><p><code>example.com/greetings</code>不仅是模块的标识，作为模块的导入路径，当其他Go项目引用这个模块下的某个包时都会以该导入路径作为共同的前缀，并加上该包相对于模块根目录的相对路径。</p><ol><li><code>go.mod</code>文件</li></ol><p>上面的命令成功执行之后就会在当前目录下面生成一个<code>go.mod</code>文件：</p><pre><code>module example.com/greetings
+
+go 1.12
+</code></pre><p>实际上，Go模块化模式下，使用<code>go get</code>命令获取模块依赖之后，相关依赖信息可以自动记录到<code>go.mod</code>文件中：</p><pre><code>go get -u rsc.io/quote
+</code></pre><p><code>go get</code>命令默认下载最新的依赖版本，当然也可以通过<code>@</code>版本管理的tag，例如：</p><pre><code>go get -u rsc.io/quote@v1.5.2
+</code></pre><p><code>go get</code>命令拉取模块依赖之后会将结果缓存到<code>$GOPATH/pkg/mod</code>和<code>$GOPATH/pkg/sumdb</code>目录，而在<code>$GOPATH/pkg/mod</code>目录中模块依赖会以<code>github.com/foo/bar</code>的格式进行存放。</p><p>拉取模块依赖之后，<code>go.mod</code>文件会变成：</p><pre><code>module example.com/greetings
+
+go 1.12
+
+require rsc.io/quote v1.5.2 // indirect
+</code></pre><blockquote><p>Note: 其中，<code>indirect</code>注释表示该模块为间接依赖，也就是在当前应用程序中的<code>import</code>语句中，并没有发现这个模块的明确引用。直接使用<code>go get</code>命令拉取模块依赖，而不是使用<code>go build</code>自动根据<code>go.mod</code>拉取模块依赖。</p></blockquote><p><code>go.mod</code>文件中可以使用到的语法关键词以及含义：</p><ul><li><code>module</code>：定义当前项目的模块路径</li><li><code>go</code>：标识当前模块的Go语言版本</li><li><code>require</code>：说明模块依赖的版本</li><li><code>exclude</code>：用于从使用中排除一个特定的模块版本，如果某个版本的模块依赖有严重bug，则显式的排除某个版本，<code>exclude github.com/google/uuid v1.1.0</code>表示不使用<code>v1.1.0</code>版本</li><li><code>replace</code>：替换<code>require</code>中声明的模块依赖，使用另外的模块依赖及其版本</li></ul><p><code>replace</code>关键词的使用场景：</p><p><strong>使用场景一：替换require的包</strong></p><p>当前项目的<code>go.mod</code>文件如下</p><pre><code>module example.com/greetings
+
+go 1.12
+
+require (
+    github.com/google/uuid v1.1.1
+    rsc.io/quote v1.5.2 // indirect
+)
+
+exclude github.com/google/uuid v1.1.0
+</code></pre><p>下执行命令<code>go list -m all</code>列出当前模块的所有依赖关系：</p><pre><code>example.com/greetings
+github.com/google/uuid v1.1.1
+rsc.io/quote v1.5.2
+</code></pre><p>在<code>go.mod</code>文件下增加这样一句配置：</p><pre><code>replace github.com/google/uuid v1.1.1 =&gt; github.com/google/uuid v1.1.0
+</code></pre><p>再次执行命令<code>go list -m all</code>列出当前模块的所有依赖关系：</p><pre><code>example.com/greetings
+github.com/google/uuid v1.1.1 =&gt; github.com/google/uuid v1.1.0
+rsc.io/quote v1.5.2
+</code></pre><p>发现最终生效的模块依赖从<code>github.com/google/uuid v1.1.1</code>变成了<code>github.com/google/uuid v1.1.0</code>。一般来说，这种场景使用的不多，和直接修改<code>require</code>作用相同，其生效有前提条件：</p><ul><li>当前引用的模块依赖有效</li><li><code>replace</code>命令左侧的包名和版本，必须是<code>require</code>中包含的对应包名和版本</li></ul><p><strong>场景二：替换无法下载的包</strong></p><p>由于国内网络限制问题，有些模块依赖包无法下载，比如<code>golang.org</code>下的所有依赖包，好在这些依赖包在GitHub都有对应的镜像，此时就可以使用GitHub上的镜像包来替换<code>golang.org</code>导入路径下的模块依赖包。</p><p>比如，如果项目中使用了<code>golang.org/x/net</code>包：</p><pre><code>module example.com/greetings
+
+go 1.12
+
+require (
+    github.com/google/uuid v1.1.1
+    golang.org/x/net v0.3.2
+    rsc.io/quote v1.5.2 // indirect
+)
+
+replace golang.org/x/net v0.3.2 =&gt; github.com/golang/net v0.3.2
+</code></pre><p>这样项目编译时就会从GitHub下载<code>golang.org/x/net</code>包，而在源代码中<code>import</code>路径<code>golang.org/x/net/xxx</code>则不需要改变。</p><p><strong>场景三：调试依赖包</strong></p><p>场景三：调试依赖包</p><p>调试依赖包时可以使用<code>replace</code>来修改依赖，如下所示：</p><pre><code>replace (
+    github.com/google/uuid v1.1.1 =&gt; ../uuid
+)
+</code></pre><p>使用本地的<code>uuid</code>来替换依赖包，此时，我们可以任意地修改<code>…/uuid</code>目录的内容来进行调试。除了使用相对路径，还可以使用绝对路径，甚至还可以使用自已的fork仓库。</p><p><strong>场景四：禁止被依赖</strong></p><p>最后一种使用<code>replace</code>的场景是不希望自己的模块被直接引用，比如kubernetes项目的的<code>go.mod</code>文件中，<code>require</code>部分有大量的<code>v0.0.0</code>依赖，比如：</p><pre><code>module k8s.io/kubernetes
+
+require (
+  ...
+  k8s.io/api v0.0.0
+  k8s.io/apiextensions-apiserver v0.0.0
+  k8s.io/apimachinery v0.0.0
+  ...
+)
+</code></pre><p>由于上面的依赖都不存在<code>v0.0.0</code>版本，所以其他项目直接依赖<code>k8s.io/kubernetes</code>时会因无法找到版本而无法使用。</p><p>因为<code>Kubernetes</code>不希望自己作为模块依赖被直接使用，其他项目可以使用kubernetes的其他子组件。kubernetes对外隐藏了依赖版本号，其真实的依赖通过<code>replace</code>指定：</p><pre><code>replace (
+  k8s.io/api =&gt; ./staging/src/k8s.io/api
+  k8s.io/apiextensions-apiserver =&gt; ./staging/src/k8s.io/apiextensions-apiserver
+  k8s.io/apimachinery =&gt; ./staging/src/k8s.io/apimachinery
+    ...
+)
+</code></pre><ol><li><code>go.sum</code>文件</li></ol><p>在我们构建执行<code>go build</code>或者<code>go test</code>等命令后还会发现在项目的根目录下面生成个<code>go.sum</code>文件。它的主要用途是检验下载的模块依赖包。实际上，模块依赖包在下载过程中有可能被恶意篡改，缓存在本地的依赖包也有被篡改的可能，单单一个<code>go.mod</code>文件并不能保证一致性构建，在<code>go.mod</code>的基础上同时也引入了<code>go.sum</code>文件，用于记录每个依赖包的哈希值（SHA-256 算法），在构建Go项目时，如果本地的依赖包哈希校验值与<code>go.sum</code>文件中记录得不一致，则会拒绝构建。</p><p>一个典型的<code>go.mod</code>文件如下所示：</p><pre><code>github.com/google/uuid v1.0.0 h1:b4Gk+7WdP/d3HZH8EJsZpvV7EtDOgaZLtnaNGIu1adA=
+github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+</code></pre><p>正常情况下，每个依赖包版本会包含两条记录，第一条记录为该依赖包版本整体（所有文件）的哈希值，第二条记录仅表示该依赖包版本中<code>go.mod</code>文件的哈希值，如果该依赖包版本没有<code>go.mod</code>文件，则只有第一条记录。</p><p>go.sum是怎么生成的？</p><p>在Go项目的根目录中执行<code>go get</code>命令，它会同步更新<code>go.mod</code>和<code>go.sum</code>文件，<code>go.mod</code>中记录的是依赖名及其版本，如：</p><pre><code>github.com/google/uuid v1.1.1
+</code></pre><p><code>go.sum</code>文件中则会记录依赖包的哈希值（同时还有依赖包中<code>go.mod</code>的哈希值）。在更新<code>go.sum</code>之前，为了确保下载的依赖包是真实可靠的，go命令在下载完依赖包后还会查询<code>GOSUMDB</code>环境变量所指示的服务器，以得到一个权威的依赖包版本哈希值。如果go命令计算出的依赖包版本哈希值与<code>GOSUMDB</code>服务器给出的哈希值不一致，go命令将拒绝向下执行，也不会更新<code>go.sum</code>文件。</p><h2 id="go模块的使用与更新">Go模块的使用与更新</h2><p>我们首先使用<code>go mod init</code>命令初始化Go项目的模块并设置模块的导入路径，然后在我们写代码的时候先写好导入的包等，<code>go build</code>或者<code>go mod tidy</code>等命令会自动下载相关导入包并更新<code>go.mod</code>与<code>go.sum</code>文件，这时候使用版本管理工具比如Git提交并管理项目源代码与更新后的<code>go.mod</code>与<code>go.sum</code>文件，确保每次的构建都可以得到一致的依赖关系。</p><ol><li>小版本更新</li></ol><p>使用<code>go get -u</code>命令会更新某个模块依赖最新的小版本，例如，它会将<code>1.0.0</code>更新为<code>1.0.1</code>或者<code>1.1.0</code>这样类似的版本；<code>go get -u=patch</code>命令则是获取最新的patch更新，例如，它会将<code>1.0.0</code>更新到<code>1.0.1</code>而不是<code>1.1.0</code>版本：</p><p>假如我们的Go项目使用的是依赖包的<code>1.0.0</code>版本，并且该模块依赖刚刚更新了<code>1.0.1</code>版本，以下任何命令都会将我们的更新到模块依赖<code>1.0.1</code>版：</p><pre><code>go get -u
+go get -u=patch
+go get github.com/example/testmod@v1.0.1
+</code></pre><ol><li>大版本更新</li></ol><p>一般来说，大版本完全不同于小版本，大版本可能会破坏向后兼容性。因此，从Go模块的角度来看，大版本是一个完全不同的包。一个库的两个不兼容的版本，实质上是两个不同的库。遇到大版本更新的时候，还是可以使用tag来更新，从<code>1.0.0</code>更新为<code>2.0.0</code>，但是一定要注意向后兼容性的问题。</p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+    container: document.getElementById('article')
+  });</script><script>hljs.initHighlightingOnLoad();
+  
+  var posts = document.getElementById('posts-list');
+  posts && quicklink({
+    el: posts,
+    priority: true,
+  });</script></body></html>
