@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_go_language/"><link rel="canonical" href="https://morven.life/notes/the_go_language/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_go_module/"><link rel="canonical" href="https://morven.life/notes/the_go_module/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
       "@context" : "http://schema.org",
       "@type" : "BlogPosting",
       "mainEntityOfPage": {
@@ -18,7 +18,7 @@
       "copyrightYear" : "2019",
       "datePublished": "2019-02-26 00:00:00 \x2b0000 UTC",
       "dateModified" : "2019-02-26 00:00:00 \x2b0000 UTC",
-      "url" : "https:\/\/morven.life\/notes\/the_go_language\/",
+      "url" : "https:\/\/morven.life\/notes\/the_go_module\/",
       "keywords" : [  ]
   }</script><title>Go模块化编程 - Morven&#39;s Life</title><meta property="og:title" content="Go模块化编程 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="Go语言从去年八月份发布的1.11版本增加了模块化编程的支持以及新的基于模块的依赖管理工具。Go语言的模块（module）是文件树中的包（package）的集合，其中模块根目录包含的go.mod文件定义了模块的导入路径（import path），Go语言版本以及模块的其他依赖性要求。每个模块依赖性要求被列为单独的一个模块路径并指定相应的模块版本，只有满足了所有依赖性要求的模块才能被成功构建。
 使用Go模块化编程之后，就不需要将Go语言的代码放入到$GOPATH/src中，也就是过去的GOPATH模式，实际上，我们可以在$GOPATH/src外的任何目录下使用go mod init创建Go项目并初始化Go模块。

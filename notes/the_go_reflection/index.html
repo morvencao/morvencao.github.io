@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/notes/the_go_reflection/"><link rel="canonical" href="https://morven.life/notes/the_go_reflection/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/morven.life\/"
+      },
+      "articleSection" : "notes",
+      "name" : "5分钟系列 -「Go Reflection」",
+      "headline" : "5分钟系列 -「Go Reflection」",
+      "description" : " 很多语言都支持反射，go语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言在运行时动态检查和操作任意对象的能力。对于反射来说，不同语言有着不同的工作方式，我们今天主要来看看在go语言中，反射是怎么工作的。\n在开始之前，先安利一篇go官方介绍反射的博客：The Laws of Reflection\n这篇笔记将我个人对于go反射机制的补充与总结，刚兴趣的读者建议去看原文。\n类型与接口 ",
+      "inLanguage" : "en-US",
+      "author" : "Morven\x27s Life",
+      "creator" : "Morven\x27s Life",
+      "publisher": "Morven\x27s Life",
+      "accountablePerson" : "Morven\x27s Life",
+      "copyrightHolder" : "Morven\x27s Life",
+      "copyrightYear" : "2018",
+      "datePublished": "2018-09-12 00:00:00 \x2b0000 UTC",
+      "dateModified" : "2018-09-12 00:00:00 \x2b0000 UTC",
+      "url" : "https:\/\/morven.life\/notes\/the_go_reflection\/",
+      "keywords" : [  ]
+  }</script><title>5分钟系列 -「Go Reflection」 - Morven&#39;s Life</title><meta property="og:title" content="5分钟系列 -「Go Reflection」 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content=" 很多语言都支持反射，go语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言在运行时动态检查和操作任意对象的能力。对于反射来说，不同语言有着不同的工作方式，我们今天主要来看看在go语言中，反射是怎么工作的。
+在开始之前，先安利一篇go官方介绍反射的博客：The Laws of Reflection
+这篇笔记将我个人对于go反射机制的补充与总结，刚兴趣的读者建议去看原文。
+类型与接口 "><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">5分钟系列 -「Go Reflection」</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2018-09-12 00:00:00 UTC">12 Sep 2018</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>很多语言都支持反射，go语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言在运行时动态检查和操作任意对象的能力。对于反射来说，不同语言有着不同的工作方式，我们今天主要来看看在go语言中，反射是怎么工作的。</p><p>在开始之前，先安利一篇go官方介绍反射的博客：<a href="https://blog.golang.org/laws-of-reflection">The Laws of Reflection</a></p><p>这篇笔记将我个人对于go反射机制的补充与总结，刚兴趣的读者建议去看原文。</p><h3 id="类型与接口">类型与接口</h3></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+    container: document.getElementById('article')
+  });</script><script>hljs.initHighlightingOnLoad();
+  
+  var posts = document.getElementById('posts-list');
+  posts && quicklink({
+    el: posts,
+    priority: true,
+  });</script></body></html>

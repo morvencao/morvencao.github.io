@@ -101,7 +101,7 @@
   </url>
   
   <url>
-    <loc>https://morven.life/notes/the_go_language/</loc>
+    <loc>https://morven.life/notes/the_go_module/</loc>
     <lastmod>2019-02-26T00:00:00+00:00</lastmod>
   </url>
   
@@ -118,6 +118,11 @@
   <url>
     <loc>https://morven.life/notes/the_knowledge_of_docker/</loc>
     <lastmod>2018-11-13T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://morven.life/notes/the_go_reflection/</loc>
+    <lastmod>2018-09-12T00:00:00+00:00</lastmod>
   </url>
   
   <url>
