@@ -8,7 +8,7 @@
       "articleSection" : "notes",
       "name" : "5分钟系列 -「Go Reflection」",
       "headline" : "5分钟系列 -「Go Reflection」",
-      "description" : " 很多语言都支持反射，go语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言在运行时动态检查和操作任意对象的能力。对于反射来说，不同语言有着不同的工作方式，我们今天主要来看看在go语言中，反射是怎么工作的。\n在开始之前，先安利一篇go官方介绍反射的博客：The Laws of Reflection\n这篇笔记将我个人对于go反射机制的补充与总结，刚兴趣的读者建议去看原文。\n类型与接口 ",
+      "description" : "很多语言都支持反射，Go 语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言可以在运行时动态访问、检查和修改任意对象本身状态和行为的能力。不同语言的反射特性有着不同的工作方式，有些语言还不支持反射特性。我们今天主要来看看在 Go 语言中，反射是怎么工作的。\n在开始之前，先安利一篇 Go 官方出品的介绍反射机制的博客：The Laws of Reflection\n这篇笔记将我个人对于 Go 反射机制的补充与总结，感兴趣的读者建议去看原文。\n反射的适用场景 需要说明的是，Go 语言是一门静态的编译型语言，也就是在编译过程中，编译器就能发现一些类型错误，但是它并不能发现反射相关代码的错误，这种错误往往需要在运行时才能被发现，所以一旦反射代码出错，将直接导致程序 panic 而退出，所以要尽量避免适用反射。此外，反射相关代码的可读性往往较差，执行效率也比正常 Go 语言代码低不少。综上，除非以下特殊情况必须使用反射外，我们应经量避免适用 Go 的这一语言特性。\n适用于反射的场景：\n 某段函数或者方法需要处理的数据类型不确定，会包含一些列的可能类型，这个时候我们就需要使用反射动态获取要处理的数据类型，基于数据类型的不同调用不同的处理程序。一个非常典型的例子是我们通过反序列化得到一段一个类型为map[string]interface{}的数据结构，然后通过反射机制递归地获取每个字段的类型。\n 在某些场景下我们需要根据特性的某些条件决定调用哪个函数，也就是说需要在运行期间获取函数以及函数调用的参数来动态地执行函数。典型的例子是现在主流的RPC框架的实现机制，RPC服务器端维护函数名到函数反射值的映射，RPC客户端通过网络传递函数名、参数列表给RPC服务器端后，RPC服务器解析为反射值，调用执行函数，最后再将函数的返回值打包通过网络返回给RPC客户端。\n   Note: 当然，可能还有其他适用于反射的适用场景，这里只是罗列常用的使用场景。\n 反射的实现基础 首先需要明确一点，Go 反射的实现基础是类型。在 Go 语言中，每个变量都有一个静态类型，也就是在编译阶段就检查的类型，比如int, string, map, struct等。需要注意的是，这个静态类型是指变量声明的时候指定的类型，并不一定不是底层真正存储的数据类型。例如：\ntype MyInt int var i int var j MyInt  上面的代码中，虽然变量i和j的真正存储的数据类型都是int，但是对于编译器来说，它们是不同的类型，要进行显示的类型转换才能相互赋值。\n有的变量可能除了静态类型之外，还会有动态类型。所谓动态类型就是指变量值实际存储的类型信息，举个例子来说明：\nvar r io.Reader tty, err := os.OpenFile(\x26quot;\/dev\/tty\x26quot;, os.O_RDWR, 0) if err != nil { return nil, err } r = tty var empty interface{} empty = tty  首先声明r的类型是io.",
       "inLanguage" : "en-US",
       "author" : "Morven\x27s Life",
       "creator" : "Morven\x27s Life",
@@ -20,10 +20,84 @@
       "dateModified" : "2018-09-12 00:00:00 \x2b0000 UTC",
       "url" : "https:\/\/morven.life\/notes\/the_go_reflection\/",
       "keywords" : [  ]
-  }</script><title>5分钟系列 -「Go Reflection」 - Morven&#39;s Life</title><meta property="og:title" content="5分钟系列 -「Go Reflection」 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content=" 很多语言都支持反射，go语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言在运行时动态检查和操作任意对象的能力。对于反射来说，不同语言有着不同的工作方式，我们今天主要来看看在go语言中，反射是怎么工作的。
-在开始之前，先安利一篇go官方介绍反射的博客：The Laws of Reflection
-这篇笔记将我个人对于go反射机制的补充与总结，刚兴趣的读者建议去看原文。
-类型与接口 "><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">5分钟系列 -「Go Reflection」</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2018-09-12 00:00:00 UTC">12 Sep 2018</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>很多语言都支持反射，go语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言在运行时动态检查和操作任意对象的能力。对于反射来说，不同语言有着不同的工作方式，我们今天主要来看看在go语言中，反射是怎么工作的。</p><p>在开始之前，先安利一篇go官方介绍反射的博客：<a href="https://blog.golang.org/laws-of-reflection">The Laws of Reflection</a></p><p>这篇笔记将我个人对于go反射机制的补充与总结，刚兴趣的读者建议去看原文。</p><h3 id="类型与接口">类型与接口</h3></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
+  }</script><title>5分钟系列 -「Go Reflection」 - Morven&#39;s Life</title><meta property="og:title" content="5分钟系列 -「Go Reflection」 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="很多语言都支持反射，Go 语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言可以在运行时动态访问、检查和修改任意对象本身状态和行为的能力。不同语言的反射特性有着不同的工作方式，有些语言还不支持反射特性。我们今天主要来看看在 Go 语言中，反射是怎么工作的。
+在开始之前，先安利一篇 Go 官方出品的介绍反射机制的博客：The Laws of Reflection
+这篇笔记将我个人对于 Go 反射机制的补充与总结，感兴趣的读者建议去看原文。
+反射的适用场景 需要说明的是，Go 语言是一门静态的编译型语言，也就是在编译过程中，编译器就能发现一些类型错误，但是它并不能发现反射相关代码的错误，这种错误往往需要在运行时才能被发现，所以一旦反射代码出错，将直接导致程序 panic 而退出，所以要尽量避免适用反射。此外，反射相关代码的可读性往往较差，执行效率也比正常 Go 语言代码低不少。综上，除非以下特殊情况必须使用反射外，我们应经量避免适用 Go 的这一语言特性。
+适用于反射的场景：
+ 某段函数或者方法需要处理的数据类型不确定，会包含一些列的可能类型，这个时候我们就需要使用反射动态获取要处理的数据类型，基于数据类型的不同调用不同的处理程序。一个非常典型的例子是我们通过反序列化得到一段一个类型为map[string]interface{}的数据结构，然后通过反射机制递归地获取每个字段的类型。
+ 在某些场景下我们需要根据特性的某些条件决定调用哪个函数，也就是说需要在运行期间获取函数以及函数调用的参数来动态地执行函数。典型的例子是现在主流的RPC框架的实现机制，RPC服务器端维护函数名到函数反射值的映射，RPC客户端通过网络传递函数名、参数列表给RPC服务器端后，RPC服务器解析为反射值，调用执行函数，最后再将函数的返回值打包通过网络返回给RPC客户端。
+   Note: 当然，可能还有其他适用于反射的适用场景，这里只是罗列常用的使用场景。
+ 反射的实现基础 首先需要明确一点，Go 反射的实现基础是类型。在 Go 语言中，每个变量都有一个静态类型，也就是在编译阶段就检查的类型，比如int, string, map, struct等。需要注意的是，这个静态类型是指变量声明的时候指定的类型，并不一定不是底层真正存储的数据类型。例如：
+type MyInt int var i int var j MyInt  上面的代码中，虽然变量i和j的真正存储的数据类型都是int，但是对于编译器来说，它们是不同的类型，要进行显示的类型转换才能相互赋值。
+有的变量可能除了静态类型之外，还会有动态类型。所谓动态类型就是指变量值实际存储的类型信息，举个例子来说明：
+var r io.Reader tty, err := os.OpenFile(&quot;/dev/tty&quot;, os.O_RDWR, 0) if err != nil { return nil, err } r = tty var empty interface{} empty = tty  首先声明r的类型是io."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">5分钟系列 -「Go Reflection」</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2018-09-12 00:00:00 UTC">12 Sep 2018</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>很多语言都支持反射，Go 语言也不例外。那么什么是反射呢？总的来说，反射就是计算机程序语言可以在运行时动态访问、检查和修改任意对象本身状态和行为的能力。不同语言的反射特性有着不同的工作方式，有些语言还不支持反射特性。我们今天主要来看看在 Go 语言中，反射是怎么工作的。</p><p>在开始之前，先安利一篇 Go 官方出品的介绍反射机制的博客：<a href="https://blog.golang.org/laws-of-reflection">The Laws of Reflection</a></p><p>这篇笔记将我个人对于 Go 反射机制的补充与总结，感兴趣的读者建议去看原文。</p><h2 id="反射的适用场景">反射的适用场景</h2><p>需要说明的是，Go 语言是一门静态的编译型语言，也就是在编译过程中，编译器就能发现一些类型错误，但是它并不能发现反射相关代码的错误，这种错误往往需要在运行时才能被发现，所以一旦反射代码出错，将直接导致程序 panic 而退出，所以要尽量避免适用反射。此外，反射相关代码的可读性往往较差，执行效率也比正常 Go 语言代码低不少。综上，除非以下特殊情况必须使用反射外，我们应经量避免适用 Go 的这一语言特性。</p><p>适用于反射的场景：</p><ol><li><p>某段函数或者方法需要处理的数据类型不确定，会包含一些列的可能类型，这个时候我们就需要使用反射动态获取要处理的数据类型，基于数据类型的不同调用不同的处理程序。一个非常典型的例子是我们通过反序列化得到一段一个类型为<code>map[string]interface{}</code>的数据结构，然后通过反射机制递归地获取每个字段的类型。</p></li><li><p>在某些场景下我们需要根据特性的某些条件决定调用哪个函数，也就是说需要在运行期间获取函数以及函数调用的参数来动态地执行函数。典型的例子是现在主流的<code>RPC</code>框架的实现机制，<code>RPC</code>服务器端维护函数名到函数反射值的映射，<code>RPC</code>客户端通过网络传递函数名、参数列表给<code>RPC</code>服务器端后，<code>RPC</code>服务器解析为反射值，调用执行函数，最后再将函数的返回值打包通过网络返回给<code>RPC</code>客户端。</p></li></ol><blockquote><p>Note: 当然，可能还有其他适用于反射的适用场景，这里只是罗列常用的使用场景。</p></blockquote><h2 id="反射的实现基础">反射的实现基础</h2><p>首先需要明确一点，Go 反射的实现基础是类型。在 Go 语言中，每个变量都有一个<strong>静态类型</strong>，也就是在编译阶段就检查的类型，比如<code>int</code>, <code>string</code>, <code>map</code>, <code>struct</code>等。需要注意的是，这个静态类型是指变量声明的时候指定的类型，并不一定不是底层真正存储的数据类型。例如：</p><pre><code>type MyInt int
+
+var i int
+var j MyInt
+</code></pre><p>上面的代码中，虽然变量<code>i</code>和<code>j</code>的真正存储的数据类型都是<code>int</code>，但是对于编译器来说，它们是不同的类型，要进行显示的类型转换才能相互赋值。</p><p>有的变量可能除了<strong>静态类型</strong>之外，还会有<strong>动态类型</strong>。所谓动态类型就是指变量值实际存储的类型信息，举个例子来说明：</p><pre><code>var r io.Reader 
+
+tty, err := os.OpenFile(&quot;/dev/tty&quot;, os.O_RDWR, 0)
+if err != nil {
+    return nil, err
+}
+
+r = tty
+
+var empty interface{}
+empty = tty
+</code></pre><p>首先声明<code>r</code>的类型是<code>io.Reader</code>，也就是说这是<code>r</code>的静态类型，此时它的动态类型为<code>nil</code>，并且它的动态值也是<code>nil</code>。接下来的<code>r=tty</code>语句，将<code>r</code>的动态类型变成<code>*os.File</code>，动态值则变成非空，表示打开的文件对象。这时，<code>r</code>可以用<code>&lt;value,type&gt;</code>对来表示为：<code>&lt;tty, *os.File&gt;</code>。</p><p>同时，我们知道，Go 语言里面的任意对象都是空接口(<code>interface{}</code>)类型，因为任意对象都实现了零个或者多个方法。于是语句<code>empty = tty</code>将<code>*os.File</code>对象赋予空借口类型的变量<code>empty</code>。</p><p>事实上，反射与空接口类型密切相关。任意一个空接口(<code>interface{}</code>)类型的对象都主要是由两部分组成：</p><ol><li>类型(Type)</li><li>数据值(Value)</li></ol><p><img src="https://i.loli.net/2021/01/24/G1UcFoJByQZdhrS.jpg" alt="go-interface.jpg"></p><p>其实如果要细分的话，可以分为无函数的<code>eface</code>和有函数的<code>iface</code>:</p><ol><li>无函数的<code>eface</code></li></ol><p><img src="https://i.loli.net/2021/01/24/iTb4XqGA2eZaOD7.jpg" alt="eface.jpg"></p><ol><li>有函数的<code>iface</code></li></ol><p><img src="https://i.loli.net/2021/01/24/lsSLRVKAaEqBf7D.jpg" alt="iface.jpg"></p><p><code>iface</code>描述的是非空接口，它包含类型包含的方法集；与之相对的是<code>eface</code>，描述的是空接口(<code>interface{}</code>)，不包含任何方法。</p><h2 id="反射的基本类型与函数">反射的基本类型与函数</h2><p><code>reflect</code>标准库中定义了两个最重要的反射对象类型，它们提供很多函数来获取存储在接口里的类型：</p><ol><li>reflect.Type</li><li>reflect.Value</li></ol><p>其中，<code>reflect.Type</code>定义为接口类型，主要提供关于类型相关的信息，所以它和<code>_type</code>关联比较紧密，从<code>Type</code>接口的<a href="https://golang.org/pkg/reflect/#Type">定义</a>中可以看到非常多有趣的方法，其中<code>MethodByName</code> 可以获取当前类型对应方法的引用、<code>Implements</code>可以判断当前类型是否实现了某个接口等；</p><pre><code>type Type interface {
+    Align() int
+    FieldAlign() int
+    Method(int) Method
+    MethodByName(string) (Method, bool)
+    NumMethod() int
+    Name() string
+    PkgPath() string
+    Size() uintptr
+    String() string
+    Kind() Kind
+    Implements(u Type) bool
+    ...
+}
+</code></pre><p>而<code>reflect.Value</code>为普通结构体，它结合了<code>_type</code>和<code>data</code>，没有任何对外暴露的成员变量，但是却提供了很多方法让我们获取或者写入<code>reflect.Value</code>结构体中存储的数据，因此可以通过它获取甚至改变类型的值。</p><pre><code>type Value struct {
+    // contains filtered or unexported fields
+}
+
+func (v Value) Addr() Value
+func (v Value) Bool() bool
+func (v Value) Bytes() []byte
+func (v Value) Float() float64
+...
+</code></pre><p>同时，<code>reflect</code>标准库还提供了两个基础的关于反射的函数来获取这两种反射对象类型：</p><ol><li>func TypeOf(i interface{}) Type</li><li>func ValueOf(i interface{}) Value</li></ol><p><code>TypeOf</code>函数用来提取一个接口中值的类型信息。由于它的输入参数是一个空接口(<code>interface{}</code>)，调用此函数时，实参会先被转化为空接口(<code>interface{}</code>)类型；<code>ValueOf</code>函数同样也是接受一个空接口(<code>interface{}</code>)，因此实参也要做类型转换，而函数的返回值是<code>reflect.Value</code>表示参数值存储的实际变量值，它能提供实际变量的各种信息，如类型结构体指针、真实数据的地址、标志位等。</p><p>特别需要说明的是，通过<code>ValueOf</code>函数获取到的<code>reflect.Value</code>反射对象值有以下两个重要的方法：</p><ol><li><code>Type()</code>方法获取变量的类型信息，等同于调用<code>reflect.TypeOf()</code>函数；</li><li><code>Interface()()</code>方法获取反射变量的接口类型信息，相当于是<code>ValueOf</code>函数的方向操作；</li></ol><p><img src="https://i.loli.net/2021/01/24/ypBaDPOXx7vE6eo.jpg" alt="go-reflect-tye-function.jpg"></p><h2 id="反射的三大法则">反射的三大法则</h2><p>根据 Go 官方关于反射的博客，反射有三大法则：</p><blockquote><ol><li>Reflection goes from interface value to reflection object.</li><li>Reflection goes from reflection object to interface value.</li><li>To modify a reflection object, the value must be settable.</li></ol></blockquote><p>反射的第一条法则说的是，基于反射我们可以将接口类型对象转化为反射类型的对象，由此来检测存储在接口类型对象中的类型和值，上面提到的<code>reflect.TypeOf</code>和<code>reflect.ValueOf</code>就是完成这个转换的两个最重要函数：</p><p>举个例子，</p><pre><code>var x float64 = 3.4
+t := reflect.TypeOf(x)
+v := reflect.ValueOf(x)
+fmt.Println(&quot;type:&quot;, t)
+fmt.Println(&quot;type:&quot;, v.Type())
+fmt.Println(&quot;kind is float64:&quot;, v.Kind() == reflect.Float64)
+fmt.Println(&quot;value:&quot;, v.Float())
+</code></pre><p>将会打印出：</p><pre><code>type: float64
+type: float64
+kind is float64: true
+value: 3.4
+</code></pre><p>上述简单的例子说明我们可以通过<code>reflect.TypeOf</code>和<code>reflect.ValueOf</code>函数将接口类型的变量<code>x</code>转化为反射类型的对象<code>t</code>与<code>v</code>，由此何以获取该变量的其他元信息，包括当前类型相关数据和操作，例如通过<code>Kind()</code>方法获取他存储的是基底层类型等：</p><ul><li>对于结构体，可以获取字段的数量并通过下标和字段名获取字段；</li><li>对于哈希表，可以获取哈希表的 Key 类型；</li><li>对于函数或方法，可以获得入参和返回值的类型；</li><li>&hellip;</li></ul><p>反射的第二条法则与第一条法则正好相反，反射对象还可以原成成接口类型的变量，<code>reflect.Value</code>类型的对象可以通过调用<code>Interface()</code>方法获得<code>interface{}</code>类型的接口变量：</p><pre><code>v := reflect.ValueOf(1)
+v.Interface{}.(int)
+</code></pre><p>从上面的例子可以看到，反射对象转换成接口对象过程就像从接口对象到反射对象的镜面过程一样，从接口对象到反射对象需要经过从基本类型到接口类型的类型转换和从接口类型到反射对象类型的转换，反过来的话，所有的反射对象也都需要先转换成接口类型，再通过强制类型转换变成原始类型。</p><p>反射的第三条法则与值是否可以被更改相关的，它说的是如果需要修改一个反射变量，那么它必须是可设置的。反射变量可设置的本质是它存储了原变量本身，这样对反射变量的操作，就会反映到原变量本身；反之，如果反射变量不能代表原变量，那么操作了反射变量，不会对原变量产生任何影响，这会给使用者带来疑惑。所以第二种情况在语言层面是不被允许的。</p><p>举个例子：</p><pre><code>var x float64 = 3.4
+v := reflect.ValueOf(x)
+v.SetFloat(7.1) // Error: will panic.
+</code></pre><pre><code>$ go run reflect.go
+panic: reflect: reflect.flag.mustBeAssignable using unaddressable value
+</code></pre><p>执行上面的代码会panic，因为反射变量<code>v</code>不能代表接口变量<code>x</code>本身的反射对象，因为调用 Go 语言函数调用是传值，所以<code>reflect.ValueOf(x)</code>这一函数执行的时候传入的实参只是形参的拷贝，所以<code>v</code>并不是<code>x</code>真正的反射对象映射。所以 Go 语言规定因此对<code>v</code>进行操作是被禁止的。</p><p>可设置(settable)是反射对象<code>reflect.Value</code>的一个性质，但不是所有的反射对象都是可被设置的。</p><p>如果想要上面的栗子可以运行，我们只需要在函数调用时传递参数的指针就可以解决：</p><pre><code>var x float64 = 3.4
+p := reflect.ValueOf(&amp;x)
+fmt.Println(&quot;type of p:&quot;, p.Type())
+fmt.Println(&quot;settability of p:&quot;, p.CanSet())
+</code></pre><p>但是虽然程序可以运行，但是从输出结果来看通过指针获取到的反射对象还是不可设置的：</p><pre><code>type of p: *float64
+settability of p: false
+</code></pre><p>原因是反射对象<code>p</code>还不是代表<code>x</code>，<code>p</code>是反射对象里面的指针类型，其真正指向的类型需要通过<code>p.Elem()</code>来获取，也就是说才<code>p.Elem()</code>代表<code>x</code>：</p><pre><code>v := p.Elem()
+v.SetFloat(7.1)
+fmt.Println(v.Interface()) // 7.1
+fmt.Println(x) // 7.1
+</code></pre><p>总之，如果想要操作原变量，反射变量<code>Value</code>必须对应到原接口变量的地址才行。</p><h2 id="总结">总结</h2><p>反射是 Go 语言比较重要的特性之一，很多框架都依赖 Go 语言的反射机制实现一些动态的功能。Go 语言作为一门静态语言，它的设计目标就是尽量追求简单，但是有时候却缺少一定的表达能力，好在 Go 语言通过提供的反射机制提供了动态特性来弥补它在语法上的一些劣势。通过本文我们大致了解了在 Go 语言中反射的使用场景，反射的基本实现机制，同时也介绍了反射的基本类型与函数和三大法则。整体来讲，Go 反射是围绕着三者进行的，分别是<code>Type</code>、<code>Value</code>以及<code>Interface</code>，三者相辅相成。<code>reflect</code>标准库实现了运行时的反射能力，能够让 Go 程序操作不同类型的对象，可以使用<code>reflect.TypeOf</code>函数从静态接口类型(<code>interface{}</code>)中获取动态类型信息并通过<code>reflect.ValueOf()</code>函数获取数据的运行时表示，通过这两个函数和<code>reflect</code>标准库其他方法就可以得到更强大的表达能力。</p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
     container: document.getElementById('article')
   });</script><script>hljs.initHighlightingOnLoad();
   
