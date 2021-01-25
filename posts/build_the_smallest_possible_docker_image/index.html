@@ -1,79 +1,57 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="generator" content="Hugo 0.55.6"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="Morven&#39;s Life"><meta property="og:url" content="https://morven.life/posts/build_the_smallest_possible_docker_image/"><link rel="canonical" href="https://morven.life/posts/build_the_smallest_possible_docker_image/"><link rel="shortcut icon" href="https://morven.life/favicon.ico" type="image/x-png"><script type="application/ld+json">{
-      "@context" : "http://schema.org",
-      "@type" : "BlogPosting",
-      "mainEntityOfPage": {
-           "@type": "WebPage",
-           "@id": "https:\/\/morven.life\/"
-      },
-      "articleSection" : "posts",
-      "name" : "创建最小Docker镜像",
-      "headline" : "创建最小Docker镜像",
-      "description" : "如果你熟悉docker，你可能知道docker镜像存储使用Union FS分层存储技术。在构建一个docker镜像时，会一层一层构建，前一层是后一层的基础，每一层构建完成之后就不会再改变。正是因为这一点，我们在构建docker镜像的时候，要特别小心，每一层尽量只包含需要的东西，构建应用额外的东西尽量在构建结束的时候删除。举例来说，比如你在构建一个go写的简单web应用程序的时候，原则上只需要一个go编译出来的binary，没有必要保留构建的工具以及环境。\ndocker官方提供了一个特殊的空镜像scratch,使用这个镜像意味着我们不需要任何的已有镜像为基础，直接将我们自定义的指令作为镜像的第一层。\nFROM scratch ...  实际上，我们可以创建自己的scratch镜像：\ntar cv --files-from \/dev\/null | docker import - scratch  那么，问题来了，我们可以使用scratch镜像为基础制作哪些镜像呢？答案是所有不需要任何依赖库的可执行文件都可以放到以scratch为基础镜像来制作。具体来说，对于linux下静态编译的程序来说，并不需要操作系统提供的运行时支持，所有需要的一切都已经在可执行文件中包含了，比如使用go语言开发的很多应用会使用直接FROM scratch的方式制作镜像，这样最终的镜像体积非常小。\n下面是一个简单的go语言开发的web程序代码：\npackage main import ( \x26quot;fmt\x26quot; \x26quot;net\/http\x26quot; ) func main() { http.HandleFunc(\x26quot;\/\x26quot;, func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, \x26quot;Hello, you\x27ve requested: %s\\n\x26quot;, r.URL.Path) }) http.ListenAndServe(\x26quot;:80\x26quot;, nil) }  我们可以使用go build来编译此程序，并以scratch为基础制作docker镜像，dockerfile如下：\nFROM scratch ADD helloworld \/ CMD [\x26quot;\/helloworld\x26quot;]  接下来开始编译并构建docker镜像：\nmc@mcmbp:~\/gocode\/src\/hello# go build -o helloworld mc@mcmbp:~\/gocode\/src\/hello# docker build -t helloworld .",
-      "inLanguage" : "en-US",
-      "author" : "Morven\x27s Life",
-      "creator" : "Morven\x27s Life",
-      "publisher": "Morven\x27s Life",
-      "accountablePerson" : "Morven\x27s Life",
-      "copyrightHolder" : "Morven\x27s Life",
-      "copyrightYear" : "2019",
-      "datePublished": "2019-01-20 00:00:00 \x2b0000 UTC",
-      "dateModified" : "2019-01-20 00:00:00 \x2b0000 UTC",
-      "url" : "https:\/\/morven.life\/posts\/build_the_smallest_possible_docker_image\/",
-      "keywords" : [  ]
-  }</script><title>创建最小Docker镜像 - Morven&#39;s Life</title><meta property="og:title" content="创建最小Docker镜像 - Morven&#39;s Life"><meta property="og:type" content="article"><meta name="description" content="如果你熟悉docker，你可能知道docker镜像存储使用Union FS分层存储技术。在构建一个docker镜像时，会一层一层构建，前一层是后一层的基础，每一层构建完成之后就不会再改变。正是因为这一点，我们在构建docker镜像的时候，要特别小心，每一层尽量只包含需要的东西，构建应用额外的东西尽量在构建结束的时候删除。举例来说，比如你在构建一个go写的简单web应用程序的时候，原则上只需要一个go编译出来的binary，没有必要保留构建的工具以及环境。
+<!doctype html><html lang=en><meta charset=utf-8><meta name=generator content="Hugo 0.80.0"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Morven's Life"><meta property=og:url content=https://morven.life/posts/build_the_smallest_possible_docker_image/><link rel=canonical href=https://morven.life/posts/build_the_smallest_possible_docker_image/><link rel="shortcut icon" href=https://morven.life/favicon.ico type=image/x-png><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/morven.life\/"},"articleSection":"posts","name":"创建最小Docker镜像","headline":"创建最小Docker镜像","description":"如果你熟悉docker，你可能知道docker镜像存储使用Union FS分层存储技术。在构建一个docker镜像时，会一层一层构建，前一层是后一层的基础，每一层构建完成之后就不会再改变。正是因为这一点，我们在构建docker镜像的时候，要特别小心，每一层尽量只包含需要的东西，构建应用额外的东西尽量在构建结束的时候删除。举例来说，比如你在构建一个go写的简单web应用程序的时候，原则上只需要一个go编译出来的binary，没有必要保留构建的工具以及环境。\ndocker官方提供了一个特殊的空镜像scratch,使用这个镜像意味着我们不需要任何的已有镜像为基础，直接将我们自定义的指令作为镜像的第一层。\nFROM scratch ... 实际上，我们可以创建自己的scratch镜像：\ntar cv --files-from \/dev\/null | docker import - scratch 那么，问题来了，我们可以使用scratch镜像为基础制作哪些镜像呢？答案是所有不需要任何依赖库的可执行文件都可以放到以scratch为基础镜像来制作。具体来说，对于linux下静态编译的程序来说，并不需要操作系统提供的运行时支持，所有需要的一切都已经在可执行文件中包含了，比如使用go语言开发的很多应用会使用直接FROM scratch的方式制作镜像，这样最终的镜像体积非常小。\n下面是一个简单的go语言开发的web程序代码：\npackage main import ( \u0026#34;fmt\u0026#34; \u0026#34;net\/http\u0026#34; ) func main() { http.HandleFunc(\u0026#34;\/\u0026#34;, func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, \u0026#34;Hello, you\u0026#39;ve requested: %s\\n\u0026#34;, r.URL.Path) }) http.ListenAndServe(\u0026#34;:80\u0026#34;, nil) } 我们可以使用go build来编译此程序，并以scratch为基础制作docker镜像，dockerfile如下：\nFROM scratch ADD helloworld \/ CMD [\u0026#34;\/helloworld\u0026#34;] 接下来开始编译并构建docker镜像：\nmc@mcmbp:~\/gocode\/src\/hello# go build -o helloworld mc@mcmbp:~\/gocode\/src\/hello# docker build -t helloworld . Sending build context to Docker daemon 7.","inLanguage":"en-US","author":"Morven\u0027s Life","creator":"Morven\u0027s Life","publisher":"Morven\u0027s Life","accountablePerson":"Morven\u0027s Life","copyrightHolder":"Morven\u0027s Life","copyrightYear":"2019","datePublished":"2019-01-20 00:00:00 \u002b0000 UTC","dateModified":"2019-01-20 00:00:00 \u002b0000 UTC","url":"https:\/\/morven.life\/posts\/build_the_smallest_possible_docker_image\/","keywords":[]}</script><title>创建最小Docker镜像 - Morven's Life</title><meta property=og:title content="创建最小Docker镜像 - Morven's Life"><meta property=og:type content=article><meta name=description content='如果你熟悉docker，你可能知道docker镜像存储使用Union FS分层存储技术。在构建一个docker镜像时，会一层一层构建，前一层是后一层的基础，每一层构建完成之后就不会再改变。正是因为这一点，我们在构建docker镜像的时候，要特别小心，每一层尽量只包含需要的东西，构建应用额外的东西尽量在构建结束的时候删除。举例来说，比如你在构建一个go写的简单web应用程序的时候，原则上只需要一个go编译出来的binary，没有必要保留构建的工具以及环境。
 docker官方提供了一个特殊的空镜像scratch,使用这个镜像意味着我们不需要任何的已有镜像为基础，直接将我们自定义的指令作为镜像的第一层。
-FROM scratch ...  实际上，我们可以创建自己的scratch镜像：
-tar cv --files-from /dev/null | docker import - scratch  那么，问题来了，我们可以使用scratch镜像为基础制作哪些镜像呢？答案是所有不需要任何依赖库的可执行文件都可以放到以scratch为基础镜像来制作。具体来说，对于linux下静态编译的程序来说，并不需要操作系统提供的运行时支持，所有需要的一切都已经在可执行文件中包含了，比如使用go语言开发的很多应用会使用直接FROM scratch的方式制作镜像，这样最终的镜像体积非常小。
+FROM scratch ... 实际上，我们可以创建自己的scratch镜像：
+tar cv --files-from /dev/null | docker import - scratch 那么，问题来了，我们可以使用scratch镜像为基础制作哪些镜像呢？答案是所有不需要任何依赖库的可执行文件都可以放到以scratch为基础镜像来制作。具体来说，对于linux下静态编译的程序来说，并不需要操作系统提供的运行时支持，所有需要的一切都已经在可执行文件中包含了，比如使用go语言开发的很多应用会使用直接FROM scratch的方式制作镜像，这样最终的镜像体积非常小。
 下面是一个简单的go语言开发的web程序代码：
-package main import ( &quot;fmt&quot; &quot;net/http&quot; ) func main() { http.HandleFunc(&quot;/&quot;, func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, &quot;Hello, you&#39;ve requested: %s\n&quot;, r.URL.Path) }) http.ListenAndServe(&quot;:80&quot;, nil) }  我们可以使用go build来编译此程序，并以scratch为基础制作docker镜像，dockerfile如下：
-FROM scratch ADD helloworld / CMD [&quot;/helloworld&quot;]  接下来开始编译并构建docker镜像：
-mc@mcmbp:~/gocode/src/hello# go build -o helloworld mc@mcmbp:~/gocode/src/hello# docker build -t helloworld ."><link rel="stylesheet" href="https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css"><link rel="stylesheet" href="https://morven.life/css/index.css"><link href="https://morven.life/index.xml" rel="alternate" type="application/rss+xml" title="Morven&#39;s Life"><script>(function(undefined) {}).call('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script></head><body><article class="post Chinese" id="article"><div class="row"><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href="https://morven.life/"><div class="head-line"></div></a><header class="post-header"><h1 class="post-title">创建最小Docker镜像</h1><div class="row"><div class="col-xs-6"><time class="post-date" datetime="2019-01-20 00:00:00 UTC">20 Jan 2019</time></div><div class="col-xs-6"><div class="post-author"><a target="_blank" href="https://morven.life/">@Morven&#39;s Life</a></div></div></div></header><div class="post-content markdown-body"><p>如果你熟悉<a href="https://www.docker.com/">docker</a>，你可能知道docker镜像存储使用<a href="https://en.wikipedia.org/wiki/Union_mount">Union FS</a>分层存储技术。在构建一个docker镜像时，会一层一层构建，前一层是后一层的基础，每一层构建完成之后就不会再改变。正是因为这一点，我们在构建docker镜像的时候，要特别小心，每一层尽量只包含需要的东西，构建应用额外的东西尽量在构建结束的时候删除。举例来说，比如你在构建一个go写的简单web应用程序的时候，原则上只需要一个go编译出来的binary，没有必要保留构建的工具以及环境。</p><p>docker官方提供了一个特殊的空镜像<code>scratch</code>,使用这个镜像意味着我们不需要任何的已有镜像为基础，直接将我们自定义的指令作为镜像的第一层。</p><pre><code>FROM scratch
+package main import ( "fmt" "net/http" ) func main() { http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "Hello, you&#39;ve requested: %s\n", r.URL.Path) }) http.ListenAndServe(":80", nil) } 我们可以使用go build来编译此程序，并以scratch为基础制作docker镜像，dockerfile如下：
+FROM scratch ADD helloworld / CMD ["/helloworld"] 接下来开始编译并构建docker镜像：
+mc@mcmbp:~/gocode/src/hello# go build -o helloworld mc@mcmbp:~/gocode/src/hello# docker build -t helloworld . Sending build context to Docker daemon 7.'><link rel=stylesheet href=https://unpkg.com/flexboxgrid@6.3.1/dist/flexboxgrid.min.css><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/tomorrow.min.css><link rel=stylesheet href=https://morven.life/css/index.css><link href=https://morven.life/index.xml rel=alternate type=application/rss+xml title="Morven's Life"><script>(function(undefined){}).call('object'===typeof window&&window||'object'===typeof self&&self||'object'===typeof global&&global||{});</script><article class="post 简体中文" id=article><div class=row><div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"><a href=https://morven.life/><div class=head-line></div></a><header class=post-header><h1 class=post-title>创建最小Docker镜像</h1><div class=row><div class=col-xs-6><time class=post-date datetime="2019-01-20 00:00:00 UTC">20 Jan 2019</time></div><div class=col-xs-6><div class=post-author><a target=_blank href=https://morven.life/>@Morven's Life</a></div></div></div></header><div class="post-content markdown-body"><p>如果你熟悉<a href=https://www.docker.com/>docker</a>，你可能知道docker镜像存储使用<a href=https://en.wikipedia.org/wiki/Union_mount>Union FS</a>分层存储技术。在构建一个docker镜像时，会一层一层构建，前一层是后一层的基础，每一层构建完成之后就不会再改变。正是因为这一点，我们在构建docker镜像的时候，要特别小心，每一层尽量只包含需要的东西，构建应用额外的东西尽量在构建结束的时候删除。举例来说，比如你在构建一个go写的简单web应用程序的时候，原则上只需要一个go编译出来的binary，没有必要保留构建的工具以及环境。<p>docker官方提供了一个特殊的空镜像<code>scratch</code>,使用这个镜像意味着我们不需要任何的已有镜像为基础，直接将我们自定义的指令作为镜像的第一层。<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>FROM scratch
 ...
-</code></pre><p>实际上，我们可以创建自己的<code>scratch</code>镜像：</p><pre><code>tar cv --files-from /dev/null | docker import - scratch
-</code></pre><p>那么，问题来了，我们可以使用<code>scratch</code>镜像为基础制作哪些镜像呢？答案是所有不需要任何依赖库的可执行文件都可以放到以<code>scratch</code>为基础镜像来制作。具体来说，对于linux下静态编译的程序来说，并不需要操作系统提供的运行时支持，所有需要的一切都已经在可执行文件中包含了，比如使用go语言开发的很多应用会使用直接<code>FROM scratch</code>的方式制作镜像，这样最终的镜像体积非常小。</p><p>下面是一个简单的go语言开发的web程序代码：</p><pre><code>package main
+</code></pre></div><p>实际上，我们可以创建自己的<code>scratch</code>镜像：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>tar cv --files-from /dev/null | docker import - scratch
+</code></pre></div><p>那么，问题来了，我们可以使用<code>scratch</code>镜像为基础制作哪些镜像呢？答案是所有不需要任何依赖库的可执行文件都可以放到以<code>scratch</code>为基础镜像来制作。具体来说，对于linux下静态编译的程序来说，并不需要操作系统提供的运行时支持，所有需要的一切都已经在可执行文件中包含了，比如使用go语言开发的很多应用会使用直接<code>FROM scratch</code>的方式制作镜像，这样最终的镜像体积非常小。<p>下面是一个简单的go语言开发的web程序代码：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-go data-lang=go><span style=color:#204a87;font-weight:700>package</span> <span style=color:#000>main</span>
 
-import (
-	&quot;fmt&quot;
-	&quot;net/http&quot;
-)
+<span style=color:#204a87;font-weight:700>import</span> <span style=color:#000;font-weight:700>(</span>
+	<span style=color:#4e9a06>&#34;fmt&#34;</span>
+	<span style=color:#4e9a06>&#34;net/http&#34;</span>
+<span style=color:#000;font-weight:700>)</span>
 
-func main() {
-	http.HandleFunc(&quot;/&quot;, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, &quot;Hello, you've requested: %s\n&quot;, r.URL.Path)
-	})
+<span style=color:#204a87;font-weight:700>func</span> <span style=color:#000>main</span><span style=color:#000;font-weight:700>()</span> <span style=color:#000;font-weight:700>{</span>
+	<span style=color:#000>http</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>HandleFunc</span><span style=color:#000;font-weight:700>(</span><span style=color:#4e9a06>&#34;/&#34;</span><span style=color:#000;font-weight:700>,</span> <span style=color:#204a87;font-weight:700>func</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>w</span> <span style=color:#000>http</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>ResponseWriter</span><span style=color:#000;font-weight:700>,</span> <span style=color:#000>r</span> <span style=color:#ce5c00;font-weight:700>*</span><span style=color:#000>http</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Request</span><span style=color:#000;font-weight:700>)</span> <span style=color:#000;font-weight:700>{</span>
+		<span style=color:#000>fmt</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Fprintf</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>w</span><span style=color:#000;font-weight:700>,</span> <span style=color:#4e9a06>&#34;Hello, you&#39;ve requested: %s\n&#34;</span><span style=color:#000;font-weight:700>,</span> <span style=color:#000>r</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>URL</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Path</span><span style=color:#000;font-weight:700>)</span>
+	<span style=color:#000;font-weight:700>})</span>
 
-	http.ListenAndServe(&quot;:80&quot;, nil)
-}
-</code></pre><p>我们可以使用go build来编译此程序，并以<code>scratch</code>为基础制作docker镜像，dockerfile如下：</p><pre><code>FROM scratch
+	<span style=color:#000>http</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>ListenAndServe</span><span style=color:#000;font-weight:700>(</span><span style=color:#4e9a06>&#34;:80&#34;</span><span style=color:#000;font-weight:700>,</span> <span style=color:#204a87;font-weight:700>nil</span><span style=color:#000;font-weight:700>)</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><p>我们可以使用go build来编译此程序，并以<code>scratch</code>为基础制作docker镜像，dockerfile如下：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>FROM scratch
 ADD helloworld /
-CMD [&quot;/helloworld&quot;]
-</code></pre><p>接下来开始编译并构建docker镜像：</p><pre><code>mc@mcmbp:~/gocode/src/hello# go build -o helloworld
+CMD [&#34;/helloworld&#34;]
+</code></pre></div><p>接下来开始编译并构建docker镜像：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>mc@mcmbp:~/gocode/src/hello# go build -o helloworld
 mc@mcmbp:~/gocode/src/hello# docker build -t helloworld .
 Sending build context to Docker daemon  7.376MB
 Step 1/3 : FROM scratch
  ---&gt;
 Step 2/3 : ADD helloworld /
  ---&gt; 000f150706c7
-Step 3/3 : CMD [&quot;/helloworld&quot;]
+Step 3/3 : CMD [&#34;/helloworld&#34;]
  ---&gt; Running in f9c2c6932a34
 Removing intermediate container f9c2c6932a34
  ---&gt; 496f865c05e4
 Successfully built 496f865c05e4
 Successfully tagged helloworld:latest
-</code></pre><p>这样镜像就构建成功了，我们来看一下大小</p><pre><code>mc@mcmbp:~/gocode/src/hello# docker image ls
+</code></pre></div><p>这样镜像就构建成功了，我们来看一下大小<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>mc@mcmbp:~/gocode/src/hello# docker image ls
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
 helloworld          latest              496f865c05e4        8 seconds ago       7.37MB
-</code></pre><p>但是运行这个镜像，会发现容器无法创建：</p><pre><code>mc@mcmbp:~/gocode/src/hello# docker run -ti -p 80:80 helloworld
-standard_init_linux.go:207: exec user process caused &quot;no such file or directory&quot;
-</code></pre><p>原因是我们的<code>helloworld</code>可执行文件运行的时候依赖的一些库如<code>libc</code>还是动态链接的，而<code>scratch</code>镜像完全是空的，所以构建<code>helloworld</code>可执行文件的时候要按照下面的方式，使生成的<code>helloowrld</code>静态链接所有的库：</p><pre><code>CGO_ENABLED=0 go build -a -ldflags '-extldflags &quot;-static&quot;' -o helloworld .
-</code></pre><p>然后重新创建docker镜像：</p><pre><code>mc@mcmbp:~/gocode/src/hello# CGO_ENABLED=0 go build -a -ldflags '-extldflags &quot;-static&quot;' -o helloworld .
+</code></pre></div><p>但是运行这个镜像，会发现容器无法创建：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>mc@mcmbp:~/gocode/src/hello# docker run -ti -p 80:80 helloworld
+standard_init_linux.go:207: exec user process caused &#34;no such file or directory&#34;
+</code></pre></div><p>原因是我们的<code>helloworld</code>可执行文件运行的时候依赖的一些库如<code>libc</code>还是动态链接的，而<code>scratch</code>镜像完全是空的，所以构建<code>helloworld</code>可执行文件的时候要按照下面的方式，使生成的<code>helloowrld</code>静态链接所有的库：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>CGO_ENABLED=0 go build -a -ldflags &#39;-extldflags &#34;-static&#34;&#39; -o helloworld .
+</code></pre></div><p>然后重新创建docker镜像：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>mc@mcmbp:~/gocode/src/hello# CGO_ENABLED=0 go build -a -ldflags &#39;-extldflags &#34;-static&#34;&#39; -o helloworld .
 mc@mcmbp:~/gocode/src/hello# docker build -t helloworld .
 Sending build context to Docker daemon  7.316MB
 Step 1/3 : FROM scratch
  ---&gt;
 Step 2/3 : ADD helloworld /
  ---&gt; 3fec774cb2a4
-Step 3/3 : CMD [&quot;/helloworld&quot;]
+Step 3/3 : CMD [&#34;/helloworld&#34;]
  ---&gt; Running in cbe7dc97d6ad
 Removing intermediate container cbe7dc97d6ad
  ---&gt; d15a1e6d759a
@@ -83,7 +61,7 @@ mc@mcmbp:~/gocode/src/hello# docker image ls -a
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
 helloworld          latest              d15a1e6d759a        3 seconds ago       7.31MB
 &lt;none&gt;              &lt;none&gt;              3fec774cb2a4        3 seconds ago       7.31MB
-</code></pre><p>运行docker镜像：</p><pre><code>mc@mcmbp:~/gocode/src/hello# docker run -ti -d -p 80:80 helloworld
+</code></pre></div><p>运行docker镜像：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>mc@mcmbp:~/gocode/src/hello# docker run -ti -d -p 80:80 helloworld
 3c77ae750352245369c4d142e4e57fd3c0f1e11d67ef857235417ec475ef6286
 mc@mcmbp:~/gocode/src/hello# curl -v localhost
 * Rebuilt URL to: localhost/
@@ -99,22 +77,22 @@ mc@mcmbp:~/gocode/src/hello# curl -v localhost
 &lt; Content-Length: 27
 &lt; Content-Type: text/plain; charset=utf-8
 &lt;
-Hello, you've requested: /
+Hello, you&#39;ve requested: /
 * Connection #0 to host localhost left intact
-</code></pre><p>但是，问题来了，如果我们在MacOS上面编译<code>helloowrld</code>可执行文件并制作镜像，可以运行docker容器吗？答案是不行！</p><p>我们需要在的时候指定<code>GOOS=linux</code>, 也就是完整的编译命令应该是这样的：</p><pre><code>CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags &quot;-static&quot;' -o helloworld .
-</code></pre><p>对于有些有强迫症的程序员来说，他们想更进一步，为什么不在容器里面编译可执行文件然后再构建镜像呢？这样的好处在于可以控制go的版本，保证环境的清洁，而且对于某些与CI集成的项目来说十分友好。</p><p>DockerCE 17.5(edge release)引入了一个从<code>scratch</code>构建镜像的新特性，叫做<code>Multi-Stage Builds</code>。有了这个新特性之后，我们可以这样去写我们的dockerfile:</p><pre><code>FROM golang as compiler
-RUN CGO_ENABLED=0 go get -a -ldflags '-s' \
+</code></pre></div><p>但是，问题来了，如果我们在MacOS上面编译<code>helloowrld</code>可执行文件并制作镜像，可以运行docker容器吗？答案是不行！<p>我们需要在的时候指定<code>GOOS=linux</code>, 也就是完整的编译命令应该是这样的：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>CGO_ENABLED=0 GOOS=linux go build -a -ldflags &#39;-extldflags &#34;-static&#34;&#39; -o helloworld .
+</code></pre></div><p>对于有些有强迫症的程序员来说，他们想更进一步，为什么不在容器里面编译可执行文件然后再构建镜像呢？这样的好处在于可以控制go的版本，保证环境的清洁，而且对于某些与CI集成的项目来说十分友好。<p>DockerCE 17.5(edge release)引入了一个从<code>scratch</code>构建镜像的新特性，叫做<code>Multi-Stage Builds</code>。有了这个新特性之后，我们可以这样去写我们的dockerfile:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>FROM golang as compiler
+RUN CGO_ENABLED=0 go get -a -ldflags &#39;-s&#39; \
 github.com/morvencao/helloworld
 FROM scratch
 COPY --from=compiler /go/bin/helloworld .
 EXPOSE 80
-CMD [&quot;./helloworld&quot;]
-</code></pre><p>是的，你没有看错，确实是一个dockerfile里面包含两个<code>FROM</code>指令，需要说明的是：</p><ol><li><code>FROM golang as compiler</code>是给第一阶段的构建起一个名字叫<code>compiler</code></li><li><code>COPY --from=compiler /go/bin/helloworld .</code>是引用第一阶段的构建产出，以此构建第二阶段</li></ol><p>如果你没有给第一阶段起名，可以使用构建阶段的序号(以0开始)来指定，像这样: <code>--from=0</code>，但是出于可读性的考虑，起名感觉更好一点儿。</p><p>构建完成后我们来看镜像的大小:</p><pre><code>mc@mcmbp:~/gocode/src/hello# docker image ls
+CMD [&#34;./helloworld&#34;]
+</code></pre></div><p>是的，你没有看错，确实是一个dockerfile里面包含两个<code>FROM</code>指令，需要说明的是：<ol><li><code>FROM golang as compiler</code>是给第一阶段的构建起一个名字叫<code>compiler</code><li><code>COPY --from=compiler /go/bin/helloworld .</code>是引用第一阶段的构建产出，以此构建第二阶段</ol><p>如果你没有给第一阶段起名，可以使用构建阶段的序号(以0开始)来指定，像这样: <code>--from=0</code>，但是出于可读性的考虑，起名感觉更好一点儿。<p>构建完成后我们来看镜像的大小:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>mc@mcmbp:~/gocode/src/hello# docker image ls
 REPOSITORY        TAG      IMAGE ID       CREATED          SIZE
 helloworld        latest   071ca07e23f5   1 minutes ago    7.31MB
 &lt;none&gt;            &lt;none&gt;   2471fd63f0e7   1 minutes ago    720MB
 golang            latest   6d0bfafa0452   2 weeks ago      703MB
-</code></pre><p>运行docker镜像：</p><pre><code>mc@mcmbp:~/gocode/src/hello# docker run -ti -d -p 80:80 helloworld
+</code></pre></div><p>运行docker镜像：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>mc@mcmbp:~/gocode/src/hello# docker run -ti -d -p 80:80 helloworld
 3c77ae750352245369c4d142e4e57fd3c0f1e11d67ef857235417ec475ef6286
 mc@mcmbp:~/gocode/src/hello# curl -v localhost
 * Rebuilt URL to: localhost/
@@ -130,14 +108,7 @@ mc@mcmbp:~/gocode/src/hello# curl -v localhost
 &lt; Content-Length: 27
 &lt; Content-Type: text/plain; charset=utf-8
 &lt;
-Hello, you've requested: /
+Hello, you&#39;ve requested: /
 * Connection #0 to host localhost left intact
-</code></pre><p>这样，我们就将编译并创建最终镜像集成到一个dockerfile里面了，而且构建出来的镜像体积也非常小。</p><h3 id="refer">Refer:</h3><p><a href="https://medium.com/@kelseyhightower/optimizing-docker-images-for-static-binaries-b5696e26eb07">https://medium.com/@kelseyhightower/optimizing-docker-images-for-static-binaries-b5696e26eb07</a> <a href="https://medium.com/@adriaandejonge/simplify-the-smallest-possible-docker-image-62c0e0d342ef">https://medium.com/@adriaandejonge/simplify-the-smallest-possible-docker-image-62c0e0d342ef</a></p></div></div></div></article><script src="https://morven.life/js/highlight.pack.js"></script><script src="https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js"></script><script>var lazyImage = new LazyLoad({
-    container: document.getElementById('article')
-  });</script><script>hljs.initHighlightingOnLoad();
-  
-  var posts = document.getElementById('posts-list');
-  posts && quicklink({
-    el: posts,
-    priority: true,
-  });</script></body></html>
+</code></pre></div><p>这样，我们就将编译并创建最终镜像集成到一个dockerfile里面了，而且构建出来的镜像体积也非常小。<h3 id=refer>Refer:</h3><p><a href=https://medium.com/@kelseyhightower/optimizing-docker-images-for-static-binaries-b5696e26eb07>https://medium.com/@kelseyhightower/optimizing-docker-images-for-static-binaries-b5696e26eb07</a>
+<a href=https://medium.com/@adriaandejonge/simplify-the-smallest-possible-docker-image-62c0e0d342ef>https://medium.com/@adriaandejonge/simplify-the-smallest-possible-docker-image-62c0e0d342ef</a></div></div></div></article><script src=https://morven.life/js/highlight.pack.js></script><script src=https://unpkg.com/quicklink@0.1.1/dist/quicklink.umd.js></script><script src=https://cdn.jsdelivr.net/npm/vanilla-lazyload@10.19.0/dist/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')});</script><script>hljs.initHighlightingOnLoad();var posts=document.getElementById('posts-list');posts&&quicklink({el:posts,priority:true,});</script>
