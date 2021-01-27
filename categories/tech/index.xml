@@ -77,7 +77,7 @@ routing: 进行路由处理，如果是目的IP不是本地IP，且没有开启i
 下面这张图展示的的通信模型变种其实从计算机刚出现不久的上世纪50年代开始就得到广泛应用，那个时候，计算机很稀有，也很昂贵，人们手动管理计算机之间的连接，图中绿色的网络栈底层只负责传输电子信号和字节码：
 随着计算机变得越来越普及，价格也没那么贵了，计算机之间的连接数量和通信的数据量出现了疯狂式的增长，人们越来越依赖网络系统，工程师们必须确保他们开发的服务能够满足用户的要求。于是，如何提升系统质量成为人们关注的焦点。机器需要知道如何找到其他节点，处理同一个通道上的并发连接，与非直接连接的机器发生通信，通过网络路由数据包，加密流量……除此之外，还需要流量控制机制，流量控制可以防止下游服务器给上游服务器发送过多的数据包。
 于是，在一段时期内，开发人员需要在自己的代码里处理上述问题。在下面这张图的示例中，为了确保下游服务器不给其他上游服务造成过载，应用程序需要处理流量控制逻辑，于是网络中的流量控制逻辑和业务逻辑就混杂在一起：
-幸运的是，上世纪60年代末，TCP/IP协议栈的出现解决了可靠传输和流量控制等问题，此后尽管网络逻辑代码依然存在，但已经从应用程序里抽离出来，成为操作系统网络栈的一部分，工程师只需要按照操作系统的调用接口进行编程就可以解决基础的网络传输问题：
+幸运的是，上世纪60年代末，TCP/IP协议栈的出现解决了可靠传输和流量控制等问题，此后尽管网络逻辑代码依然存在，但已经从应用程序里抽离出来，成为操作系统网络栈的一部分，工程师只需要按照操作系统的调用接口进行编程就可以解决基础的网络传输问题：
 进入21世纪，计算机越来越普及，也越来越便宜，相互连接的计算机节点越来越多，业界出现了各种网络系统，如分布式代理和面向服务架构(SOA)：
 分布式为我们带来了更高层次的能力和好处，但却带来了新的挑战。这时候工程师的重心开始转移到应用程序的网络功能上面，这时候的服务之间的对话以“消息”为传输单元，当工程师们通过网络进行调用服务时，必须能为应用程序消息执行超时、重试、确认等操作。
 于是，有工程师是开始尝试使用消息主干网（messaging backbone）集中式地来提供、控制应用程序网络功能，如服务发现、负载均衡、重试等等，甚至，比如协议调解、消息转换、消息路由、编排等功能，因为他们觉得如果可以将这些看似同一层面的内容加入到基础设施中，应用程序或许会更轻量、更精简、更敏捷等等。这些需求绝对是真实的，ESB(Enterprise Service Bus)演变并满足了这些需要。ESB在是2005年被提出的，它的概念特别类似于计算机硬件概念里的USB, USB作为电脑中的标准扩展接口，可以连接各种外部设备；而ESB则就把路由管理、协议转换、策略控制等通用应用程序网络功能加到现有的集中式消息总线里：
@@ -192,20 +192,15 @@ If it looks like a duck, swims like a duck, and quacks like a duck, then it prob
 传统的静态语言，如Java, C++等，它们必须显示声明实现了某个接口，之后，才能用在任何需要这个接口的地方，否则编译也不会通过，这也是静态语言比动态语言更安全的原因。但是Go语言作为一门“现代”静态语言，使用的是动态编程语言的对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。也就是说，Go语言引入了动态语言的便利，同时又会进行静态语言的类型检查，因此，它采用了折中的做法：不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。
 举个例子，下面的代码片段先定义一个接口，和使用此接口作为参数的函数：
 type IGreeting interface { greeting() } func sayHello(i IGreeting) { i.greeting() } 接下来再定义两个结构体：
-type A struct {} func (a A) greeting() { fmt.Println(&amp;#34;Hi, I am A!&amp;#34;) } type B struct {} func (b B) greeting() { fmt.Println(&amp;#34;Hi, I am B!&amp;#34;) } 最后，在main函数里调用sayHello()函数：</description></item><item><title>从零开始认识iptables</title><link>https://morven.life/posts/the_knowledge_of_iptables/</link><pubDate>Sat, 20 May 2017 00:00:00 +0000</pubDate><guid>https://morven.life/posts/the_knowledge_of_iptables/</guid><description>在使用Linux的过程中，很多人和我一样经常接触iptables，但却只知道它是用来设置Linux防火墙的工具，不知道它具体是怎么工作的。今天，我们就从零开始认识一下Linux下iptables的具体工作原理。
-iptables是Linux上常用的防火墙软件netfilter项目的一部分，所以要讲清楚iptables，我们先理一理什么是防火墙？
+type A struct {} func (a A) greeting() { fmt.Println(&amp;#34;Hi, I am A!&amp;#34;) } type B struct {} func (b B) greeting() { fmt.Println(&amp;#34;Hi, I am B!&amp;#34;) } 最后，在main函数里调用sayHello()函数：</description></item><item><title>从零开始认识 iptables</title><link>https://morven.life/posts/the_knowledge_of_iptables/</link><pubDate>Sat, 20 May 2017 00:00:00 +0000</pubDate><guid>https://morven.life/posts/the_knowledge_of_iptables/</guid><description>在使用 Linux 的过程中，很多人和我一样经常接触 iptables，但却只知道它是用来设置 Linux 防火墙的工具，不知道它具体是怎么工作的。今天，我们就从零开始认识一下 Linux 系统下 iptables 的具体工作原理。
+iptables 是 Linux 上常用的防火墙软件 netfilter 项目的一部分，所以要讲清楚 iptables，我们先理一理什么是防火墙？
 什么是防火墙 简单来说，防火墙是一种网络隔离工具，部署于主机或者网络的边缘，目标是对于进出主机或者本地网络的网络报文根据事先定义好的规则做匹配检测，规则匹配成功则对相应的网络报文做定义好的处理（允许，拒绝，转发，丢弃等）。防火墙根据其管理的范围来分可以将其划分为主机防火墙和网络防火墙；根据其工作机制来区分又可分为包过滤型防火墙（netfilter）和代理服务器（Proxy）。我们接下来在这篇笔记中主要说说**包过滤型防火墙（netfilter）。
-Note: 也有人将tcp_warrpers也划分为防火墙的一种，它是根据服务程序软件的名称来处理网络数据包的工具。
-包过滤型防火墙的工作原理 包过滤型防火墙主要依赖于Linux内核软件netfilter，它是一个Linux内核“安全框架”，而iptables是内核软件netfilter的配置工具，工作于用户空间。iptables/netfilter组合就是Linux平台下的过滤型防火墙，并且这个防火墙软件是免费的，可以用来替代商业防火墙软件，来完成网络数据包的过滤，修改，重定向以及网络地址转换（nat）等功能。
-Note: 在有些Linux发行版上，我们可以使用systemctl start iptables来启动iptables服务，但需要指出的是，iptables 并不是也不依赖于守护进程，它只是利用Linux内核提供的功能。
-Linux网络管理员通过配置iptables规则以及对应的网路数据包处理逻辑，当网络数据包符合这样的规则时，就做执行预先定义好的相应的处理逻辑。可以简单的总结为：
-IF network_pkg match rule; THEN handler FI 其中规则可以包括匹配数据报文的源地址，目的地址，传输层协议（TCP/UDP/ICMP/..）以及应用层协议（HTTP/FTP/SMTP/..）等，处理逻辑就是根据规则所定义的方法来处理这些数据包，如放行（accept），拒绝（reject），丢弃（drop）等。
-而netfilter是工作于内核空间当中的一系列网络（TCP/IP）协议栈的钩子（hook），为内核模块在网络协议栈中的不同位置注册回调函数（callback）。也就是说，在数据包经过网络协议栈的不同位置时做相应的由iptables配置好的处理逻辑。 netfilter中的五个钩子（这里也称为五个关卡）PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，网络数据包的流向图如下图所示：
-当主机/网络服务器网卡收到一个数据包之后进入内核空间的TCP/IP协议栈进行层层解封装 刚刚进入网络层的数据包通过PRE_ROUTING关卡时，要进行一次路由选择，当目标地址为本机地址时，数据进入INPUT，非本地的目标地址进入FORWARD（需要本机内核支持IP_FORWARD），所以目标地址转换通常在这个关卡进行 INPUT：经过路由之后送往本地的数据包经过此关卡，所以过滤INPUT包在此点关卡进行 FORWARD：经过路由选择之后要转发的数据包经过此关卡，所以网络防火墙通常在此关卡配置 OUTPUT：由本地用户空间应用进程产生的数据包过此关卡，所以OUTPUT包过滤在此关卡进行 POST_ROUTING：刚刚通过FORWARD和OUTPUT关卡的数据包要通过一次路由选择由哪个接口送往网络中，经过路由之后的数据包要通过POST_ROUTING此关卡，源地址转换通常在此点进行 上面提到的这些处于网络（TCP/IP）协议栈的“关卡”，在iptables的术语里叫做“链（chain）”，内置的链包括上面提到的5个：
-PreRouting Forward Input Output PostRouting 一般的场景里面，数据包的流向基本是：
-到本主机某进程的报文：PreRouting -&amp;gt; Input -&amp;gt; Process -&amp;gt; Output -&amp;gt; PostRouting 由本主机转发的报文：PreRouting -&amp;gt; Forward -&amp;gt; PostRouting iptables的四表五链 iptables默认有五条链（chain），分别对应上面提到的五个关卡，PRE_ROUTING，INPUT，FORWARD，OUTPUT，POST_ROUTING，这五个关卡分别由netfilter的五个钩子函数来触发。但是，为什么叫做“链”呢？ 我们知道，iptables/netfilter防火墙对经过的数据包进行“规则”匹配，然后执行相应的“处理”。当报文经过某一个关卡时，这个关卡上的“规则”不止一条，很多条规则会按照顺序逐条匹配，将在此关卡的所有规则组织称“链”就很适合，对于经过的数据包按照顺序逐条匹配“规则”。
-另外一个问题是，每一条“链”上的一串规则里面有些功能是相似的，比如，A类规则都是对IP或者端口进行过滤，B类规则都是修改报文，我们考虑能否将这些功能相似的规则放到一起，这样管理iptables规则会更方便。iptables把具有相同功能的规则集合叫做“表”，并且定一个四种表：
-filter：负责过滤功能；与之对应的内核模块是iptables_filter nat：Network Address Translation，网络地址转换功能，典型的比如SNAT，DNAT；与之对应的内核模块是iptables_nat mangle：解包报文，修改并封包；与之对应的内核模块是iptables_mangle raw：关闭nat表上启用的连接追踪机制；与之对应的内核模块是iptables_raw 这样，Linux网络管理员所定义的iptables“规则”都存在于这四张表中。</description></item><item><title>编写健壮的 Shell 脚本</title><link>https://morven.life/posts/how-to-write-robust-shell-script/</link><pubDate>Mon, 06 Feb 2017 00:00:00 +0000</pubDate><guid>https://morven.life/posts/how-to-write-robust-shell-script/</guid><description>编写 Shell 脚本应该是程序员必须掌握的技能。因为 Shell 脚本简单易上手的特性，在日常工作中，我们经常使用它来自动化应用的测试部署、环境的搭建清理等。其实在编写运行 Shell 脚本的时候也会遇到各种坑，稍不注意就会导致 Shell 脚本因为各种原因不能正常执行。实际上，编写健壮可靠的 Shell 脚本也是有很多技巧的，今天我们就来探讨一下。
+Note: 也有人将 TCP Wrappers 也划分为防火墙的一种，它是根据服务程序软件的名称来处理网络数据包的工具。
+包过滤型防火墙 包过滤型防火墙主要依赖于 Linux 内核软件 netfilter，它是一个 Linux 内核“安全框架”，而 iptables 是内核软件 netfilter 的配置工具，工作于用户空间。iptables/netfilter 组合就是 Linux 平台下的过滤型防火墙，并且这个防火墙软件是免费的，可以用来替代商业防火墙软件，来完成网络数据包的过滤、修改、重定向以及网络地址转换（nat）等功能。
+Note: 在有些 Linux 发行版上，我们可以使用 systemctl start iptables 来启动 iptables 服务，但需要指出的是，iptables 并不是也不依赖于守护进程，它只是利用 Linux 内核提供的功能。
+Linux 网络管理员通过配置 iptables 规则以及对应的网路数据包处理逻辑，当网络数据包符合这样的规则时，就做执行预先定义好的相应处理逻辑。可以简单的总结为：
+IF network_pkg match rule; THEN handler FI 其中规则可以包括匹配数据报文的源地址、目的地址、传输层协议（TCP/UDP/ICMP/..）以及应用层协议（HTTP/FTP/SMTP/..）等，处理逻辑就是根据规则所定义的方法来处理这些数据包，如放行（accept），拒绝（reject），丢弃（drop）等。
+而 netfilter 是工作于内核空间当中的一系列网络协议栈的钩子（hook），为内核模块在网络协议栈中的不同位置注册回调函数。也就是说，在数据包经过网络协议栈的不同位置时做相应的由 iptables 配置好的处理逻辑。 netfilter 中的五个钩子（这里也称为五个关卡）分别为：PRE_ROUTING/INPUT/FORWARD/OUTPUT/POST_ROUTING，网络数据包的流向图如下图所示：</description></item><item><title>编写健壮的 Shell 脚本</title><link>https://morven.life/posts/how-to-write-robust-shell-script/</link><pubDate>Mon, 06 Feb 2017 00:00:00 +0000</pubDate><guid>https://morven.life/posts/how-to-write-robust-shell-script/</guid><description>编写 Shell 脚本应该是程序员必须掌握的技能。因为 Shell 脚本简单易上手的特性，在日常工作中，我们经常使用它来自动化应用的测试部署、环境的搭建清理等。其实在编写运行 Shell 脚本的时候也会遇到各种坑，稍不注意就会导致 Shell 脚本因为各种原因不能正常执行。实际上，编写健壮可靠的 Shell 脚本也是有很多技巧的，今天我们就来探讨一下。
 设置 Shell 的默认执行环境参数 在执行 Shell 脚本的时候，通常都会创建一个新的 Shell ，比如，当我们执行：
 bash script.sh 我们指明使用 bash 会创建一个新的 Shell 来执行 script.sh ，同时给定了这个执行环境默认的各种参数。 set 命令可以用来修改 Shell 环境的运行参数，不带任何参数的 set 命令，会显示所有的环境变量和 Shell 函数。对于所有可以定制的运行参数，请查看官方手册，我们重点介绍其中最常用的四个。
 跟踪命令的执行 默认情况下， Shell 脚本执行后只显示运行结果，不会展示结果是哪一行代码的输出，如果多个命令连续执行，它们的运行结果就会连续输出，导致很难分清一串结果是什么命令产生的。 set -x 用来在运行结果之前，先输出执行的那一行命令，行首以 + 表示是命令而非命令输出，同时，每个命令的参数也会展开，这样我们可以清晰地看到每个命令的运行实参，这对于 Shell 脚本的 debug 来说非常友好。
