@@ -350,4 +350,127 @@ apiVersion:v1kind:Podmetadata:name:webserverlabels:app:webserverspec:containers:
 	<span style=color:#000;font-weight:700>}</span>
 	<span style=color:#204a87;font-weight:700>return</span> <span style=color:#204a87;font-weight:700>nil</span>
 <span style=color:#000;font-weight:700>}</span>
-</code></pre></div><h2 id=小结>小结</h2><p>为了便于记忆，现在对前面介绍的各种接口以及实现做一个小结：<p><img src=https://i.loli.net/2021/02/25/TE1IG6mqYi89jfv.jpg alt=k8s-apimachinery.jpg><ol><li>runtime.Object 接口是所有 API 单体资源对象的根类，各个 API 对象的编码与解码依赖于该接口类型；<li>schema.ObjectKind 接口是对 API 资源对象类型的抽象，可以用来获取或者设置 GVK；<li>metav1.Object 接口是 API 资源对象属性的抽象，用来存取资源对象的属性；<li>metav1.ListInterface 接口是 API 对象列表属性的抽象，用来存取资源对象列表的属性；<li>metav1.TypeMeta 结构体实现了 schema.ObjectKind 接口，所有的 API 资源类型继承它；<li>metav1.ObjectMeta 结构体实现了 metav1.Object 接口，所有的 API 资源类型继承它；<li>metav1.ListMeta 结构体实现了 metav1.ListInterface 接口，所有的 API 资源对象列表类型继承它；</ol></div><div class="row middle-xs"><div class=col-xs-12><div class=post-category><a href=https://morven.life/categories/note/>note</a></div><div class=post-category><a href=https://morven.life/categories/tech/>tech</a></div></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer><div class=site-footer-item><a href=https://morven.life/about/ target=_blank>About Me</a></div></div></div></div></article><script src=https://morven.life/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')});</script>
+</code></pre></div><h3 id=metav1unstructured>metav1.Unstructured</h3><p>metav1.Unstructured 与具体实现 rutime.Object 接口的类型（如 Pod、Deployment、Service 等等）不同，如果说，各个实现 rutime.Object 接口的类型主要用于 <a href=https://github.com/kubernetes/client-go>client-go</a> 类型化的静态客户端，那么 metav1.Unstructured 则用于动态客户端。<p>在看 metav1.Unstructured 源码实现之前，我们先了解一下什么是结构化数据与非结构化数据。结构化数据，顾名思义，就是数据中的字段名与字段值都是固定的，例如一个 JSON 格式的字符串表示一个学生的信息：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-json data-lang=json><span style=color:#000;font-weight:700>{</span>
+    
+	<span style=color:#204a87;font-weight:700>&#34;id&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#0000cf;font-weight:700>101</span><span style=color:#000;font-weight:700>,</span>
+	<span style=color:#204a87;font-weight:700>&#34;name&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;Tom&#34;</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><p>定义这个学生的数据格式中的字段名与字段值都是固定的，我们很容易使用 Go 语言写出一个 struct 结构来表示这个学生的信息，各个字段意义明确：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-golang data-lang=golang><span style=color:#204a87;font-weight:700>type</span> <span style=color:#000>Student</span> <span style=color:#204a87;font-weight:700>struct</span> <span style=color:#000;font-weight:700>{</span>
+    
+	<span style=color:#000>ID</span> <span style=color:#204a87;font-weight:700>int</span>
+	<span style=color:#000>Name</span> <span style=color:#000>String</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><p>实际的情况是，一个格式化的字符串里面可能会包含很多编译时未知的信息，这些信息只有在运行时才能获取到。例如，上面的学生的数据中还包括第三个字段，该字段的类型和内容代码编译时未知，到运行时才可以获取具体的值。如何处理这种情况呢？熟悉反射的同学很快就应该想到，Go 语言可以依赖于反射机制在运行时动态获取各个字段，在编译阶段，我们将这些未知的类型统一为 <code>interface{}</code>。正是基于此，metav1.Unstructured 的数据结构定义很简单：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-golang data-lang=golang><span style=color:#8f5902;font-style:italic>// soure code from: https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/unstructured/unstructured.go
+</span><span style=color:#8f5902;font-style:italic>//
+</span><span style=color:#8f5902;font-style:italic></span><span style=color:#204a87;font-weight:700>type</span> <span style=color:#000>Unstructured</span> <span style=color:#204a87;font-weight:700>struct</span> <span style=color:#000;font-weight:700>{</span>
+    
+	<span style=color:#8f5902;font-style:italic>// Object is a JSON compatible map with string, float, int, bool, []interface{}, or
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#8f5902;font-style:italic>// map[string]interface{} children.
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#000>Object</span> <span style=color:#204a87;font-weight:700>map</span><span style=color:#000;font-weight:700>[</span><span style=color:#204a87;font-weight:700>string</span><span style=color:#000;font-weight:700>]</span><span style=color:#204a87;font-weight:700>interface</span><span style=color:#000;font-weight:700>{}</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><p>事实上，metav1.Unstructured 是 apimachinery 中 runtime.Unstructured 接口的具体实现，runtime.Unstructured 接口定义了非结构化数据的操作接口方法列表，它提供程序来处理资源的通用属性，例如 metadata.namespace 等。<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-golang data-lang=golang><span style=color:#8f5902;font-style:italic>// soure code from: https://github.com/kubernetes/apimachinery/blob/master/pkg/runtime/interfaces.go
+</span><span style=color:#8f5902;font-style:italic>//
+</span><span style=color:#8f5902;font-style:italic>// Unstructured objects store values as map[string]interface{}, with only values that can be serialized
+</span><span style=color:#8f5902;font-style:italic>// to JSON allowed.
+</span><span style=color:#8f5902;font-style:italic></span><span style=color:#204a87;font-weight:700>type</span> <span style=color:#000>Unstructured</span> <span style=color:#204a87;font-weight:700>interface</span> <span style=color:#000;font-weight:700>{</span>
+	<span style=color:#000>Object</span>
+	<span style=color:#8f5902;font-style:italic>// NewEmptyInstance returns a new instance of the concrete type containing only kind/apiVersion and no other data.
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#8f5902;font-style:italic>// This should be called instead of reflect.New() for unstructured types because the go type alone does not preserve kind/apiVersion info.
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#000>NewEmptyInstance</span><span style=color:#000;font-weight:700>()</span> <span style=color:#000>Unstructured</span>
+	<span style=color:#8f5902;font-style:italic>// UnstructuredContent returns a non-nil map with this object&#39;s contents. Values may be
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#8f5902;font-style:italic>// []interface{}, map[string]interface{}, or any primitive type. Contents are typically serialized to
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#8f5902;font-style:italic>// and from JSON. SetUnstructuredContent should be used to mutate the contents.
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#000>UnstructuredContent</span><span style=color:#000;font-weight:700>()</span> <span style=color:#204a87;font-weight:700>map</span><span style=color:#000;font-weight:700>[</span><span style=color:#204a87;font-weight:700>string</span><span style=color:#000;font-weight:700>]</span><span style=color:#204a87;font-weight:700>interface</span><span style=color:#000;font-weight:700>{}</span>
+	<span style=color:#8f5902;font-style:italic>// SetUnstructuredContent updates the object content to match the provided map.
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#000>SetUnstructuredContent</span><span style=color:#000;font-weight:700>(</span><span style=color:#204a87;font-weight:700>map</span><span style=color:#000;font-weight:700>[</span><span style=color:#204a87;font-weight:700>string</span><span style=color:#000;font-weight:700>]</span><span style=color:#204a87;font-weight:700>interface</span><span style=color:#000;font-weight:700>{})</span>
+	<span style=color:#8f5902;font-style:italic>// IsList returns true if this type is a list or matches the list convention - has an array called &#34;items&#34;.
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#000>IsList</span><span style=color:#000;font-weight:700>()</span> <span style=color:#204a87;font-weight:700>bool</span>
+	<span style=color:#8f5902;font-style:italic>// EachListItem should pass a single item out of the list as an Object to the provided function. Any
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#8f5902;font-style:italic>// error should terminate the iteration. If IsList() returns false, this method should return an error
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#8f5902;font-style:italic>// instead of calling the provided function.
+</span><span style=color:#8f5902;font-style:italic></span>	<span style=color:#000>EachListItem</span><span style=color:#000;font-weight:700>(</span><span style=color:#204a87;font-weight:700>func</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>Object</span><span style=color:#000;font-weight:700>)</span> <span style=color:#204a87;font-weight:700>error</span><span style=color:#000;font-weight:700>)</span> <span style=color:#204a87;font-weight:700>error</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><p>只有 metav1.Unstructured 的定义并不能发挥什么作用，真正重要的是其实现的方法，借助这些方法可以灵活的处理非结构化数据。metav1.Unstructured 实现了存取类型元信息与对象元信息的方法，除此之外，它也实现了 runtime.Unstructured 接口中的所有方法。<p>基于这些方法，我们可以构建操作 kubernetes 资源的动态客户端，不需要使用 k8s.io/api 中定义的 Go 类型，使用 metav1.Unstructured 非结构化直接解码是 YAML/JSON 对象表示形式；非结构化数据编码时生成的 JSON/YAML 外也不会添加额外的字段。<p>以下示例演示了如何将 YAML 清单读为非结构化，非结构化并将其编码回 JSON：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-golang data-lang=golang><span style=color:#204a87;font-weight:700>import</span> <span style=color:#000;font-weight:700>(</span>
+    <span style=color:#4e9a06>&#34;encoding/json&#34;</span>
+    <span style=color:#4e9a06>&#34;fmt&#34;</span>
+    <span style=color:#4e9a06>&#34;os&#34;</span>
+
+    <span style=color:#4e9a06>&#34;k8s.io/apimachinery/pkg/apis/meta/v1/unstructured&#34;</span>
+    <span style=color:#4e9a06>&#34;k8s.io/apimachinery/pkg/runtime/serializer/yaml&#34;</span>
+<span style=color:#000;font-weight:700>)</span>
+
+<span style=color:#204a87;font-weight:700>const</span> <span style=color:#000>dsManifest</span> <span style=color:#000;font-weight:700>=</span> <span style=color:#4e9a06>`
+</span><span style=color:#4e9a06>apiVersion: apps/v1
+</span><span style=color:#4e9a06>kind: DaemonSet
+</span><span style=color:#4e9a06>metadata:
+</span><span style=color:#4e9a06>  name: example
+</span><span style=color:#4e9a06>  namespace: default
+</span><span style=color:#4e9a06>spec:
+</span><span style=color:#4e9a06>  selector:
+</span><span style=color:#4e9a06>    matchLabels:
+</span><span style=color:#4e9a06>      name: nginx-ds
+</span><span style=color:#4e9a06>  template:
+</span><span style=color:#4e9a06>    metadata:
+</span><span style=color:#4e9a06>      labels:
+</span><span style=color:#4e9a06>        name: nginx-ds
+</span><span style=color:#4e9a06>    spec:
+</span><span style=color:#4e9a06>      containers:
+</span><span style=color:#4e9a06>      - name: nginx
+</span><span style=color:#4e9a06>        image: nginx:latest
+</span><span style=color:#4e9a06>`</span>
+
+<span style=color:#204a87;font-weight:700>func</span> <span style=color:#000>main</span><span style=color:#000;font-weight:700>()</span> <span style=color:#000;font-weight:700>{</span>
+    <span style=color:#000>obj</span> <span style=color:#ce5c00;font-weight:700>:=</span> <span style=color:#ce5c00;font-weight:700>&amp;</span><span style=color:#000>unstructured</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Unstructured</span><span style=color:#000;font-weight:700>{}</span>
+
+    <span style=color:#8f5902;font-style:italic>// decode YAML into unstructured.Unstructured
+</span><span style=color:#8f5902;font-style:italic></span>    <span style=color:#000>dec</span> <span style=color:#ce5c00;font-weight:700>:=</span> <span style=color:#000>yaml</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>NewDecodingSerializer</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>unstructured</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>UnstructuredJSONScheme</span><span style=color:#000;font-weight:700>)</span>
+    <span style=color:#000>_</span><span style=color:#000;font-weight:700>,</span> <span style=color:#000>gvk</span><span style=color:#000;font-weight:700>,</span> <span style=color:#000>err</span> <span style=color:#ce5c00;font-weight:700>:=</span> <span style=color:#000>dec</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Decode</span><span style=color:#000;font-weight:700>([]</span><span style=color:#204a87>byte</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>dsManifest</span><span style=color:#000;font-weight:700>),</span> <span style=color:#204a87;font-weight:700>nil</span><span style=color:#000;font-weight:700>,</span> <span style=color:#000>obj</span><span style=color:#000;font-weight:700>)</span>
+
+    <span style=color:#8f5902;font-style:italic>// Get the common metadata, and show GVK
+</span><span style=color:#8f5902;font-style:italic></span>    <span style=color:#000>fmt</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Println</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>obj</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>GetName</span><span style=color:#000;font-weight:700>(),</span> <span style=color:#000>gvk</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>String</span><span style=color:#000;font-weight:700>())</span>
+
+    <span style=color:#8f5902;font-style:italic>// encode back to JSON
+</span><span style=color:#8f5902;font-style:italic></span>    <span style=color:#000>enc</span> <span style=color:#ce5c00;font-weight:700>:=</span> <span style=color:#000>json</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>NewEncoder</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>os</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Stdout</span><span style=color:#000;font-weight:700>)</span>
+    <span style=color:#000>enc</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>SetIndent</span><span style=color:#000;font-weight:700>(</span><span style=color:#4e9a06>&#34;&#34;</span><span style=color:#000;font-weight:700>,</span> <span style=color:#4e9a06>&#34;    &#34;</span><span style=color:#000;font-weight:700>)</span>
+    <span style=color:#000>enc</span><span style=color:#000;font-weight:700>.</span><span style=color:#000>Encode</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>obj</span><span style=color:#000;font-weight:700>)</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><p>程序的输出如下：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-json data-lang=json><span style=color:#a40000>example</span> <span style=color:#a40000>apps/v</span><span style=color:#0000cf;font-weight:700>1</span><span style=color:#a40000>,</span> <span style=color:#a40000>Kind=DaemonSet</span>
+<span style=color:#000;font-weight:700>{</span>
+    <span style=color:#204a87;font-weight:700>&#34;apiVersion&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;apps/v1&#34;</span><span style=color:#000;font-weight:700>,</span>
+    <span style=color:#204a87;font-weight:700>&#34;kind&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;DaemonSet&#34;</span><span style=color:#000;font-weight:700>,</span>
+    <span style=color:#204a87;font-weight:700>&#34;metadata&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+        <span style=color:#204a87;font-weight:700>&#34;name&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;example&#34;</span><span style=color:#000;font-weight:700>,</span>
+        <span style=color:#204a87;font-weight:700>&#34;namespace&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;default&#34;</span>
+    <span style=color:#000;font-weight:700>},</span>
+    <span style=color:#204a87;font-weight:700>&#34;spec&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+        <span style=color:#204a87;font-weight:700>&#34;selector&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+            <span style=color:#204a87;font-weight:700>&#34;matchLabels&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+                <span style=color:#204a87;font-weight:700>&#34;name&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;nginx-ds&#34;</span>
+            <span style=color:#000;font-weight:700>}</span>
+        <span style=color:#000;font-weight:700>},</span>
+        <span style=color:#204a87;font-weight:700>&#34;template&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+            <span style=color:#204a87;font-weight:700>&#34;metadata&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+                <span style=color:#204a87;font-weight:700>&#34;labels&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+                    <span style=color:#204a87;font-weight:700>&#34;name&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;nginx-ds&#34;</span>
+                <span style=color:#000;font-weight:700>}</span>
+            <span style=color:#000;font-weight:700>},</span>
+            <span style=color:#204a87;font-weight:700>&#34;spec&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>{</span>
+                <span style=color:#204a87;font-weight:700>&#34;containers&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#000;font-weight:700>[</span>
+                    <span style=color:#000;font-weight:700>{</span>
+                        <span style=color:#204a87;font-weight:700>&#34;image&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;nginx:latest&#34;</span><span style=color:#000;font-weight:700>,</span>
+                        <span style=color:#204a87;font-weight:700>&#34;name&#34;</span><span style=color:#000;font-weight:700>:</span> <span style=color:#4e9a06>&#34;nginx&#34;</span>
+                    <span style=color:#000;font-weight:700>}</span>
+                <span style=color:#000;font-weight:700>]</span>
+            <span style=color:#000;font-weight:700>}</span>
+        <span style=color:#000;font-weight:700>}</span>
+    <span style=color:#000;font-weight:700>}</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><p>此外，通过 Go 语言的反射机制可以实现 metav1.Unstructured 对象与具体资源对象的相互转换，runtime.unstructuredConverter 接口定义了 metav1.Unstructured 对象与具体资源对象的相互转换方法，并且内置了 runtime.DefaultUnstructuredConverter 实现了 runtime.unstructuredConverter 接口。<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-golang data-lang=golang><span style=color:#8f5902;font-style:italic>// source code from: https://github.com/kubernetes/apimachinery/blob/master/pkg/runtime/converter.go
+</span><span style=color:#8f5902;font-style:italic>//
+</span><span style=color:#8f5902;font-style:italic>// UnstructuredConverter is an interface for converting between interface{}
+</span><span style=color:#8f5902;font-style:italic>// and map[string]interface representation.
+</span><span style=color:#8f5902;font-style:italic></span><span style=color:#204a87;font-weight:700>type</span> <span style=color:#000>UnstructuredConverter</span> <span style=color:#204a87;font-weight:700>interface</span> <span style=color:#000;font-weight:700>{</span>
+	<span style=color:#000>ToUnstructured</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>obj</span> <span style=color:#204a87;font-weight:700>interface</span><span style=color:#000;font-weight:700>{})</span> <span style=color:#000;font-weight:700>(</span><span style=color:#204a87;font-weight:700>map</span><span style=color:#000;font-weight:700>[</span><span style=color:#204a87;font-weight:700>string</span><span style=color:#000;font-weight:700>]</span><span style=color:#204a87;font-weight:700>interface</span><span style=color:#000;font-weight:700>{},</span> <span style=color:#204a87;font-weight:700>error</span><span style=color:#000;font-weight:700>)</span>
+	<span style=color:#000>FromUnstructured</span><span style=color:#000;font-weight:700>(</span><span style=color:#000>u</span> <span style=color:#204a87;font-weight:700>map</span><span style=color:#000;font-weight:700>[</span><span style=color:#204a87;font-weight:700>string</span><span style=color:#000;font-weight:700>]</span><span style=color:#204a87;font-weight:700>interface</span><span style=color:#000;font-weight:700>{},</span> <span style=color:#000>obj</span> <span style=color:#204a87;font-weight:700>interface</span><span style=color:#000;font-weight:700>{})</span> <span style=color:#204a87;font-weight:700>error</span>
+<span style=color:#000;font-weight:700>}</span>
+</code></pre></div><h2 id=小结>小结</h2><p>为了便于记忆，现在对前面介绍的各种接口以及实现做一个小结：<p><img src=https://i.loli.net/2021/02/27/6OjGi3QcaCbTrun.jpg alt=k8s-apimachinery.jpg><ol><li>runtime.Object 接口是所有 API 单体资源对象的根类，各个 API 对象的编码与解码依赖于该接口类型；<li>schema.ObjectKind 接口是对 API 资源对象类型的抽象，可以用来获取或者设置 GVK；<li>metav1.Object 接口是 API 资源对象属性的抽象，用来存取资源对象的属性；<li>metav1.ListInterface 接口是 API 对象列表属性的抽象，用来存取资源对象列表的属性；<li>metav1.TypeMeta 结构体实现了 schema.ObjectKind 接口，所有的 API 资源类型继承它；<li>metav1.ObjectMeta 结构体实现了 metav1.Object 接口，所有的 API 资源类型继承它；<li>metav1.ListMeta 结构体实现了 metav1.ListInterface 接口，所有的 API 资源对象列表类型继承它；<li>metav1.Unstructured 结构体实现了 runtime.Unstructured 接口，可以用于构建动态客户端，从 metav1.Unstructured 的实例中可以获取资源类型元信息与资源对象元信息，还可以获取到对象的 map[string]interface{} 的通用内容表示；<li>metav1.Unstructured 与实现了 metav1.Object 接口具体 API 类型进行相互转化，转换依赖于 runtime.UnstructuredConverter 的接口方法。</ol></div><div class="row middle-xs"><div class=col-xs-12><div class=post-category><a href=https://morven.life/categories/note/>note</a></div><div class=post-category><a href=https://morven.life/categories/tech/>tech</a></div></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer><div class=site-footer-item><a href=https://morven.life/about/ target=_blank>About Me</a></div></div></div></div></article><script src=https://morven.life/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')});</script>
