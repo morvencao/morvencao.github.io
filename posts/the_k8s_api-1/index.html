@@ -17,15 +17,15 @@ API-Server 我们知道 kubernetes 控制层面的核心组件包括 API-Server�
 </span><span style=color:#f8f8f8;text-decoration:underline>  </span><span style=color:#204a87;font-weight:700>labels</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline>    </span><span style=color:#204a87;font-weight:700>app</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline> </span><span style=color:#000>exp</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline></span><span style=color:#000>...</span><span style=color:#f8f8f8;text-decoration:underline>
-</span></code></pre></div><p>API 分组也体现在访问资源的 RESTful API 路径上，core 组中的资源访问路径一般为 <code>/api/$VERSION</code>，其他命名组的资源访问路径则是 <code>/apis/$GROUP_NAME/$VERSION</code>，此外还有一些系统级别的资源，如集群指标信息 <code>/metrics</code>，以上这些就基本构成了 kubernetes API 的树结构：<p><img src=https://i.loli.net/2021/02/24/dVyAUsCOX2SBI8g.png alt=API-server-space.png><h3 id=api-version>API-version</h3><p>为了支持独立的演进，kubernetes API 也支持不同的版本，不同的版本代表不同的成熟度。注意，这里说的是 <strong>API 而非资源</strong>支持多版本。因为多版本支持是针对 API 级别，而不是特定的资源或者资源的字段。一般来说，我们根据 API 分组、资源类型、namespace 以及 name 来区分不同的资源对象，对于同一个资源对象的不同版本，API-Server 负责不同版本之间的无损切换，这点对于客户端来说是完全透明的。事实上，不同版本的同类型的资源在持久化层的数据可能是相同的。例如，对于同一种资源类型支持 <code>v1</code> 和 <code>v1beta1</code> 两个 API 版本，以 <code>v1beta1</code> 版本创建该资源的对象，后续可以以<code>v1</code> 或者 <code>v1beta1</code> 来更新或者删除该资源对象。<p>API 多版本支持一般通过将资源分组置于不同的版本中来实现，例如，<code>batch</code> 同时存在 <code>v2alph1</code> 与 <code>v1</code> 版本。一般来说，新的资源分组先出现 <code>v1alpha1</code> 版本，随着稳定性的提高被推进到 <code>v1beta1</code> ，最后从 <code>v1</code> 版本毕业。<p>随着新的用户场景出现，kubernetes API 需要不断变化，可能是新增一个字段，也可能是删除旧的字段，甚至是改变资源的展现形式。为了保证兼容性，kubernetes 制定了一系列的<a href=https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md>策略</a>。总的来说，对于已经 GA 的 API，API，kubernetes 严格维护其兼容性，终端用户可以放心食用，beta 版本的 API 则尽量维护，保证不打破版本跨版本之间的交互，而对于 alpha 版本的 API 则很难保证兼容性，不太推荐生产环境使用。<h3 id=gvk-与-gvr-映射>GVK 与 GVR 映射</h3><p>在 kubernetes API 宇宙中，我们经常使用属于 GVK 或者 GVR 来区分特定的 kubernetes 资源。其中 GVK 是 Group Version Kind 的简称，而 GVR 则是 Group Version Resource 的简称。<p>通过上面对于 kubernetes API 分组和多版本的介绍中我们已经了解了 Group 与 Version，那么 Kind 与 Resource 又分别是指什么呢？<p><strong>Kind</strong> 是 API “顶级”资源对象的类型，每个资源对象都需要 Kind 来区分它自身代表的资源类型，例如，对于一个 pod 的例子：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-yaml data-lang=yaml><span style=color:#204a87;font-weight:700>apiVersion</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline> </span><span style=color:#000>v1</span><span style=color:#f8f8f8;text-decoration:underline>
+</span></code></pre></div><p>API 分组也体现在访问资源的 RESTful API 路径上，core 组中的资源访问路径一般为 <code>/api/$VERSION</code>，其他命名组的资源访问路径则是 <code>/apis/$GROUP_NAME/$VERSION</code>，此外还有一些系统级别的资源，如集群指标信息 <code>/metrics</code>，以上这些就基本构成了 kubernetes API 的树结构：<p><img src=https://i.loli.net/2021/02/24/dVyAUsCOX2SBI8g.png alt=API-server-space.png><h3 id=api-version>API-version</h3><p>为了支持独立的演进，kubernetes API 也支持不同的版本，不同的版本代表不同的成熟度。注意，这里说的是 <strong>API 而非资源</strong>支持多版本。因为多版本支持是针对 API 级别，而不是特定的资源或者资源的字段。一般来说，我们根据 API 分组、资源类型、namespace 以及 name 来区分不同的资源对象，对于同一个资源对象的不同版本，API-Server 负责不同版本之间的无损切换，这点对于客户端来说是完全透明的。事实上，不同版本的同类型的资源在持久化层的数据可能是相同的。例如，对于同一种资源类型支持 <code>v1</code> 和 <code>v1beta1</code> 两个 API 版本，以 <code>v1beta1</code> 版本创建该资源的对象，后续可以以<code>v1</code> 或者 <code>v1beta1</code> 来更新或者删除该资源对象。<p>API 多版本支持一般通过将资源分组置于不同的版本中来实现，例如，<code>batch</code> 同时存在 <code>v2alph1</code> 与 <code>v1</code> 版本。一般来说，新的资源分组先出现 <code>v1alpha1</code> 版本，随着稳定性的提高被推进到 <code>v1beta1</code> ，最后从 <code>v1</code> 版本毕业。<p>随着新的用户场景出现，kubernetes API 需要不断变化，可能是新增一个字段，也可能是删除旧的字段，甚至是改变资源的展现形式。为了保证兼容性，kubernetes 制定了一系列的<a href=https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md>策略</a>。总的来说，对于已经 GA 的 API，Kubernetes 严格维护其兼容性，终端用户可以放心食用，beta 版本的 API 则尽量维护，保证不打破版本跨版本之间的交互，而对于 alpha 版本的 API 则很难保证兼容性，不太推荐生产环境使用。<h3 id=gvk-与-gvr-映射>GVK 与 GVR 映射</h3><p>在 kubernetes API 宇宙中，我们经常使用 GVK 或者 GVR 来区分特定的 kubernetes 资源。其中 GVK 是 Group Version Kind 的简称，而 GVR 则是 Group Version Resource 的简称。<p>通过上面对于 kubernetes API 分组和多版本的介绍，我们已经了解了 Group 与 Version，那么 Kind 与 Resource 又分别是指什么呢？<p><strong>Kind</strong> 是 API “顶级”资源对象的类型，每个资源对象都需要 Kind 来区分它自身代表的资源类型，例如，对于一个 pod 的例子：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-yaml data-lang=yaml><span style=color:#204a87;font-weight:700>apiVersion</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline> </span><span style=color:#000>v1</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline></span><span style=color:#204a87;font-weight:700>kind</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline> </span><span style=color:#000>Pod</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline></span><span style=color:#204a87;font-weight:700>metadata</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline>  </span><span style=color:#204a87;font-weight:700>name</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline> </span><span style=color:#000>example-pod</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline>  </span><span style=color:#204a87;font-weight:700>labels</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline>    </span><span style=color:#204a87;font-weight:700>app</span><span style=color:#000;font-weight:700>:</span><span style=color:#f8f8f8;text-decoration:underline> </span><span style=color:#000>exp</span><span style=color:#f8f8f8;text-decoration:underline>
 </span><span style=color:#f8f8f8;text-decoration:underline></span><span style=color:#000>...</span><span style=color:#f8f8f8;text-decoration:underline>
-</span></code></pre></div><p>其中 kind 字段即代表该资源对象的类型。一般来说，在 kubernetes API 中有三种不同的 Kind：<ol><li>单个资源对象的类型，最典型的就是刚才例子中提到的 Pod<li>资源对象的列表类型，例如 PodList 以及 NodeList 等<li>特殊类型以及非持久化操作的类型，很多这种类型的资源是 subresource， 例如用于绑定资源的 <code>/binding</code>、更新资源状态的 <code>/status</code> 以及读写资源实例数量的 <code>/scale</code></ol><p>需要注意的是，同 Kind 不止可以出现在同一分组的不同版本中，如 <code>apps/v1beta1</code> 与 <code>apps/v1</code>，它还可能出现在不同的分组中，例如 Deployment 开始以 alpha 的特性出现在 <code>extensions</code> 分组，GA 之后被推进到 <code>apps</code> 组，所以为了严格区分不同的 Kind，需要组合 API Group、API Version 与 Kind 成为 <strong>GVK</strong>。<p><strong>Resource</strong> 则是通过 HTTP 协议以 JSON 格式发送或者读取的资源展现形式，可以以单个资源对象展现，例如 <code>.../namespaces/default</code>，也可以以列表的形式展现，例如 <code>.../jobs</code>。要正确的请求资源对象，API-Server 必须知道 <code>apiVersion</code> 与请求的资源，这样 API-Server 才能正确地解码请求信息，这些信息正是处于请求的资源路径中。一般来说，把 API Group、API Version 以及 Resource 组合成为 GVR 可以区分特定的资源请求路径，例如 <code>/apis/batch/v1/jobs</code> 就是请求所有的 jobs 信息。<p>GVR 常用于组合成 RESTful API 请求路径。例如，针对应用程序 v1 部署的 RESTful API 请求如下所示：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>GET /apis/apps/v1/namespaces/{namespace}/deployments/{name}
-</code></pre></div><p>通过获取资源的 JSON 或 YAML 格式的序列化对象，进而从资源的类型信息中可以获得该资源的 GVK；相反，通过 GVK 信息则可以获取要读取的资源对象的 GVR，进而构建 RESTful API 请求获取对应的资源。这种 GVK 与 GVR 的映射叫做 RESTMapper。Kubernetes 定义了 <a href=https://github.com/kubernetes/apimachinery/blob/master/pkg/api/meta/interfaces.go>RESTMapper 接口</a>并带默认带有实现 <a href=https://github.com/kubernetes/apimachinery/blob/master/pkg/api/meta/restmapper.go>DefaultRESTMapper</a>。<p>关于 kubernetes API 的详细规范请参考 <a href=https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md>API Conventions</a><h2 id=如何储存>如何储存</h2><p>经过上一章节的研究，我们已经知道了 kubernetes API 的组织结构以及背后的设计原理，那么，Kubernetes API 的资源对象最终是怎么提供可靠存储的。之前也提到了 API-Server 是无状态的，它需要与分布式存储系统 <a href=https://etcd.io/>etcd</a> 交互来实现资源对象的持久化操作。从概念上讲，etcd 支持的数据模型是键值（key-value）存储。在 etcd2 中，各个 key 是以层次结构存在，而在 etcd3 中这个就变成了平级模型，但为了保证兼容性也保持了层次结构的方式。<p>在 Kubernetes 中 etcd 是如何使用的呢？实际上，前面也提到了，etcd 被部署为独立的部分，甚至多个 etcd 可以组成集群，API-Server 负责与 etcd 交互来完成资源对象的持久化。从 1.5.x 之后，Kubernetes 开始全面使用 etcd3。可以在 API-Server 的相关启动项参数中配置使用 etcd 的方式：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=color:#8f5902;font-style:italic># kube-apiserver -h</span>
+</span></code></pre></div><p>其中 kind 字段即代表该资源对象的类型。一般来说，在 kubernetes API 中有三种不同类型的 Kind：<ol><li>单个资源对象的类型，最典型的就是刚才例子中提到的 Pod<li>资源对象的列表类型，例如 PodList 以及 NodeList 等<li>特殊类型以及非持久化操作的类型，很多这种类型的资源是 subresource， 例如用于绑定资源的 <code>/binding</code>、更新资源状态的 <code>/status</code> 以及读写资源实例数量的 <code>/scale</code></ol><p>需要注意的是，同一个 Kind 的资源类型不止可以出现在同一分组的不同版本中，如 <code>apps/v1beta1</code> 与 <code>apps/v1</code>，它还可能出现在不同的分组中，例如 Deployment 开始以 alpha 特性出现在 <code>extensions</code> 分组，GA 之后被推进到 <code>apps</code> 组，所以为了严格区分不同的 Kind，需要组合 API 的 Group、Version 与 Kind 形成 <strong>GVK</strong>。<p><strong>Resource</strong> 则是用来以 HTTP 协议将 JSON 格式发送或者读取的资源展现形式，可以通过单个资源对象展现，例如 <code>.../namespaces/default</code>，也可以通过资源列表的形式展现，例如 <code>.../jobs</code>。要正确的请求资源对象，API-Server 必须知道 <code>apiVersion</code> 与请求的资源，这样 API-Server 才能正确地解码请求信息，这些信息正是处于请求的资源路径中。一般来说，把 API 对象的 Group、Version 以及 Resource 组合成为 GVR 并形成特定的资源请求路径，就可以区分请求的特定资源，例如 <code>/apis/batch/v1/jobs</code> 就是请求所有的 jobs 信息。<p>GVR 常用于组合成 RESTful API 请求路径。例如，针对 <code>apps/v1</code> 下面 Deployment 的 RESTful API 请求路径如下所示：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>GET /apis/apps/v1/namespaces/{namespace}/deployments/{name}
+</code></pre></div><p>通过获取资源的 JSON 或 YAML 格式的序列化对象，进而从资源的类型信息中可以获得该资源的 GVK；相反，通过 GVK 信息则可以获取要读取的资源对象的 GVR，进而构建 RESTful API 请求获取对应的资源。这种 GVK 与 GVR 的映射叫做 RESTMapper。Kubernetes 定义了 <a href=https://github.com/kubernetes/apimachinery/blob/master/pkg/api/meta/interfaces.go>RESTMapper 接口</a>并带默认带有实现 <a href=https://github.com/kubernetes/apimachinery/blob/master/pkg/api/meta/restmapper.go>DefaultRESTMapper</a>。<p>关于 kubernetes API 的详细规范请参考 <a href=https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md>API Conventions</a><h2 id=如何储存>如何储存</h2><p>经过上一章节的研究，我们已经知道了 kubernetes API 的组织结构以及背后的设计原理，接下来我们来看看，Kubernetes API 的资源对象最终是怎么提供可靠存储的。之前也提到了 API-Server 是无状态的，它需要与分布式存储系统 <a href=https://etcd.io/>etcd</a> 交互来实现资源对象的持久化操作。从概念上讲，etcd 支持的数据模型是键值（key-value）存储。在 etcd2 中，各个 key 是以层次结构存在，而在 etcd3 中这个就变成了平级模型，但为了保证兼容性也保持了层次结构的方式。<p>在 Kubernetes 中 etcd 是如何使用的呢？实际上，etcd 被部署为独立的部分，甚至多个 etcd 可以组成集群，API-Server 负责与 etcd 交互来完成资源对象的持久化。从 1.5.x 之后，Kubernetes 开始全面使用 etcd3。可以在 API-Server 的相关启动项参数中配置使用 etcd 的方式：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=color:#8f5902;font-style:italic># kube-apiserver -h</span>
 ...
 Etcd flags:
 
@@ -45,52 +45,52 @@ Etcd flags:
                 The media <span style=color:#204a87>type</span> to use to store objects in storage. Some resources or storage backends may only support a specific media <span style=color:#204a87>type</span> and will ignore this setting. <span style=color:#ce5c00;font-weight:700>(</span>default
                 <span style=color:#4e9a06>&#34;application/vnd.kubernetes.protobuf&#34;</span><span style=color:#ce5c00;font-weight:700>)</span>
 ...
-</code></pre></div><p>Kubernetes 资源对象是以 JSON 或 Protocol Buffers 格式存储在 etcd 中，这可以通过配置 kube-apiserver 的启动参数 <code>--storage-media-type</code> 来决定想要序列化数据存入 etcd 的格式，默认情况下为 <code>application/vnd.kubernetes.protobuf</code> 格式；另外也可以通过配置 <code>--storage-versions</code> 启动参数来配置每个API 分组的资源对象的持久化存储的默认版本号。<p>下面通过一个简单的例子来看，创建一个 pod，然后使用 etcdctl 工具来查看存储在 etcd 中数据：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=color:#8f5902;font-style:italic># cat &lt;&lt; EOF | kubectl create -f -</span>
-apiVersion: v1
-kind: Pod
-metadata:
-  name: webserver
-spec:
-  containers:
-  - name: nginx
-    image: nginx
-    ports:
-    - containerPort: <span style=color:#0000cf;font-weight:700>80</span>
-EOF
+</code></pre></div><p>Kubernetes 资源对象是以 JSON 或 Protocol Buffers 格式存储在 etcd 中，这可以通过配置 kube-apiserver 的启动参数 <code>--storage-media-type</code> 来决定想要序列化数据存入 etcd 的格式，默认情况下为 <code>application/vnd.kubernetes.protobuf</code> 格式；另外也可以通过配置 <code>--storage-versions</code> 启动参数来配置每个API 分组的资源对象持久化存储的默认版本号。<p>下面通过一个简单的例子来看，创建一个 pod，然后使用 etcdctl 工具来查看存储在 etcd 中数据：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash>$ cat <span style=color:#4e9a06>&lt;&lt; EOF | kubectl create -f -
+</span><span style=color:#4e9a06>apiVersion: v1
+</span><span style=color:#4e9a06>kind: Pod
+</span><span style=color:#4e9a06>metadata:
+</span><span style=color:#4e9a06>  name: webserver
+</span><span style=color:#4e9a06>spec:
+</span><span style=color:#4e9a06>  containers:
+</span><span style=color:#4e9a06>  - name: nginx
+</span><span style=color:#4e9a06>    image: nginx
+</span><span style=color:#4e9a06>    ports:
+</span><span style=color:#4e9a06>    - containerPort: 80
+</span><span style=color:#4e9a06>EOF</span>
 pod/webserver created
-<span style=color:#8f5902;font-style:italic># etcdctl --endpoints=$ETCD_URL \</span>
-  --cert /etc/kubernetes/pki/etcd/server.crt <span style=color:#4e9a06>\
+$ etcdctl --endpoints<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#000>$ETCD_URL</span> <span style=color:#4e9a06>\
+</span><span style=color:#4e9a06></span>  --cert /etc/kubernetes/pki/etcd/server.crt <span style=color:#4e9a06>\
 </span><span style=color:#4e9a06></span>  --key /etc/kubernetes/pki/etcd/server.key <span style=color:#4e9a06>\
 </span><span style=color:#4e9a06></span>  --cacert /etc/kubernetes/pki/etcd/ca.crt <span style=color:#4e9a06>\
 </span><span style=color:#4e9a06></span>  get /registry/pods/default/webserver --prefix -w simple
 /registry/pods/default/webserver
 ...
 10.244.0.5<span style=color:#4e9a06>&#34;
-</span></code></pre></div><p>使用各种客户端工具创建资源对象到然后存储到 etcd 的流程大致如下图所示：<p><img src=https://i.loli.net/2021/02/25/qlbvT9NuFoQ3XcE.png alt=API-server-serialization-overview.png><ol><li>客户端工具（例如 kubectl）提供一个期望状态的资源对象的序列化表示，该例子使用 YAML 格式提供<li>kubectl 将 YAML 转换为 JSON 格式，并发送给 API-Server<li>对应同类型对象的不同版本，API-Server 执行无损转换。对于老版本中不存在的字段则存储在 annotations 中<li>API-Server 将接收到的对象转换为规范存储版本，这个版本由 API-Server 启动参数指定，一般是最新的稳定版本<li>最后将资源对象通过 JSON 或 protobuf 方式解析并通过一个特定的 key 存入etcd当中</ol><p>上面提到的无损转换是如何进行的？下面使用 Kubernetes 资源对象对象 Horizontal Pod Autoscaling (HPA) 来举例说明：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=color:#8f5902;font-style:italic># kubectl proxy --port=8080 &amp;</span>
-<span style=color:#8f5902;font-style:italic># cat &lt;&lt; EOF | kubectl apply -f -</span>
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: webserver
-spec:
-  selector:
-    matchLabels:
-      app: webserver
-  template:
-    metadata:
-      labels:
-        app: webserver
-    spec:
-      containers:
-        - name: nginx
-          image: nginx
-          ports:
-            - containerPort: <span style=color:#0000cf;font-weight:700>80</span>
-EOF
-<span style=color:#8f5902;font-style:italic># kubectl autoscale deployment webserver --min=2 --max=5 --cpu-percent=80</span>
-<span style=color:#8f5902;font-style:italic># curl http://127.0.0.1:8001/apis/autoscaling/v2beta1/namespaces/default/horizontalpodautoscalers/webserver &gt; hpa-v2beta1.json</span>
-<span style=color:#8f5902;font-style:italic># curl http://127.0.0.1:8001/apis/autoscaling/v2beta2/namespaces/default/horizontalpodautoscalers/webserver &gt; hpa-v2beta2.json</span>
-<span style=color:#8f5902;font-style:italic># diff hpa-v2beta1.json hpa-v2beta2.json</span>
+</span></code></pre></div><p>使用各种客户端工具创建资源对象然后存储到 etcd 的流程大致如下图所示：<p><img src=https://i.loli.net/2021/02/25/qlbvT9NuFoQ3XcE.png alt=API-server-serialization-overview.png><ol><li>客户端工具（例如 kubectl）提供一个期望状态的资源对象的序列化表示，该例子使用 YAML 格式提供<li>kubectl 将 YAML 转换为 JSON 格式，并发送给 API-Server<li>对应同类型对象的不同版本，API-Server 执行无损转换。对于老版本中不存在的字段则存储在 annotations 中<li>API-Server 将接收到的对象转换为规范存储版本，这个版本由 API-Server 启动参数指定，一般是最新的稳定版本<li>最后将资源对象通过 JSON 或 protobuf 方式解析并通过一个特定的 key 存入etcd当中</ol><p>上面提到的无损转换是如何进行的？下面使用 Kubernetes 资源对象对象 Horizontal Pod Autoscaling (HPA) 来举例说明：<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash>$ kubectl proxy --port<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#0000cf;font-weight:700>8080</span> <span style=color:#000;font-weight:700>&amp;</span>
+$ cat <span style=color:#4e9a06>&lt;&lt; EOF | kubectl apply -f -
+</span><span style=color:#4e9a06>apiVersion: apps/v1
+</span><span style=color:#4e9a06>kind: Deployment
+</span><span style=color:#4e9a06>metadata:
+</span><span style=color:#4e9a06>  name: webserver
+</span><span style=color:#4e9a06>spec:
+</span><span style=color:#4e9a06>  selector:
+</span><span style=color:#4e9a06>    matchLabels:
+</span><span style=color:#4e9a06>      app: webserver
+</span><span style=color:#4e9a06>  template:
+</span><span style=color:#4e9a06>    metadata:
+</span><span style=color:#4e9a06>      labels:
+</span><span style=color:#4e9a06>        app: webserver
+</span><span style=color:#4e9a06>    spec:
+</span><span style=color:#4e9a06>      containers:
+</span><span style=color:#4e9a06>        - name: nginx
+</span><span style=color:#4e9a06>          image: nginx
+</span><span style=color:#4e9a06>          ports:
+</span><span style=color:#4e9a06>            - containerPort: 80
+</span><span style=color:#4e9a06>EOF</span>
+$ kubectl autoscale deployment webserver --min<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#0000cf;font-weight:700>2</span> --max<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#0000cf;font-weight:700>5</span> --cpu-percent<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#0000cf;font-weight:700>80</span>
+$ curl http://127.0.0.1:8001/apis/autoscaling/v2beta1/namespaces/default/horizontalpodautoscalers/webserver &gt; hpa-v2beta1.json
+$ curl http://127.0.0.1:8001/apis/autoscaling/v2beta2/namespaces/default/horizontalpodautoscalers/webserver &gt; hpa-v2beta2.json
+$ diff hpa-v2beta1.json hpa-v2beta2.json
 3c3
 &lt;   <span style=color:#4e9a06>&#34;apiVersion&#34;</span>: <span style=color:#4e9a06>&#34;autoscaling/v2beta1&#34;</span>,
 ---
@@ -102,4 +102,4 @@ EOF
 &gt;             <span style=color:#4e9a06>&#34;type&#34;</span>: <span style=color:#4e9a06>&#34;Utilization&#34;</span>,
 &gt;             <span style=color:#4e9a06>&#34;averageUtilization&#34;</span>: <span style=color:#0000cf;font-weight:700>80</span>
 &gt;           <span style=color:#ce5c00;font-weight:700>}</span>
-</code></pre></div><p>通过上面命令的输出能够看出，即使 HorizontalPodAutoscale 的版本从 v2beta1 变为了 v2beta2，API-Server 也能够在不同的版本之前无损转换，不论在 etcd 中实际存的是哪个版本。实际上，API-Server 将所有已知的 Kubernetes 资源类型保存在名为 Scheme 的注册表（registry）中。在此注册表中，定义了每种 Kubernetes 资源的类型、分组、版本以及如何转换它们，如何创建新对象，以及如何将对象编码和解码为 JSON 或 protobuf 格式的序列化形式。</div><div class="row middle-xs"><div class=col-xs-12><div class=post-category><a href=https://morven.life/categories/note/>note</a></div><div class=post-category><a href=https://morven.life/categories/tech/>tech</a></div></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer><div class=site-footer-item><a href=https://morven.life/about/ target=_blank>About Me</a></div></div></div></div></article><script src=https://morven.life/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')});</script>
+</code></pre></div><p>通过上面命令的输出能够看出，即使 HorizontalPodAutoscale 的版本从 v2beta1 变为了 v2beta2，API-Server 也能够在不同的版本之前无损转换，不论在 etcd 中实际存的是哪个版本。实际上，API-Server 将所有已知的 Kubernetes 资源类型保存在名为 Scheme 的注册表（registry）中。在此注册表中，定义了每种 Kubernetes 资源的类型、分组、版本以及如何转换它们，如何创建新对象，以及如何将对象编码和解码为 JSON 或 protobuf 格式的序列化形式。<p>截至目前，我们了解了 Kubernetes API-Server 是什么，涉及到的基本术语，以及如何实现 API 资源的版本更迭以及 API 资源的持久化存储，接下来的笔记中，我们会从代码实现的角度进一步探讨 Kubernetes API 更详细的运行机制。</div><div class="row middle-xs"><div class=col-xs-12><div class=post-category><a href=https://morven.life/categories/note/>note</a></div><div class=post-category><a href=https://morven.life/categories/tech/>tech</a></div></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer><div class=site-footer-item><a href=https://morven.life/about/ target=_blank>About Me</a></div></div></div></div></article><script src=https://morven.life/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')});</script>
