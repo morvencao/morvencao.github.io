@@ -1,0 +1,489 @@
+<!doctype html><html lang=en><meta charset=utf-8><meta name=generator content="Hugo 0.80.0"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Morven's Life"><meta property=og:url content=https://morven.life/en/posts/diving-into-kubernetes-mutating-admission-webhook/><link rel=canonical href=https://morven.life/en/posts/diving-into-kubernetes-mutating-admission-webhook/><link rel=apple-touch-icon href=https://morven.life/favicon.ico><link rel=icon href=https://morven.life/favicon.ico><link rel=shortcut href=https://morven.life/favicon.ico><link rel=alternate type=application/atom+xml href=https://morven.life/index.xml title="Morven's Life"><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/morven.life\/"},"articleSection":"posts","name":"Diving into Kubernetes MutatingAdmissionWebhook","headline":"Diving into Kubernetes MutatingAdmissionWebhook","description":"Admission controllers are powerful tools for intercepting requests to the Kubernetes API server prior to persistence of the object. However, they are not very flexible due to the requirement that they are compiled as a binary in the kube-apiserver that is configured by the cluster administrator. Starting in Kubernetes 1.7, Initializers and External Admission Webhooks are introduced to address this limitation. In Kubernetes 1.9, Initializers stays in alpha phase while External Admission Webhooks are promoted to beta and split into MutatingAdmissionWebhook and ValidatingAdmissionWebhook.","inLanguage":"en-US","author":"Morven\u0027s Life","creator":"Morven\u0027s Life","publisher":"Morven\u0027s Life","accountablePerson":"Morven\u0027s Life","copyrightHolder":"Morven\u0027s Life","copyrightYear":"2018","datePublished":"2018-04-10 00:00:00 \u002b0000 UTC","dateModified":"2018-04-10 00:00:00 \u002b0000 UTC","url":"https:\/\/morven.life\/en\/posts\/diving-into-kubernetes-mutating-admission-webhook\/","keywords":[]}</script><title>Diving into Kubernetes MutatingAdmissionWebhook</title><meta property=og:title content="Diving into Kubernetes MutatingAdmissionWebhook"><meta property=og:type content=article><meta property=og:description content="Admission controllers are powerful tools for intercepting requests to the Kubernetes API server prior to persistence of the object. However, they are not very flexible due to the requirement that they are compiled as a binary in the kube-apiserver that is configured by the cluster administrator. Starting in Kubernetes 1.7, Initializers and External Admission Webhooks are introduced to address this limitation. In Kubernetes 1.9, Initializers stays in alpha phase while External Admission Webhooks are promoted to beta and split into MutatingAdmissionWebhook and ValidatingAdmissionWebhook."><meta name=description content="Admission controllers are powerful tools for intercepting requests to the Kubernetes API server prior to persistence of the object. However, they are not very flexible due to the requirement that they are compiled as a binary in the kube-apiserver that is configured by the cluster administrator. Starting in Kubernetes 1.7, Initializers and External Admission Webhooks are introduced to address this limitation. In Kubernetes 1.9, Initializers stays in alpha phase while External Admission Webhooks are promoted to beta and split into MutatingAdmissionWebhook and ValidatingAdmissionWebhook."><meta property=og:locale content=en-us><style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body blockquote{background-color:#f8f8f8;border-left:2px solid;margin:40px;padding:10px 20px}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:85%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.signatures{font-family:permanent marker,Impact,Charcoal,sans-serif;font-size:3rem;margin-top:32px}.signatures a{text-decoration:none}.header-line{width:100%;height:3px;background-color:#000;margin:18px 0}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-date,.posts-title{font-size:1.2rem}.posts-line{margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px;margin-bottom:3px}.site-footer{margin-top:50px;margin-bottom:80px;display:flex;justify-content:flex-end;flex-wrap:wrap;padding:12px 0;border-width:3px;border-color:#000}.site-footer-item{margin-right:12px}@media screen and (max-width:600px){.site-header{display:none}.post-content{padding:0 12px}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}.post-content img{max-width:100%;display:block;margin-left:auto;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2.5rem;font-weight:600}.post-category{display:inline;font-weight:900;margin:0 4px;padding:2px 5px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}</style><style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style><link href=https://morven.life/index.xml rel=alternate type=application/rss+xml title="Morven's Life"><link href="https://fonts.googleapis.com/css?family=Arvo|Permanent+Marker|Bree+Serif" rel=stylesheet><article class="post English" id=article><div class=row><div class=col-xs-12><header class=post-header><h1 class=post-title>Diving into Kubernetes MutatingAdmissionWebhook</h1><div class="row post-desc"><div class=col-xs-6><time class=post-date datetime="2018-04-10 00:00:00 UTC">10 Apr 2018</time></div><div class=col-xs-6><div class=post-author><a target=_blank href=https://morven.life/>@Morven's Life</a></div></div></div></header><div class="post-content markdown-body"><p><a href=https://kubernetes.io/docs/admin/admission-controllers/>Admission controllers</a> are powerful tools for intercepting requests to the Kubernetes API server prior to persistence of the object. However, they are not very flexible due to the requirement that they are compiled as a binary in the <code>kube-apiserver</code> that is configured by the cluster administrator. Starting in Kubernetes 1.7, <a href=https://v1-8.docs.kubernetes.io/docs/admin/extensible-admission-controllers/#initializers>Initializers</a> and <a href=https://v1-8.docs.kubernetes.io/docs/admin/extensible-admission-controllers/#external-admission-webhooks>External Admission Webhooks</a> are introduced to address this limitation. In Kubernetes 1.9, <code>Initializers</code> stays in alpha phase while <code>External Admission Webhooks</code> are promoted to beta and split into <a href=https://kubernetes.io/docs/admin/admission-controllers/#mutatingadmissionwebhook-beta-in-19>MutatingAdmissionWebhook</a> and <a href=https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19>ValidatingAdmissionWebhook</a>.<p><code>MutatingAdmissionWebhook</code> together with <code>ValidatingAdmissionWebhook</code> are a special kind of <code>admission controllers</code> which process mutations and validations. This validation is done by matching the rules that are defined in the <a href=https://v1-9.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.9/#mutatingwebhookconfiguration-v1beta1-admissionregistration>MutatingWebhookConfiguration</a>(explained below).<p>In this article, I will dive into the details of a <code>MutatingAdmissionWebhook</code> and write a working webhook admission server step-by-step.<h2 id=benefit-of-webhooks>Benefit of Webhooks</h2><p>Kubernetes cluster administrators can use <code>webhooks</code> to create additional mutating and validating admission plugins to the admission chain of <code>apiserver</code> without recompiling them. This provides developers with the freedom and flexibility to customize admission logic on multiple actions such CREATE, UPDATE, and DELETE on any resource. The number of applications that can be used are vast. Some common use cases include:<ul><li>Mutating resources before creating them. <a href=https://github.com/istio>Istio</a>, a representative example, injects an <a href=https://github.com/envoyproxy/envoy>Envoy</a> sidecar container to target pods to implement traffic management and policy enforcement.<li>Automated provisioning of <code>StorageClass</code>. Observes creation of <code>PersistentVolumeClaim</code> objects and automatically adds storage class to them based on predefined policy. Users that do not need to care about <code>StorageClass</code> creating.<li>Validating complex custom resource. Make sure custom resource can only be created after its definition and all dependencies created and available.<li>Restricting namespace. On multi-tenant systems, avoid resources created in reserved namespaces.</ul><p>Besides the user-cases listed above, many more applications can be created based on the power of <code>webhooks</code>.<h2 id=webhooks-vs-initializers>Webhooks vs Initializers</h2><p>Based on feedback from the community and use cases in alpha phase for both <code>External Admission Webhooks</code> and <code>Initializers</code>, the Kubernetes community decided to promote webhooks to beta and split it into two types of webhooks (<code>MutatingAdmissionWebhook</code> and <code>ValidatingAdmissionWebhook</code>). These updates make webhooks consistent with other admission controllers and enforce <code>mutate-before-validate</code>. <code>Initializers</code> can also implement dynamic admission control by modifying Kubernetes resources before they are actually created. If you&rsquo;re unfamiliar with <code>Initializers</code>, please refer to the article: <a href=https://medium.com/ibm-cloud/kubernetes-initializers-deep-dive-and-tutorial-3bc416e4e13e>https://medium.com/ibm-cloud/kubernetes-initializers-deep-dive-and-tutorial-3bc416e4e13e</a>.<p>So what’s the difference between <code>Webhooks</code> and <code>Initializers</code>?<ul><li><code>Webhooks</code> can be applied on more actions, including &lsquo;mutate&rsquo; or &lsquo;admit&rsquo; on resoures &lsquo;CREATE&rsquo; &lsquo;UPDATE&rsquo; and &lsquo;DELETE&rsquo;, whereas <code>Initializers</code> can&rsquo;t &lsquo;admit&rsquo; resources for &lsquo;DELETE&rsquo; requests.<li><code>Webhooks</code> are not allowed to query resources before created, while <code>Initializers</code> are capable of watching the uninitialized resources by the query parameter <code>?includeUninitialized=true</code>, which makes the resource creation progress transparent.<li>Since <code>Initializers</code> persist the &lsquo;pre-create&rsquo; states to <code>etcd</code>, higher latency and increased <code>etcd</code> burden will be introduced accordingly, especially when <code>apiserver</code> upgrades or fails. <code>Webhooks</code>, however, consume less memory and computing resources.<li><code>Webhooks</code> provide more robustness on failures than <code>Initializers</code>. Failure policies can be configured in <code>Webhooks</code> configuraton to avoid hanging onto resources that are created. Buggy <code>Initializers</code>, on the other hand, may block all matched resources attempted to be created.</ul><p>Besides the differences listed above, <code>Initializer</code> has some significant issues currently as open issues with long expected development time including quota replenishment bug. Promotion of <code>Webhooks</code> to beta may be a signal that more support for it in the future, but that depends. If stable behavior is preferred, I suggest you choose <code>Webhooks</code>.<h2 id=how-mutatingadmissionwebhook-works>How MutatingAdmissionWebhook works</h2><p><code>MutatingAdmissionWebhook</code> intercepts requests matching the rules defined in <code>MutatingWebhookConfiguration</code> before presisting into <code>etcd</code>. <code>MutatingAdmissionWebhook</code> executes the mutation by sending admission requests to webhook server. Webhook server is just plain http server that adhere to the <a href=https://github.com/kubernetes/kubernetes/blob/v1.9.0/pkg/apis/admission/types.go>API</a>.<p>The following diagram describes how <code>MutatingAdmissionWebhook</code> works in details:<p><img src=https://i.loli.net/2019/03/17/5c8dede75dfde.jpg alt><p>The <code>MutatingAdmissionWebhook</code> needs three objects to function:<ol><li><strong>MutatingWebhookConfiguration</strong></ol><p><code>MutatingAdmissionWebhook</code> needs to be registered in the <code>apiserver</code> by providing <code>MutatingWebhookConfiguration</code>. During the registration process, <code>MutatingAdmissionWebhook</code> states:<ul><li>How to connect to the webhook admission server<li>How to verify the webhook admission server<li>The URL path of the webhook admission server<li>Rules defining which resource and what action it handles<li>How unrecognized errors from the webhook admission server are handled</ul><ol start=2><li><strong>MutatingAdmissionWebhook itself</strong></ol><p><code>MutatingAdmissionWebhook</code> is a plugin-style admission controller that can be configured into the <code>apiserver</code>. The <code>MutatingAdmissionWebhook</code> plugin get the list of interested admission webhooks from <code>MutatingWebhookConfiguration</code>. Then the <code>MutatingAdmissionWebhook</code> observes the requests to <code>apiserver</code> and intercepts requests matching the rules in admission webhooks and calls them in parallel.<ol start=3><li><strong>Webhook Admission Server</strong></ol><p>Webhook Admission Server is just plain http server that adhere to Kubernetes <a href=https://github.com/kubernetes/kubernetes/blob/v1.9.0/pkg/apis/admission/types.go>admission API</a>. For each request to the <code>apiserver</code>, the <code>MutatingAdmissionWebhook</code> sends an <code>admissionReview</code>(<a href=https://github.com/kubernetes/kubernetes/blob/v1.9.0/pkg/apis/admission/types.go>API</a> for reference) to the relevant webhook admission server. The webhook admission server gathers information like <code>object</code>, <code>oldobject</code>, and <code>userInfo</code> from <code>admissionReview</code>, and sends back an <code>admissionReview</code> response including <code>AdmissionResponse</code> whose <code>Allowed</code> and <code>Result</code> fields are filled with the admission decision and optional <code>Patch</code> to mutate the resoures.<h2 id=tutorial-for-mutatingadmissionwebhook>Tutorial for MutatingAdmissionWebhook</h2><p>Writing a complete Webhook Admission Server may be intimidating. To make it easier, we’ll write a simple Webhook Admission Server that implements injecting nginx sidecar container and volume. The complete code can be found in the <a href=https://github.com/morvencao/kube-mutating-webhook-tutorial>kube-mutating-webhook-tutorial</a>. This project refers to `Kunernetes webhook example](<a href=https://github.com/kubernetes/kubernetes/tree/release-1.9/test/images/webhook>https://github.com/kubernetes/kubernetes/tree/release-1.9/test/images/webhook</a>) and <a href=https://github.com/istio/istio/tree/master/pilot/pkg/kube/inject>Istio sidecar injection implementation</a>.<p>In the following sections, I’ll show you how to write a working containerized webhook admission server and deploy it to a Kubernetes cluster.<h3 id=prerequisites>Prerequisites</h3><p><code>MutatingAdmissionWebhook</code> requires a Kubernetes 1.9.0 or above with the <code>admissionregistration.k8s.io/v1beta1</code> API enabled. Verify that by the following command:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>kubectl api-versions | grep admissionregistration.k8s.io/v1beta1
+</code></pre></div><p>The result should not be empty.<p>In addition, the <code>MutatingAdmissionWebhook</code> and <code>ValidatingAdmissionWebhook</code> admission controllers should be added and listed in the correct order in the <code>admission-control</code> flag of <code>kube-apiserver</code>.<h3 id=write-the-webhook-server>Write the Webhook Server</h3><p>Webhook Admission Server is just a simple http server that adheres to the <a href=https://github.com/kubernetes/kubernetes/blob/v1.9.0/pkg/apis/admission/types.go>Kubernetes admission API</a>. I&rsquo;ll paste some pseudo code to describe the main logic:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>sidecarConfig, err := loadConfig(parameters.sidecarCfgFile)
+pair, err := tls.LoadX509KeyPair(parameters.certFile, parameters.keyFile)
+
+whsvr := &amp;WebhookServer {
+    sidecarConfig:    sidecarConfig,
+    server:           &amp;http.Server {
+        Addr:        fmt.Sprintf(&#34;:%v&#34;, 443),
+        TLSConfig:   &amp;tls.Config{Certificates: []tls.Certificate{pair}},
+    },
+}
+	
+// define http server and server handler
+mux := http.NewServeMux()
+mux.HandleFunc(&#34;/mutate&#34;, whsvr.serve)
+whsvr.server.Handler = mux
+
+// start webhook server in new rountine
+go func() {
+    if err := whsvr.server.ListenAndServeTLS(&#34;&#34;, &#34;&#34;); err != nil {
+        glog.Errorf(&#34;Filed to listen and serve webhook server: %v&#34;, err)
+    }
+}()
+</code></pre></div><p>Explanation for the above code:<ul><li><code>sidecarCfgFile</code> contains sidecar injector template defined in <code>ConfigMap</code> below.<li><code>certFile</code> and <code>keyFile</code> key pair that will be needed for TLS communication between <code>apiserver</code> and webhook server.<li>Line 19 starts https server listening on 443 on path <code>/mutate</code>.</ul><p>Next we’ll focus on the main logic of the handler function serve:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>// Serve method for webhook server
+func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
+	var body []byte
+	if r.Body != nil {
+		if data, err := ioutil.ReadAll(r.Body); err == nil {
+			body = data
+		}
+	}
+
+	var reviewResponse *v1beta1.AdmissionResponse
+	ar := v1beta1.AdmissionReview{}
+	deserializer := codecs.UniversalDeserializer()
+	if _, _, err := deserializer.Decode(body, nil, &amp;ar); err != nil {
+		glog.Error(err)
+		reviewResponse = toAdmissionResponse(err)
+	} else {
+		reviewResponse = mutate(ar)
+	}
+
+	response := v1beta1.AdmissionReview{}
+	if reviewResponse != nil {
+		response.Response = reviewResponse
+		response.Response.UID = ar.Request.UID
+	}
+	// reset the Object and OldObject, they are not needed in a response.
+	ar.Request.Object = runtime.RawExtension{}
+	ar.Request.OldObject = runtime.RawExtension{}
+
+	resp, err := json.Marshal(response)
+	if err != nil {
+		glog.Error(err)
+	}
+	if _, err := w.Write(resp); err != nil {
+		glog.Error(err)
+	}
+}
+</code></pre></div><p>The <code>serve</code> function is a simple http handler with http request and response writer parameters.<ul><li>First demarshal the request to AdmissionReview, which contains information like <code>object</code>, <code>oldobject</code> and <code>userInfo</code>&mldr;<li>Then call Webhook core function <code>mutate</code> to create patch that injects sidecar container and volume.<li>Finally, demarshal the response with admission decision and optional patch, the send it back to <code>apiserver</code>.</ul><p>For the part of <code>mutate</code> function, you get the free rein to complete it in your preferred way. Let&rsquo;s take my implementation as an example:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>// main mutation process
+func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
+	req := ar.Request
+	var pod corev1.Pod
+	if err := json.Unmarshal(req.Object.Raw, &amp;pod); err != nil {
+		glog.Errorf(&#34;Could not unmarshal raw object: %v&#34;, err)
+		return &amp;v1beta1.AdmissionResponse {
+			Result: &amp;metav1.Status {
+				Message: err.Error(),
+			},
+		}
+	}
+	
+	// determine whether to perform mutation
+	if !mutationRequired(ignoredNamespaces, &amp;pod.ObjectMeta) {
+		glog.Infof(&#34;Skipping mutation for %s/%s due to policy check&#34;, pod.Namespace, pod.Name)
+		return &amp;v1beta1.AdmissionResponse {
+			Allowed: true, 
+		}
+	}
+
+	annotations := map[string]string{admissionWebhookAnnotationStatusKey: &#34;injected&#34;}
+	patchBytes, err := createPatch(&amp;pod, whsvr.sidecarConfig, annotations)
+	
+	return &amp;v1beta1.AdmissionResponse {
+		Allowed: true,
+		Patch:   patchBytes,
+		PatchType: func() *v1beta1.PatchType {
+			pt := v1beta1.PatchTypeJSONPatch
+			return &amp;pt
+		}(),
+	}
+}
+</code></pre></div><p>From the code above, the <code>mutate</code> function calls <a href=https://github.com/morvencao/kube-mutating-webhook-tutorial/blob/master/webhook.go#L98-L130>mutationRequired</a> to detemine whether mutation is required or not. For those requiring mutation, the <code>mutate</code> function gets the mutation &lsquo;patch&rsquo; from another function <a href=https://github.com/morvencao/kube-mutating-webhook-tutorial/blob/master/webhook.go#L196-L205>createPatch</a>. Pay close attention to the little trick in function <code>mutationRequired</code>, we skip the pods without annotation <code>sidecar-injector-webhook.morven.me/inject: true</code>. That will be mentioned latter when we deployment applications. For complete code, please refer to <a href=https://github.com/morvencao/kube-mutating-webhook-tutorial/blob/master/webhook.go>https://github.com/morvencao/kube-mutating-webhook-tutorial/blob/master/webhook.go</a>.<h3 id=create-dockerfile-and-build-the-container>Create Dockerfile and Build the Container</h3><p>Create the <code>build</code> script:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>dep ensure
+CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o kube-mutating-webhook-tutorial .
+docker build --no-cache -t morvencao/sidecar-injector:v1 .
+rm -rf kube-mutating-webhook-tutorial
+
+docker push morvencao/sidecar-injector:v1
+</code></pre></div><p>And create <code>Dockerfile</code> as dependency of build script:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>FROM alpine:latest
+
+ADD kube-mutating-webhook-tutorial /kube-mutating-webhook-tutorial
+ENTRYPOINT [&#34;./kube-mutating-webhook-tutorial&#34;]
+</code></pre></div><p>Before actually building the container, you need a <a href=https://hub.docker.com/>Docker</a> account and change the image name&tag(in <code>Dockerfile</code> and <code>deployment.yaml</code>) to yours, then execute:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# ./build
+Sending build context to Docker daemon  44.89MB
+Step 1/3 : FROM alpine:latest
+ ---&gt; 3fd9065eaf02
+Step 2/3 : ADD kube-mutating-webhook-tutorial /kube-mutating-webhook-tutorial
+ ---&gt; 432de60c2b3f
+Step 3/3 : ENTRYPOINT [&#34;./kube-mutating-webhook-tutorial&#34;]
+ ---&gt; Running in da6e956d1755
+Removing intermediate container da6e956d1755
+ ---&gt; 619faa936145
+Successfully built 619faa936145
+Successfully tagged morvencao/sidecar-injector:v1
+The push refers to repository [docker.io/morvencao/sidecar-injector]
+efd05fe119bb: Pushed
+cd7100a72410: Layer already exists
+v1: digest: sha256:7a4889928ec5a8bcfb91b610dab812e5228d8dfbd2b540cd7a341c11f24729bf size: 739
+</code></pre></div><h3 id=create-sidecar-injection-configuration>Create Sidecar Injection Configuration</h3><p>Now let’s create a Kubernetes <code>ConfigMap</code>, which includes <code>container</code> and <code>volume</code> information that will be injected into the target pod.<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidecar-injector-webhook-configmap
+data:
+  sidecarconfig.yaml: |
+    containers:
+      - name: sidecar-nginx
+        image: nginx:1.12.2
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: nginx-conf
+            mountPath: /etc/nginx
+    volumes:
+      - name: nginx-conf
+        configMap:
+          name: nginx-configmap
+</code></pre></div><p>From the above manifest, another ConfigMap including nginx conf is required. Here we put it in <a href=https://github.com/morvencao/kube-mutating-webhook-tutorial/blob/master/deployment/nginxconfigmap.yaml>nginxconfigmap.yaml</a>.<p>Then deploy the two ConfigMaps to cluster:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl create -f ./deployment/nginxconfigmap.yaml
+configmap &#34;nginx-configmap&#34; created
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl create -f ./deployment/configmap.yaml
+configmap &#34;sidecar-injector-webhook-configmap&#34; created
+</code></pre></div><h3 id=create-secret-including-signed-keycert-pair>Create Secret Including Signed key/cert Pair</h3><p>Supporting <code>TLS</code> for external webhook server is also required because admission is a high security operation. As part of the process, we need to create a TLS certificate signed by the Kubernetes CA to secure the communication between the webhook server and <code>apiserver</code>. For the complete steps for creating and approving the process for <code>CSR</code>, please refer to <a href=https://kubernetes.io/docs/tasks/tls/managing-tls-in-a-cluster/>https://kubernetes.io/docs/tasks/tls/managing-tls-in-a-cluster/</a>.<p>For simplicity purposes, we referred to the <a href=https://github.com/istio/istio/blob/master/install/kubernetes/webhook-create-signed-cert.sh>script</a> from <code>Istio</code> and created a similar script called <code>webhook-create-signed-cert.sh</code> to automatically create the <code>cert/key</code> pair and include it in a Kubernetes secret.<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=color:#8f5902;font-style:italic>#!/bin/bash
+</span><span style=color:#8f5902;font-style:italic></span><span style=color:#204a87;font-weight:700>while</span> <span style=color:#ce5c00;font-weight:700>[[</span> <span style=color:#000>$#</span> -gt <span style=color:#0000cf;font-weight:700>0</span> <span style=color:#ce5c00;font-weight:700>]]</span><span style=color:#000;font-weight:700>;</span> <span style=color:#204a87;font-weight:700>do</span>
+    <span style=color:#204a87;font-weight:700>case</span> <span style=color:#4e9a06>${</span><span style=color:#000>1</span><span style=color:#4e9a06>}</span> in
+        --service<span style=color:#ce5c00;font-weight:700>)</span>
+            <span style=color:#000>service</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>&#34;</span><span style=color:#000>$2</span><span style=color:#4e9a06>&#34;</span>
+            <span style=color:#204a87>shift</span>
+            <span style=color:#000;font-weight:700>;;</span>
+        --secret<span style=color:#ce5c00;font-weight:700>)</span>
+            <span style=color:#000>secret</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>&#34;</span><span style=color:#000>$2</span><span style=color:#4e9a06>&#34;</span>
+            <span style=color:#204a87>shift</span>
+            <span style=color:#000;font-weight:700>;;</span>
+        --namespace<span style=color:#ce5c00;font-weight:700>)</span>
+            <span style=color:#000>namespace</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>&#34;</span><span style=color:#000>$2</span><span style=color:#4e9a06>&#34;</span>
+            <span style=color:#204a87>shift</span>
+            <span style=color:#000;font-weight:700>;;</span>
+    <span style=color:#204a87;font-weight:700>esac</span>
+    <span style=color:#204a87>shift</span>
+<span style=color:#204a87;font-weight:700>done</span>
+
+<span style=color:#ce5c00;font-weight:700>[</span> -z <span style=color:#4e9a06>${</span><span style=color:#000>service</span><span style=color:#4e9a06>}</span> <span style=color:#ce5c00;font-weight:700>]</span> <span style=color:#ce5c00;font-weight:700>&amp;&amp;</span> <span style=color:#000>service</span><span style=color:#ce5c00;font-weight:700>=</span>sidecar-injector-webhook-svc
+<span style=color:#ce5c00;font-weight:700>[</span> -z <span style=color:#4e9a06>${</span><span style=color:#000>secret</span><span style=color:#4e9a06>}</span> <span style=color:#ce5c00;font-weight:700>]</span> <span style=color:#ce5c00;font-weight:700>&amp;&amp;</span> <span style=color:#000>secret</span><span style=color:#ce5c00;font-weight:700>=</span>sidecar-injector-webhook-certs
+<span style=color:#ce5c00;font-weight:700>[</span> -z <span style=color:#4e9a06>${</span><span style=color:#000>namespace</span><span style=color:#4e9a06>}</span> <span style=color:#ce5c00;font-weight:700>]</span> <span style=color:#ce5c00;font-weight:700>&amp;&amp;</span> <span style=color:#000>namespace</span><span style=color:#ce5c00;font-weight:700>=</span>default
+
+<span style=color:#000>csrName</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>${</span><span style=color:#000>service</span><span style=color:#4e9a06>}</span>.<span style=color:#4e9a06>${</span><span style=color:#000>namespace</span><span style=color:#4e9a06>}</span>
+<span style=color:#000>tmpdir</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#204a87;font-weight:700>$(</span>mktemp -d<span style=color:#204a87;font-weight:700>)</span>
+<span style=color:#204a87>echo</span> <span style=color:#4e9a06>&#34;creating certs in tmpdir </span><span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span><span style=color:#4e9a06> &#34;</span>
+
+cat <span style=color:#4e9a06>&lt;&lt;EOF &gt;&gt; ${tmpdir}/csr.conf
+</span><span style=color:#4e9a06>[req]
+</span><span style=color:#4e9a06>req_extensions = v3_req
+</span><span style=color:#4e9a06>distinguished_name = req_distinguished_name
+</span><span style=color:#4e9a06>[req_distinguished_name]
+</span><span style=color:#4e9a06>[ v3_req ]
+</span><span style=color:#4e9a06>basicConstraints = CA:FALSE
+</span><span style=color:#4e9a06>keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+</span><span style=color:#4e9a06>extendedKeyUsage = serverAuth
+</span><span style=color:#4e9a06>subjectAltName = @alt_names
+</span><span style=color:#4e9a06>[alt_names]
+</span><span style=color:#4e9a06>DNS.1 = ${service}
+</span><span style=color:#4e9a06>DNS.2 = ${service}.${namespace}
+</span><span style=color:#4e9a06>DNS.3 = ${service}.${namespace}.svc
+</span><span style=color:#4e9a06>EOF</span>
+
+openssl genrsa -out <span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span>/server-key.pem <span style=color:#0000cf;font-weight:700>2048</span>
+openssl req -new -key <span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span>/server-key.pem -subj <span style=color:#4e9a06>&#34;/CN=</span><span style=color:#4e9a06>${</span><span style=color:#000>service</span><span style=color:#4e9a06>}</span><span style=color:#4e9a06>.</span><span style=color:#4e9a06>${</span><span style=color:#000>namespace</span><span style=color:#4e9a06>}</span><span style=color:#4e9a06>.svc&#34;</span> -out <span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span>/server.csr -config <span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span>/csr.conf
+
+<span style=color:#8f5902;font-style:italic># clean-up any previously created CSR for our service. Ignore errors if not present.</span>
+kubectl delete csr <span style=color:#4e9a06>${</span><span style=color:#000>csrName</span><span style=color:#4e9a06>}</span> 2&gt;/dev/null <span style=color:#ce5c00;font-weight:700>||</span> <span style=color:#204a87>true</span>
+
+<span style=color:#8f5902;font-style:italic># create  server cert/key CSR and  send to k8s API</span>
+cat <span style=color:#4e9a06>&lt;&lt;EOF | kubectl create -f -
+</span><span style=color:#4e9a06>apiVersion: certificates.k8s.io/v1beta1
+</span><span style=color:#4e9a06>kind: CertificateSigningRequest
+</span><span style=color:#4e9a06>metadata:
+</span><span style=color:#4e9a06>  name: ${csrName}
+</span><span style=color:#4e9a06>spec:
+</span><span style=color:#4e9a06>  groups:
+</span><span style=color:#4e9a06>  - system:authenticated
+</span><span style=color:#4e9a06>  request: $(cat ${tmpdir}/server.csr | base64 | tr -d &#39;\n&#39;)
+</span><span style=color:#4e9a06>  usages:
+</span><span style=color:#4e9a06>  - digital signature
+</span><span style=color:#4e9a06>  - key encipherment
+</span><span style=color:#4e9a06>  - server auth
+</span><span style=color:#4e9a06>EOF</span>
+
+<span style=color:#8f5902;font-style:italic># verify CSR has been created</span>
+<span style=color:#204a87;font-weight:700>while</span> true<span style=color:#000;font-weight:700>;</span> <span style=color:#204a87;font-weight:700>do</span>
+    kubectl get csr <span style=color:#4e9a06>${</span><span style=color:#000>csrName</span><span style=color:#4e9a06>}</span>
+    <span style=color:#204a87;font-weight:700>if</span> <span style=color:#ce5c00;font-weight:700>[</span> <span style=color:#4e9a06>&#34;</span><span style=color:#000>$?</span><span style=color:#4e9a06>&#34;</span> -eq <span style=color:#0000cf;font-weight:700>0</span> <span style=color:#ce5c00;font-weight:700>]</span><span style=color:#000;font-weight:700>;</span> <span style=color:#204a87;font-weight:700>then</span>
+        <span style=color:#204a87>break</span>
+    <span style=color:#204a87;font-weight:700>fi</span>
+<span style=color:#204a87;font-weight:700>done</span>
+
+<span style=color:#8f5902;font-style:italic># approve and fetch the signed certificate</span>
+kubectl certificate approve <span style=color:#4e9a06>${</span><span style=color:#000>csrName</span><span style=color:#4e9a06>}</span>
+<span style=color:#8f5902;font-style:italic># verify certificate has been signed</span>
+<span style=color:#204a87;font-weight:700>for</span> x in <span style=color:#204a87;font-weight:700>$(</span>seq 10<span style=color:#204a87;font-weight:700>)</span><span style=color:#000;font-weight:700>;</span> <span style=color:#204a87;font-weight:700>do</span>
+    <span style=color:#000>serverCert</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#204a87;font-weight:700>$(</span>kubectl get csr <span style=color:#4e9a06>${</span><span style=color:#000>csrName</span><span style=color:#4e9a06>}</span> -o <span style=color:#000>jsonpath</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>&#39;{.status.certificate}&#39;</span><span style=color:#204a87;font-weight:700>)</span>
+    <span style=color:#204a87;font-weight:700>if</span> <span style=color:#ce5c00;font-weight:700>[[</span> <span style=color:#4e9a06>${</span><span style=color:#000>serverCert</span><span style=color:#4e9a06>}</span> !<span style=color:#ce5c00;font-weight:700>=</span> <span style=color:#4e9a06>&#39;&#39;</span> <span style=color:#ce5c00;font-weight:700>]]</span><span style=color:#000;font-weight:700>;</span> <span style=color:#204a87;font-weight:700>then</span>
+        <span style=color:#204a87>break</span>
+    <span style=color:#204a87;font-weight:700>fi</span>
+    sleep <span style=color:#0000cf;font-weight:700>1</span>
+<span style=color:#204a87;font-weight:700>done</span>
+<span style=color:#204a87;font-weight:700>if</span> <span style=color:#ce5c00;font-weight:700>[[</span> <span style=color:#4e9a06>${</span><span style=color:#000>serverCert</span><span style=color:#4e9a06>}</span> <span style=color:#ce5c00;font-weight:700>==</span> <span style=color:#4e9a06>&#39;&#39;</span> <span style=color:#ce5c00;font-weight:700>]]</span><span style=color:#000;font-weight:700>;</span> <span style=color:#204a87;font-weight:700>then</span>
+    <span style=color:#204a87>echo</span> <span style=color:#4e9a06>&#34;ERROR: After approving csr </span><span style=color:#4e9a06>${</span><span style=color:#000>csrName</span><span style=color:#4e9a06>}</span><span style=color:#4e9a06>, the signed certificate did not appear on the resource. Giving up after 10 attempts.&#34;</span> &gt;<span style=color:#000;font-weight:700>&amp;</span><span style=color:#0000cf;font-weight:700>2</span>
+    <span style=color:#204a87>exit</span> <span style=color:#0000cf;font-weight:700>1</span>
+<span style=color:#204a87;font-weight:700>fi</span>
+<span style=color:#204a87>echo</span> <span style=color:#4e9a06>${</span><span style=color:#000>serverCert</span><span style=color:#4e9a06>}</span> <span style=color:#000;font-weight:700>|</span> openssl base64 -d -A -out <span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span>/server-cert.pem
+
+
+<span style=color:#8f5902;font-style:italic># create the secret with CA cert and server cert/key</span>
+kubectl create secret generic <span style=color:#4e9a06>${</span><span style=color:#000>secret</span><span style=color:#4e9a06>}</span> <span style=color:#4e9a06>\
+</span><span style=color:#4e9a06></span>        --from-file<span style=color:#ce5c00;font-weight:700>=</span>key.pem<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span>/server-key.pem <span style=color:#4e9a06>\
+</span><span style=color:#4e9a06></span>        --from-file<span style=color:#ce5c00;font-weight:700>=</span>cert.pem<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>${</span><span style=color:#000>tmpdir</span><span style=color:#4e9a06>}</span>/server-cert.pem <span style=color:#4e9a06>\
+</span><span style=color:#4e9a06></span>        --dry-run -o yaml <span style=color:#000;font-weight:700>|</span>
+    kubectl -n <span style=color:#4e9a06>${</span><span style=color:#000>namespace</span><span style=color:#4e9a06>}</span> apply -f -
+</code></pre></div><p>We then execute it and a Kubernetes secret including <code>cert/key</code> pair is created:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# ./deployment/webhook-create-signed-cert.sh
+creating certs in tmpdir /tmp/tmp.wXZywp0wAF
+Generating RSA private key, 2048 bit long modulus
+...........................................+++
+..........+++
+e is 65537 (0x10001)
+certificatesigningrequest &#34;sidecar-injector-webhook-svc.default&#34; created
+NAME                                   AGE       REQUESTOR                                           CONDITION
+sidecar-injector-webhook-svc.default   0s        https://mycluster.icp:9443/oidc/endpoint/OP#admin   Pending
+certificatesigningrequest &#34;sidecar-injector-webhook-svc.default&#34; approved
+secret &#34;sidecar-injector-webhook-certs&#34; created
+</code></pre></div><h3 id=create-the-sidecar-injector-deployment-and-service>Create the Sidecar Injector Deployment and Service</h3><p>The <code>deployment</code> brings up 1 pod in which the <code>sidecar-injector</code> container is running. The container starts with special arguments:<ul><li><code>sidecarCfgFile</code> pointing to the sidecar injector configuration file mounted from <code>sidecar-injector-webhook-configmap</code> ConfigMap created above.<li><code>tlsCertFile</code> and <code>tlsKeyFile</code> are <code>cert/key</code> pair mounted from <code>sidecar-injector-webhook-certs</code> Secret create by script above.<li><code>alsologtostderr</code> <code>v=4</code> and <code>2>&1</code> are logging arguments.</ul><div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sidecar-injector-webhook-deployment
+  labels:
+    app: sidecar-injector
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sidecar-injector
+    spec:
+      containers:
+        - name: sidecar-injector
+          image: morvencao/sidecar-injector:v1
+          imagePullPolicy: IfNotPresent
+          args:
+            - -sidecarCfgFile=/etc/webhook/config/sidecarconfig.yaml
+            - -tlsCertFile=/etc/webhook/certs/cert.pem
+            - -tlsKeyFile=/etc/webhook/certs/key.pem
+            - -alsologtostderr
+            - -v=4
+            - 2&gt;&amp;1
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+            - name: webhook-config
+              mountPath: /etc/webhook/config
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: sidecar-injector-webhook-certs
+        - name: webhook-config
+          configMap:
+            name: sidecar-injector-webhook-configmap
+</code></pre></div><p>The <code>service</code> exposes the pod defined above labeled by <code>app=sidecar-injector</code> to make it accessible in cluster. This service will be referred by the <code>MutatingWebhookConfiguration</code> in <code>clientConfig</code> section and by default spec.ports.port should be <strong>443</strong>(default https port).<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>apiVersion: v1
+kind: Service
+metadata:
+  name: sidecar-injector-webhook-svc
+  labels:
+    app: sidecar-injector
+spec:
+  ports:
+  - port: 443
+    targetPort: 443
+  selector:
+    app: sidecar-injector
+</code></pre></div><p>Next we deploy the above <code>Deployment</code> and <code>Service</code> to cluster and verify the sidecar injector webhook server is running:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl create -f ./deployment/deployment.yaml
+deployment &#34;sidecar-injector-webhook-deployment&#34; created
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl create -f ./deployment/service.yaml
+service &#34;sidecar-injector-webhook-svc&#34; created
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get deployment
+NAME                                  DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+sidecar-injector-webhook-deployment   1         1         1            1           2m
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get pod
+NAME                                                  READY     STATUS    RESTARTS   AGE
+sidecar-injector-webhook-deployment-bbb689d69-fdbgj   1/1       Running   0          3m
+</code></pre></div><h3 id=configure-webhook-admission-controller-on-the-fly>Configure webhook admission controller on the fly</h3><p><code>MutatingWebhookConfiguration</code> specifies which webhook admission servers are enabled and which resources are subject to the admission server. It is recommended that you firstly deploy the webhook admission server and make sure it is working properly before creating the <code>MutatingWebhookConfiguration</code>. Otherwise, requests will be unconditionally accepted or rejected based on <code>failurePolicy</code>.<p>For now, we create the <code>MutatingWebhookConfiguration</code> manifest with the following content:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: sidecar-injector-webhook-cfg
+  labels:
+    app: sidecar-injector
+webhooks:
+  - name: sidecar-injector.morven.me
+    clientConfig:
+      service:
+        name: sidecar-injector-webhook-svc
+        namespace: default
+        path: &#34;/mutate&#34;
+      caBundle: ${CA_BUNDLE}
+    rules:
+      - operations: [ &#34;CREATE&#34; ]
+        apiGroups: [&#34;&#34;]
+        apiVersions: [&#34;v1&#34;]
+        resources: [&#34;pods&#34;]
+    namespaceSelector:
+      matchLabels:
+        sidecar-injector: enabled
+</code></pre></div><p>Line 8: <code>name</code> - name for the webhook, should be fully qualified. Mutiple mutating webhooks are sorted by providing order.
+Line 9: <code>clientConfig</code> - describes how to connect to the webhook admission server and the TLS certificate. In our case, we specify the sidecar injector service. Line 15: <code>rules</code> - specifies what resources and what actions the webhook server handles. In our case, only intercepts request for creating of pods.
+Line 20: <code>namespaceSelector</code> - <code>namespaceSelector</code> decides whether to send admission request the webhook server on an object based on whether the namespace for that object matches the selector.<p>Before deploying the <code>MutatingWebhookConfiguration</code>, we need to replace the <code>${CA_BUNDLE}</code> with apiserver&rsquo;s default caBundle. Let&rsquo;s write the script <code>webhook-patch-ca-bundle.sh</code> to automate this process:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=color:#8f5902;font-style:italic>#!/bin/bash
+</span><span style=color:#8f5902;font-style:italic></span><span style=color:#204a87>set</span> -o errexit
+<span style=color:#204a87>set</span> -o nounset
+<span style=color:#204a87>set</span> -o pipefail
+
+<span style=color:#000>ROOT</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#204a87;font-weight:700>$(</span><span style=color:#204a87>cd</span> <span style=color:#204a87;font-weight:700>$(</span>dirname <span style=color:#000>$0</span><span style=color:#204a87;font-weight:700>)</span>/../../<span style=color:#000;font-weight:700>;</span> <span style=color:#204a87>pwd</span><span style=color:#204a87;font-weight:700>)</span>
+
+<span style=color:#204a87>export</span> <span style=color:#000>CA_BUNDLE</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#204a87;font-weight:700>$(</span>kubectl get configmap -n kube-system extension-apiserver-authentication -o<span style=color:#ce5c00;font-weight:700>=</span><span style=color:#000>jsonpath</span><span style=color:#ce5c00;font-weight:700>=</span><span style=color:#4e9a06>&#39;{.data.client-ca-file}&#39;</span> <span style=color:#000;font-weight:700>|</span> base64 <span style=color:#000;font-weight:700>|</span> tr -d <span style=color:#4e9a06>&#39;\n&#39;</span><span style=color:#204a87;font-weight:700>)</span>
+
+<span style=color:#204a87;font-weight:700>if</span> <span style=color:#204a87>command</span> -v envsubst &gt;/dev/null 2&gt;<span style=color:#000;font-weight:700>&amp;</span>1<span style=color:#000;font-weight:700>;</span> <span style=color:#204a87;font-weight:700>then</span>
+    envsubst
+<span style=color:#204a87;font-weight:700>else</span>
+    sed -e <span style=color:#4e9a06>&#34;s|\${CA_BUNDLE}|</span><span style=color:#4e9a06>${</span><span style=color:#000>CA_BUNDLE</span><span style=color:#4e9a06>}</span><span style=color:#4e9a06>|g&#34;</span>
+<span style=color:#204a87;font-weight:700>fi</span>
+</code></pre></div><p>Then execute:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# cat ./deployment/mutatingwebhook.yaml |\
+&gt;   ./deployment/webhook-patch-ca-bundle.sh &gt;\
+&gt;   ./deployment/mutatingwebhook-ca-bundle.yaml
+</code></pre></div><p>Finally we can deploy <code>MutatingWebhookConfiguration</code>:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl create -f ./deployment/mutatingwebhook-ca-bundle.yaml
+mutatingwebhookconfiguration &#34;sidecar-injector-webhook-cfg&#34; created
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get mutatingwebhookconfiguration
+NAME                           AGE
+sidecar-injector-webhook-cfg   11s
+</code></pre></div><h3 id=verification-and-troubleshooting>Verification and Troubleshooting</h3><p>Now it’s time to verify sidecar injector works as expected and try to see how to troubleshoot if you encounter issues. Typically we create and deploy a sleep application in <code>default</code> namespace to see if the sidecar can be injected.<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# cat &lt;&lt;EOF | kubectl create -f -
+&gt; apiVersion: extensions/v1beta1
+&gt; kind: Deployment
+&gt; metadata:
+&gt;   name: sleep
+&gt; spec:
+&gt;   replicas: 1
+&gt;   template:
+&gt;     metadata:
+&gt;       annotations:
+&gt;         sidecar-injector-webhook.morven.me/inject: &#34;true&#34;
+&gt;       labels:
+&gt;         app: sleep
+&gt;     spec:
+&gt;       containers:
+&gt;       - name: sleep
+&gt;         image: tutum/curl
+&gt;         command: [&#34;/bin/sleep&#34;,&#34;infinity&#34;]
+&gt;         imagePullPolicy: IfNotPresent
+&gt; EOF
+deployment &#34;sleep&#34; created
+</code></pre></div><p>Pay close attention to the <code>spec.template.metadata.annotations</code> as there is a new annotation added:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>sidecar-injector-webhook.morven.me/inject: &#34;true&#34;
+</code></pre></div><p>The sidecar injector has some logic to check the existence of the above annotation before injecting sidecar container and volume. You’re free to delete the logic or customize it before build the sidecar injector container.<p>Check the deployment and pod:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl get deployment
+NAME                                  DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+sidecar-injector-webhook-deployment   1         1         1            1           18m
+sleep                                 1         1         1            1           58s
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get pod
+NAME                                                  READY     STATUS    RESTARTS   AGE
+sidecar-injector-webhook-deployment-bbb689d69-fdbgj   1/1       Running   0          18m
+sleep-6d79d8dc54-r66vz                                1/1       Running   0          1m
+</code></pre></div><p>It’s not there. What’s going on? Let’s check the sidecar injector logs:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl logs -f sidecar-injector-webhook-deployment-bbb689d69-fdbgj
+I0314 08:48:15.140858       1 webhook.go:88] New configuration: sha256sum 21669464280f76170b88241fd79ecbca3dcebaec5c152a4a9a3e921ff742157f
+</code></pre></div><p>We can’t find any logs that indicate webhook server got admission request, seems that request hadn’t been sent to sidecar injector webhook server. So there is a possibility that the issue is caused by configuration in <code>MutatingWebhookConfiguration</code>. Do a double check of <code>MutatingWebhookConfiguration</code> and we find following content:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>namespaceSelector:
+      matchLabels:
+        sidecar-injector: enabled
+</code></pre></div><h3 id=control-sidecar-injector-with-namespaceselector>Control sidecar injector with namespaceSelector</h3><p>We have configured ‘namespaceSelector’ in <code>MutatingWebhookConfiguration</code>, which means only resources in namespace matching the selector will be sent to webhook server. So we need label the <code>default</code> namespace with <code>sidecar-injector=enabled</code>:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl label namespace default sidecar-injector=enabled
+namespace &#34;default&#34; labeled
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get namespace -L sidecar-injector
+NAME          STATUS    AGE       sidecar-injector
+default       Active    1d        enabled
+kube-public   Active    1d
+kube-system   Active    1d
+</code></pre></div><p>We have now configured the <code>MutatingWebhookConfiguration</code> resulting in the sidecar injection occurring at pod creation time. Kill the running pod and verify a new pod is created with the injected sidecar.<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl delete pod sleep-6d79d8dc54-r66vz
+pod &#34;sleep-6d79d8dc54-r66vz&#34; deleted
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get pods
+NAME                                                  READY     STATUS              RESTARTS   AGE
+sidecar-injector-webhook-deployment-bbb689d69-fdbgj   1/1       Running             0          29m
+sleep-6d79d8dc54-b8ztx                                0/2       ContainerCreating   0          3s
+sleep-6d79d8dc54-r66vz                                1/1       Terminating         0          11m
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get pod sleep-6d79d8dc54-b8ztx -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubernetes.io/psp: default
+    sidecar-injector-webhook.morven.me/inject: &#34;true&#34;
+    sidecar-injector-webhook.morven.me/status: injected
+  labels:
+    app: sleep
+    pod-template-hash: &#34;2835848710&#34;
+  name: sleep-6d79d8dc54-b8ztx
+  namespace: default
+spec:
+  containers:
+  - command:
+    - /bin/sleep
+    - infinity
+    image: tutum/curl
+    imagePullPolicy: IfNotPresent
+    name: sleep
+    resources: {}
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-d7t2r
+      readOnly: true
+  - image: nginx:1.12.2
+    imagePullPolicy: IfNotPresent
+    name: sidecar-nginx
+    ports:
+    - containerPort: 80
+      protocol: TCP
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/nginx
+      name: nginx-conf
+  volumes:
+  - name: default-token-d7t2r
+    secret:
+      defaultMode: 420
+      secretName: default-token-d7t2r
+  - configMap:
+      defaultMode: 420
+      name: nginx-configmap
+    name: nginx-conf
+...
+</code></pre></div><p>We can see that sidecar container and volume have been injected into sleep application successfully. Until now, we have working sidecar injector with <code>MutatingAdmissionWebhook</code>. With <code>namespaceSelector</code> we can easily control whether the pods in specified namespace will be injected or not.<p>But there is a problem for this, with the above configurations, all of the pods in <code>default</code> namespace will be injected with a sidecar, this may be not expected for some cases.<h3 id=control-sidecar-injector-with-annotation>Control sidecar injector with annotation</h3><p>Thanks to flexibility of <code>MutatingAdmissionWebhook</code>, we can easily customized the mutating logic to filter resources with specified annotations. Remember the annotation <code>sidecar-injector-webhook.morven.me/inject: "true"</code> mentioned above. It can be used as an extra control on sidecar injector. I have written <a href=https://github.com/morvencao/kube-mutating-webhook-tutorial/blob/master/webhook.go#L98-L130>some code</a> in webhook server to skip injecting for pod without the annotation.<p>Let’s give it a try. In this case, we create another sleep application without <code>sidecar-injector-webhook.morven.me/inject: "true"</code> annotation in <code>podTemplateSpec</code>:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl delete deployment sleep
+deployment &#34;sleep&#34; deleted
+[root@mstnode kube-mutating-webhook-tutorial]# cat &lt;&lt;EOF | kubectl create -f -
+apiVersion: extensions/v1beta1
+&gt; kind: Deployment
+&gt; metadata:
+&gt;   name: sleep
+&gt; spec:
+&gt;   replicas: 1
+&gt;   template:
+&gt;     metadata:
+&gt;       labels:
+&gt;         app: sleep
+&gt;     spec:
+&gt;       containers:
+&gt;       - name: sleep
+&gt;         image: tutum/curl
+&gt;         command: [&#34;/bin/sleep&#34;,&#34;infinity&#34;]
+&gt;         imagePullPolicy: IfNotPresent
+&gt; EOF
+deployment &#34;sleep&#34; created
+</code></pre></div><p>And then verify the sidecar injector skipped the pod:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl get deployment
+NAME                                  DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+sidecar-injector-webhook-deployment   1         1         1            1           45m
+sleep                                 1         1         1            1           17s
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get pod
+NAME                                                  READY     STATUS        RESTARTS   AGE
+sidecar-injector-webhook-deployment-bbb689d69-fdbgj   1/1       Running       0          45m
+sleep-776b7bcdcd-4bz58                                1/1       Running       0          21s
+</code></pre></div><p>The output shows that the sleep application contains only one container, no extra container and volume injected. Then we patch the sleep deployment to add the additional annotation and verify it will be injected after recreated:<div class=highlight><pre style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-fallback data-lang=fallback>[root@mstnode kube-mutating-webhook-tutorial]# kubectl patch deployment sleep -p &#39;{&#34;spec&#34;:{&#34;template&#34;:{&#34;metadata&#34;:{&#34;annotations&#34;:{&#34;sidecar-injector-webhook.morven.me/inject&#34;: &#34;true&#34;}}}}}&#39;
+deployment &#34;sleep&#34; patched
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl delete pod sleep-776b7bcdcd-4bz58
+pod &#34;sleep-776b7bcdcd-4bz58&#34; deleted
+[root@mstnode kube-mutating-webhook-tutorial]# kubectl get pods
+NAME                                                  READY     STATUS              RESTARTS   AGE
+sidecar-injector-webhook-deployment-bbb689d69-fdbgj   1/1       Running             0          49m
+sleep-3e42ff9e6c-6f87b                                0/2       ContainerCreating   0          18s
+sleep-776b7bcdcd-4bz58                                1/1       Terminating         0          3m
+</code></pre></div><p>As expected, the pod has been injected with extra sidecar container. Now, we got working sidecar injector with <code>mutatingAdmissionWebhook</code> and its coarse-grained control by <code>namespaceSelector</code> and fine-grained control by additional annotation.<h2 id=conclusion>Conclusion</h2><p><code>MutatingAdmissionWebhook</code> is one of easiest ways of extending Kubernetes with new policy controls and resources mutation and a host of other options.<p>This feature will enable more workloads and support more ecosystem components, including <a href=https://github.com/istio/istio>Istio</a> service mesh platform. Starting with Istio 0.5.0, Istio has been refactored to support their auto injection code with <code>MutatingAdmissionWebhook</code> replacing <code>initializers</code>.<h2 id=reference>Reference</h2><ul><li><a href=http://blog.kubernetes.io/2018/01/extensible-admission-is-beta.html>http://blog.kubernetes.io/2018/01/extensible-admission-is-beta.html</a><li><a href=https://docs.google.com/document/d/1c4kdkY3ha9rm0OIRbGleCeaHknZ-NR1nNtDp-i8eH8E/view>https://docs.google.com/document/d/1c4kdkY3ha9rm0OIRbGleCeaHknZ-NR1nNtDp-i8eH8E/view</a><li><a href=https://v1-8.docs.kubernetes.io/docs/admin/extensible-admission-controllers/>https://v1-8.docs.kubernetes.io/docs/admin/extensible-admission-controllers/</a><li><a href=https://github.com/kubernetes/kubernetes/tree/release-1.9/test/images/webhook>https://github.com/kubernetes/kubernetes/tree/release-1.9/test/images/webhook</a></ul></div><div class="row middle-xs"><div class=col-xs-12><div class=post-category><a href=https://morven.life/en/categories/note/>note</a></div><div class=post-category><a href=https://morven.life/en/categories/tech/>tech</a></div></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer><div class=site-footer-item><a href=https://morven.life/about/ target=_blank>About Me</a></div></div></div></div></article><script src=https://morven.life/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')});</script>
