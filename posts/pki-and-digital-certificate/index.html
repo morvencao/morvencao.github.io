@@ -1,270 +1,102 @@
-<!doctype html><html lang=en>
-<head>
-<meta charset=utf-8>
-<meta name=generator content="Hugo 0.92.2">
-<meta http-equiv=x-ua-compatible content="IE=edge">
-<meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=author content="Morven's Life">
-<meta property="og:url" content="https://morven.life/posts/pki-and-digital-certificate/">
-<link rel=canonical href=https://morven.life/posts/pki-and-digital-certificate/><link rel=apple-touch-icon href=https://morven.life/favicon.ico>
-<link rel=icon href=https://morven.life/favicon.ico>
-<link rel=shortcut href=https://morven.life/favicon.ico><link rel=alternate type=application/atom+xml href=https://morven.life/index.xml title="Morven's Life">
-<script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/morven.life\/"},"articleSection":"posts","name":"PKI 系统的与 CA 中心","headline":"PKI 系统的与 CA 中心","description":"在上一篇文章数字签名与数字证书中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。\n说到数字证书的管理，不得不提到一个专有名词： PKI(Publick Key Infrastructure) ，翻译过来就是公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的公私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。\n PKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。\n PKI的组成 PKI 作为一个实施标准，包含一系列的组件：\n  CA(Certificate Authority) 中心：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；\n  X.509 目录服务器：X.500 目录服务器用于\u0026quot;发布\u0026quot;用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；\n  基于 SSL(Secure Socket Layer) 的安全 web 服务器：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；\n  Web 安全通信平台：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；\n  自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:\n 认证政策的制定 认证规则 运作制度的制定 所涉及的各方法律关系内容 技术的实现等    证书中心 认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:","inLanguage":"en-US","author":"Morven\u0027s Life","creator":"Morven\u0027s Life","publisher":"Morven\u0027s Life","accountablePerson":"Morven\u0027s Life","copyrightHolder":"Morven\u0027s Life","copyrightYear":"2014","datePublished":"2014-11-12 00:00:00 \u002b0000 UTC","dateModified":"2014-11-12 00:00:00 \u002b0000 UTC","url":"https:\/\/morven.life\/posts\/pki-and-digital-certificate\/","keywords":[]}</script>
-<title>PKI 系统的与 CA 中心</title>
-<meta property="og:title" content="PKI 系统的与 CA 中心">
-<meta property="og:type" content="article">
-<meta property="og:description" content="在上一篇文章数字签名与数字证书中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=generator content="Hugo 0.104.3"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Morven's Life"><meta property="og:url" content="https://morven.life/posts/pki-and-digital-certificate/"><link rel=canonical href=https://morven.life/posts/pki-and-digital-certificate/><link rel=apple-touch-icon href=https://morven.life/favicon.ico><link rel=icon href=https://morven.life/favicon.ico><link rel=shortcut href=https://morven.life/favicon.ico><link rel=alternate type=application/atom+xml href=https://morven.life/index.xml title="Morven's Life"><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/morven.life\/"},"articleSection":"posts","name":"PKI 系统的与 CA 中心","headline":"PKI 系统的与 CA 中心","description":"在上一篇文章数字签名与数字证书中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。\n说到数字证书的管理，不得不提到一个专有名词： PKI(Publick Key Infrastructure) ，翻译过来就是公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的公私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。\nPKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。\nPKI的组成 PKI 作为一个实施标准，包含一系列的组件：\nCA(Certificate Authority) 中心：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；\nX.509 目录服务器：X.500 目录服务器用于\u0026quot;发布\u0026quot;用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；\n基于 SSL(Secure Socket Layer) 的安全 web 服务器：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；\nWeb 安全通信平台：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；\n自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:\n认证政策的制定 认证规则 运作制度的制定 所涉及的各方法律关系内容 技术的实现等 证书中心 认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:","inLanguage":"en-US","author":"Morven\u0027s Life","creator":"Morven\u0027s Life","publisher":"Morven\u0027s Life","accountablePerson":"Morven\u0027s Life","copyrightHolder":"Morven\u0027s Life","copyrightYear":"2014","datePublished":"2014-11-12 00:00:00 \u002b0000 UTC","dateModified":"2014-11-12 00:00:00 \u002b0000 UTC","url":"https:\/\/morven.life\/posts\/pki-and-digital-certificate\/","keywords":[]}</script><title>PKI 系统的与 CA 中心</title><meta property="og:title" content="PKI 系统的与 CA 中心"><meta property="og:type" content="article"><meta property="og:description" content="在上一篇文章数字签名与数字证书中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。
 说到数字证书的管理，不得不提到一个专有名词： PKI(Publick Key Infrastructure) ，翻译过来就是公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的公私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。
- PKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。
- PKI的组成 PKI 作为一个实施标准，包含一系列的组件：
-  CA(Certificate Authority) 中心：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；
-  X.509 目录服务器：X.500 目录服务器用于&amp;quot;发布&amp;quot;用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；
-  基于 SSL(Secure Socket Layer) 的安全 web 服务器：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；
-  Web 安全通信平台：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；
-  自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:
- 认证政策的制定 认证规则 运作制度的制定 所涉及的各方法律关系内容 技术的实现等    证书中心 认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:">
-<meta name=description content="在上一篇文章数字签名与数字证书中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。
+PKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。
+PKI的组成 PKI 作为一个实施标准，包含一系列的组件：
+CA(Certificate Authority) 中心：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；
+X.509 目录服务器：X.500 目录服务器用于&amp;quot;发布&amp;quot;用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；
+基于 SSL(Secure Socket Layer) 的安全 web 服务器：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；
+Web 安全通信平台：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；
+自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:
+认证政策的制定 认证规则 运作制度的制定 所涉及的各方法律关系内容 技术的实现等 证书中心 认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:"><meta name=description content="在上一篇文章数字签名与数字证书中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。
 说到数字证书的管理，不得不提到一个专有名词： PKI(Publick Key Infrastructure) ，翻译过来就是公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的公私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。
- PKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。
- PKI的组成 PKI 作为一个实施标准，包含一系列的组件：
-  CA(Certificate Authority) 中心：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；
-  X.509 目录服务器：X.500 目录服务器用于&amp;quot;发布&amp;quot;用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；
-  基于 SSL(Secure Socket Layer) 的安全 web 服务器：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；
-  Web 安全通信平台：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；
-  自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:
- 认证政策的制定 认证规则 运作制度的制定 所涉及的各方法律关系内容 技术的实现等    证书中心 认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:">
-<meta property="og:locale" content="en-us">
-<style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body blockquote{background-color:#f8f8f8;border-left:2px solid;margin:40px;padding:10px 20px}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:85%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.signatures{font-family:permanent marker,Impact,Charcoal,sans-serif;font-size:3rem;margin-top:32px}.signatures a{text-decoration:none}.header-line{width:100%;height:3px;background-color:#000;margin:18px 0}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-date,.posts-title{font-size:1.2rem}.posts-line{margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px;margin-bottom:3px}.site-footer{margin-top:50px;margin-bottom:80px;display:flex;justify-content:flex-end;flex-wrap:wrap;padding:12px 0;border-width:3px;border-color:#000}.site-footer-item{margin-right:12px}@media screen and (max-width:600px){.site-header{display:none}.post-content{padding:0 12px}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}.post-content img{max-width:100%;display:block;margin-left:auto;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2.5rem;font-weight:600}.post-category{display:inline;font-weight:900;margin:0 4px;padding:2px 5px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}</style>
-<style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:initial;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
-<link href=https://morven.life/index.xml rel=alternate type=application/rss+xml title="Morven's Life">
-<link href="https://fonts.googleapis.com/css?family=Arvo|Permanent+Marker|Bree+Serif" rel=stylesheet>
-</head>
-<body>
-<article class="post 简体中文" id=article>
-<div class=row>
-<div class=col-xs-12>
-<header class=post-header>
-<h1 class=post-title>PKI 系统的与 CA 中心</h1>
-<div class="row post-desc">
-<div class=col-xs-6>
-<time class=post-date datetime="2014-11-12 00:00:00 UTC">
-12 Nov 2014
-</time>
-</div>
-<div class=col-xs-6>
-<div class=post-author>
-<a target=_blank href=https://morven.life/>@Morven's Life</a>
-</div>
-</div>
-</div>
-</header>
-<div class="post-content markdown-body">
-<p>在上一篇文章<a href=https://morven.life/posts/digital-signature-and-digital-certificate/>数字签名与数字证书</a>中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。</p>
-<p>说到数字证书的管理，不得不提到一个专有名词： PKI(Publick Key Infrastructure) ，翻译过来就是公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的公私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。</p>
-<blockquote>
-<p>PKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。</p>
-</blockquote>
-<h2 id=pki的组成>PKI的组成</h2>
-<p>PKI 作为一个实施标准，包含一系列的组件：</p>
-<ol>
-<li>
-<p><strong>CA(Certificate Authority) 中心</strong>：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；</p>
-</li>
-<li>
-<p><strong>X.509 目录服务器</strong>：X.500 目录服务器用于"发布"用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；</p>
-</li>
-<li>
-<p><strong>基于 SSL(Secure Socket Layer) 的安全 web 服务器</strong>：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；</p>
-</li>
-<li>
-<p><strong>Web 安全通信平台</strong>：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；</p>
-</li>
-<li>
-<p><strong>自开发安全应用系统</strong>：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:</p>
-<ul>
-<li>认证政策的制定</li>
-<li>认证规则</li>
-<li>运作制度的制定</li>
-<li>所涉及的各方法律关系内容</li>
-<li>技术的实现等</li>
-</ul>
-</li>
-</ol>
-<h2 id=证书中心>证书中心</h2>
-<p>认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:</p>
-<ol>
-<li>接收验证最终用户数字证书的申请；</li>
-<li>确定是否接受最终用户数字证书的申请 - 证书的审批；</li>
-<li>向申请者颁发、拒绝颁发数字证书 - 证书的发放；</li>
-<li>接收、处理最终用户的数字证书更新请求 - 证书的更新；</li>
-<li>接收最终用户数字证书的查询、撤销；</li>
-<li>产生和发布证书废止列表；</li>
-<li>数字证书的归档；</li>
-<li>密钥归档；</li>
-<li>历史数据归档；</li>
-</ol>
-<h2 id=x509-证书标准>X.509 证书标准</h2>
-<p>整个 PKI 体系中有很多格式标准， PKI 的标准规定了 PKI 的设计、实施和运营，规定了 PKI 各种角色的"游戏规则"。如果两个 PKI 应用程序之间要想进行交互，只有相互理解对方的数据含义，交互才能正常进行，标准的作用就是提供了数据语法和语义的共同约定。 PKI 中最重要的标准，它定义了公钥证书的基本结构。</p>
-<p>X.509 是定义了公钥证书结构的基本标准，是目前非常通用的证书格式。X.509 标准在 PKI 中起到了举足轻重的作用，PKI 由小变大，由原来网络封闭环境到分布式开放环境，X.509 起了很大作用，可以说 X.509 标准是 PKI 的雏形。</p>
-<p><a href=https://www.ietf.org/rfc/rfc5280.txt>RFC5280</a> 规定了 x.509 证书的标准格式如下图所示：</p>
-<img src=https://i.loli.net/2021/01/26/x324EYbUFZRyImP.png alt=format-of-X-509-Certificate.png style=width:60%>
-<p>对于符合 X.509 标准的数字证书，必须保证公钥及其所有者(Subject)的姓名是一致的，同时，证书签发者者(Issuer)总是 CA 或由 CA 指定的人。 X.509 数字证书是一些标准字段的集合，这些字段包含有关用户或设备及其相应公钥的信息。 X.509 标准定义了证书中应该包含哪些信息，并描述了这些信息是如何编码的(即数据格式)，所有的 X.509 证书除了包含证书拥有者的公钥，证书拥有者的一些基本信息和数字签名之外，还包含了证书签发者的信息。具体来说包含以下数据：</p>
-<ol>
-<li><strong>版本号(Version)</strong>：指出该证书使用了哪种版本的 X.509 标准（版本1、版本2或是版本3），版本号会影响证书中的一些特定信息，目前的最新的版本为 <code>Version: 3</code> ；</li>
-<li><strong>序列号(Serial Number)</strong>： 标识证书的唯一整数，由证书颁发者分配的本证书的唯一标识符；</li>
-<li><strong>签名算法标识符</strong>： 用于签证书的算法标识，由对象标识符加上相关的参数组成，用于说明本证书所用的数字签名算法。例如， <code>sha256WithRSAEncryption</code> 对象标识符就用来说明该数字签名是利用 RSA 对 sha256 杂凑加密；</li>
-<li><strong>有效期限(Validity)</strong>： 证书起始日期和时间以及终止日期和时间；指明证书在这两个时间内有效；</li>
-<li><strong>主题信息(Subject)</strong>：证书持有人唯一的标识符(或称DN)这个名字在互联网上应该是唯一的；</li>
-<li><strong>公钥信息(Subject Public Key Info)</strong>： 包括证书持有人的公钥、算法(指明密钥属于哪种密码系统)的标识符和其他相关的密钥参数；</li>
-<li><strong>颁发者唯一标识符(Issuer)</strong>：标识符—证书颁发者的唯一标识符，仅在版本2和版本3中有要求，属于可选项；</li>
-<li><strong>认证机构的数字签名</strong>：这是使用证书发布者私钥生成的签名，以确保这个证书在发放之后没有被撰改过；</li>
-<li><strong>认证机构</strong>： 证书颁发者的可识别名（DN, Distinguished Name），是签发该证书的实体唯一的 CA 的 X.509 名字。使用该证书意味着信任签发证书的实体。(注意：在某些情况下，比如根或顶级 CA 证书，发布者自己签发证书)；</li>
-</ol>
-<p>除了以上字段之外，X.509证书还可以包括可选的标准和专用的扩展（仅在版本2和版本3中使用），这里就不一一介绍。</p>
-<p>下面是我使用<code>openssl</code>创建的个人证书信息：</p>
-<div class=highlight><pre tabindex=0 style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash>$ openssl x509 -in certificate.pem -text
-Certificate:
-    Data:
-        Version: <span style=color:#0000cf;font-weight:700>3</span> <span style=color:#ce5c00;font-weight:700>(</span>0x2<span style=color:#ce5c00;font-weight:700>)</span>
-        Serial Number: <span style=color:#0000cf;font-weight:700>4096</span> <span style=color:#ce5c00;font-weight:700>(</span>0x1000<span style=color:#ce5c00;font-weight:700>)</span>
-        Signature Algorithm: sha256WithRSAEncryption
-        Issuer: <span style=color:#000>C</span><span style=color:#ce5c00;font-weight:700>=</span>CN, <span style=color:#000>ST</span><span style=color:#ce5c00;font-weight:700>=</span>Beijing, <span style=color:#000>O</span><span style=color:#ce5c00;font-weight:700>=</span>XXX, <span style=color:#000>OU</span><span style=color:#ce5c00;font-weight:700>=</span>XXX, <span style=color:#000>CN</span><span style=color:#ce5c00;font-weight:700>=</span>XXX/emailAddress<span style=color:#ce5c00;font-weight:700>=</span>test@mail.com
-        Validity
-            Not Before: Mar <span style=color:#0000cf;font-weight:700>23</span> 11:52:23 <span style=color:#0000cf;font-weight:700>2019</span> GMT
-            Not After : Apr  <span style=color:#0000cf;font-weight:700>1</span> 11:52:23 <span style=color:#0000cf;font-weight:700>2020</span> GMT
-        Subject: <span style=color:#000>C</span><span style=color:#ce5c00;font-weight:700>=</span>CN, <span style=color:#000>ST</span><span style=color:#ce5c00;font-weight:700>=</span>Beijing, <span style=color:#000>L</span><span style=color:#ce5c00;font-weight:700>=</span>XXXXX, <span style=color:#000>O</span><span style=color:#ce5c00;font-weight:700>=</span>XXX, <span style=color:#000>OU</span><span style=color:#ce5c00;font-weight:700>=</span>XX, <span style=color:#000>CN</span><span style=color:#ce5c00;font-weight:700>=</span>XXX/emailAddress<span style=color:#ce5c00;font-weight:700>=</span>test@mail.com
-        Subject Public Key Info:
-            Public Key Algorithm: rsaEncryption
-                Public-Key: <span style=color:#ce5c00;font-weight:700>(</span><span style=color:#0000cf;font-weight:700>2048</span> bit<span style=color:#ce5c00;font-weight:700>)</span>
-                Modulus:
-                    00:a4:1a:a9:4b:aa:6e:a9:18:28:e6:35:bc:c3:6f:
-                    ec:4c:7f:81:63:34:ce:57:a0:96:3f:2c:95:c8:01:
-                    02:e9:75:54:f4:a4:22:d2:71:61:0e:8a:7a:bc:25:
-                    d3:4d:cf:f0:9c:16:6f:0f:33:87:0e:f5:88:a4:25:
-                    a8:67:b2:3e:a7:d1:b7:0d:6c:22:90:7a:ee:7a:53:
-                    00:4d:5d:2e:3b:6d:48:5d:8d:a9:79:25:58:ca:0b:
-                    ae:42:f6:ab:9f:a6:e8:e8:c7:06:ca:c3:92:09:ae:
-                    19:a5:2b:68:1c:09:91:20:30:4f:44:5c:f0:49:fe:
-                    26:29:90:7a:7b:4e:5f:93:93:49:da:a1:a1:da:4d:
-                    e1:7c:86:67:05:ea:ce:64:b7:bb:fc:e0:10:f7:2e:
-                    8f:9e:1f:82:4e:b6:d1:97:8d:a7:d2:0b:19:e4:bc:
-                    ad:46:3f:ad:32:47:f9:47:bf:29:88:b4:3f:1d:02:
-                    d4:93:e5:aa:76:13:83:52:7f:5d:33:f4:fa:73:85:
-                    20:d7:7b:b9:a6:a9:35:dd:9f:e4:53:12:d3:db:33:
-                    b0:1f:27:a1:9e:c0:aa:41:4b:ad:b1:74:8e:a3:c9:
-                    e6:19:3d:39:2d:13:a7:e6:dc:e7:c6:88:06:70:60:
-                    4b:5b:8a:cf:d3:45:23:b2:4e:17:c6:fe:06:c5:49:
-                    a9:c9
-                Exponent: <span style=color:#0000cf;font-weight:700>65537</span> <span style=color:#ce5c00;font-weight:700>(</span>0x10001<span style=color:#ce5c00;font-weight:700>)</span>
-        X509v3 extensions:
-            X509v3 Basic Constraints:
-                CA:FALSE
-            Netscape Cert Type:
-                SSL Server
-            Netscape Comment:
-                OpenSSL Generated Server Certificate
-            X509v3 Subject Key Identifier:
-                30:B7:57:E0:1A:07:69:DB:47:8C:B2:BC:21:14:7D:D2:71:A8:96:5D
-            X509v3 Authority Key Identifier:
-                keyid:E8:42:1C:63:92:76:AD:2C:62:2C:C1:71:92:40:24:B5:76:53:9A:1C
-                DirName:/C<span style=color:#ce5c00;font-weight:700>=</span>CN/ST<span style=color:#ce5c00;font-weight:700>=</span>Beijing/L<span style=color:#ce5c00;font-weight:700>=</span>XXXXX/O<span style=color:#ce5c00;font-weight:700>=</span>XXX/OU<span style=color:#ce5c00;font-weight:700>=</span>XXX/CN<span style=color:#ce5c00;font-weight:700>=</span>XXX/emailAddress<span style=color:#ce5c00;font-weight:700>=</span>test@mail.com
-                serial:10:00
-
-            X509v3 Key Usage: critical
-                Digital Signature, Key Encipherment
-            X509v3 Extended Key Usage:
-                TLS Web Server Authentication
-    Signature Algorithm: sha256WithRSAEncryption
-         98:8e:dd:8b:b7:af:c0:8d:41:76:0e:0a:5c:61:d6:39:a0:60:
-         f4:56:4b:ea:b3:0d:09:c4:54:72:f7:45:b8:ba:f3:c9:f9:7c:
-         7a:2b:81:82:dc:25:fd:b0:2c:b6:c9:d4:ad:c6:85:52:0c:0e:
-         68:a2:fe:14:04:e1:95:a9:a0:b2:7a:8c:8a:25:20:ab:2d:62:
-         a6:d7:e8:20:a2:9a:b4:8d:53:b1:ff:b0:d2:33:0d:ab:c3:fb:
-         9c:03:59:73:cb:4f:dd:3f:bc:66:8c:c3:2b:32:23:a8:96:9e:
-         a5:9d:f3:db:06:0c:a4:10:52:d6:3f:92:f8:ca:88:30:75:b6:
-         d6:16:1a:5b:0f:f9:d6:2d:f2:94:2a:bd:c5:d9:b2:f9:5d:f5:
-         02:01:4a:2a:10:45:a4:48:83:30:c0:a4:27:2f:73:72:73:93:
-         ed:34:8f:66:53:0a:b4:93:05:61:00:22:0c:89:da:b6:46:17:
-         a9:3e:28:37:2f:f3:7e:3f:69:a7:36:62:ff:c5:b2:ed:c2:0c:
-         55:34:d3:c1:a6:71:77:9a:84:3a:b6:1a:9d:46:5c:6f:11:cf:
-         f0:ef:52:f5:c9:ac:8f:dd:40:0f:28:69:44:3b:c9:c1:c7:45:
-         9c:de:fb:48:95:89:90:9e:9e:74:e2:10:3a:52:e8:e0:30:ce:
-         81:80:77:57:d9:32:02:fd:06:bd:72:e8:83:d8:3a:4e:6f:da:
-         a5:07:44:cf:ba:3f:be:f1:79:ed:aa:01:65:a8:ea:f5:f6:ca:
-         f0:dc:04:dd:8e:2e:78:93:75:31:c9:8f:c3:9b:40:19:fe:9b:
-         fb:49:ca:b3:4e:81:39:d6:41:48:d6:80:30:a5:08:77:f6:24:
-         93:d2:d0:67:5b:96:69:6a:12:f5:7c:5a:a3:f0:b2:2a:c1:69:
-         76:f8:7f:b1:6c:d6:6c:a8:a9:62:aa:7a:7b:66:d0:52:bc:44:
-         f5:4d:5d:1e:47:f0:00:ec:66:8a:05:43:a9:8c:23:1b:7c:ad:
-         0d:24:9f:b9:5c:27:ca:e7:42:bb:10:02:e8:bf:1b:35:57:e8:
-         6a:67:97:d5:dc:e0:6e:5e:fc:43:f9:26:d4:f1:32:87:15:86:
-         8a:28:66:00:be:8f:fd:33:a4:50:97:35:56:a1:41:11:a4:92:
-         5c:30:e3:6d:80:42:ef:a7:d7:f8:cb:ba:08:93:2e:61:73:b3:
-         0c:c5:35:2f:9a:c9:9d:38:94:4c:43:15:fb:65:b7:f0:f6:7f:
-         01:4b:6a:5b:a7:7c:f9:c2:a8:5c:dc:d3:30:41:1c:da:0e:e1:
-         36:50:9c:6f:4a:e7:99:23:83:dd:c8:01:26:2d:e0:33:04:2a:
-         0a:34:8b:78:47:bc:09:3b
-</code></pre></div><h2 id=数字证书格式>数字证书格式</h2>
-<p>数字证书体现为一个或一系列相关经过加密的数据文件，常用的格式有：</p>
-<ul>
-<li>符合 <code>PKI ITU-T X509</code> 标准，传统标准 (<code>.DER .PEM .CER .CRT</code>)</li>
-<li>符合 <code>PKCS#7</code> 加密消息语法标准 (<code>.P7B .P7C .SPC .P7R</code>)</li>
-<li>符合 <code>PKCS#10</code> 证书请求标准 (<code>.p10</code>)</li>
-<li>符合 <code>PKCS#12</code> 个人信息交换标准 (<code>.pfx *.p12</code>)</li>
-</ul>
-<p>当然，这只是常用的几种标准，其中，X509 证书还分两种编码形式：</p>
-<ul>
-<li><code>X.509 DER</code>(Distinguished Encoding Rules) 编码，后缀为：<code>.DER .CER .CRT</code></li>
-<li><code>X.509 BASE64</code> 编码，后缀为：<code>.PEM .CER .CRT</code></li>
-</ul>
-<p>X.509 是数字证书的基本标准，而 P7 和 P12 则是两个实现规范， P7 用于数字信封， P12 则是带有私钥的证书实现规范。采用的标准不同、生成的数字证书包含内容也可能不同。下面就证书包含/可能包含的内容做个汇总，一般证书特性有：</p>
-<ul>
-<li>存储格式：二进制还是 ASCII</li>
-<li>是否包含公钥、私钥</li>
-<li>包含一个还是多个证书</li>
-<li>是否支持密码保护（针对当前证书）</li>
-</ul>
-<p>其中：</p>
-<ul>
-<li><code>DER、CER、CRT</code> 以二进制形式存放证书，只有公钥，不包含私钥；</li>
-<li><code>CSR</code> 证书请求；</li>
-<li><code>PEM</code> 以 Base64 编码形式存放证书，以 <code>—–BEGIN CERTIFICATE—–</code> 和 <code>—–END CERTIFICATE—–</code> 封装，只有公钥；</li>
-<li><code>PFX</code>、 <code>P12</code> 也是以二进制形式存放证书，包含公钥、私钥，包含保护密码。<code>PFX</code> 和 <code>P12</code> 存储格式完全相同只是扩展名不同；</li>
-<li><code>P10</code> 证书请求；</li>
-<li><code>P7R</code> 是 CA 对证书请求回复，一般做数字信封；</li>
-<li><code>P7B/P7C</code> 证书链，可包含一个或多个证书；</li>
-</ul>
-<p>凡是包含私钥的，一律必须添加密码保护， 比如 <code>PFX</code>、 <code>P12</code> 也是以二进制形式存放证书；<code>DER</code> 表示证书且有签名，实际使用中，还有 <code>DER</code> 编码的私钥不用签名，实际上只是个“中间件”；另外，证书签名请求一般采用 <code>CSR</code> 扩展名，但是其格式有可能是 <code>PEM</code> 也可能是 <code>DER</code> 格式，但都代表证书请求，只有经过 CA 签发后才能得到真正的证书。</p>
-</div>
-<div class="row middle-xs">
-<div class=col-xs-12>
-<div class=post-category>
-<a href=https://morven.life/categories/note/>
-note
-</a>
-</div>
-<div class=post-category>
-<a href=https://morven.life/categories/tech/>
-tech
-</a>
-</div>
-</div>
-</div>
-<div class=row>
-<div class=col-xs-12>
-</div>
-</div>
-<div style=height:50px></div>
-<div class=site-footer>
-<div class=site-footer-item>
-<a href=https://morven.life/about/ target=_blank>About Me</a>
-</div>
-</div>
-</div>
-</div>
-</article>
-<script src=https://morven.life/js/lazyload.min.js></script>
-<script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script>
-<script></script>
-</body>
-</html>
+PKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。
+PKI的组成 PKI 作为一个实施标准，包含一系列的组件：
+CA(Certificate Authority) 中心：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；
+X.509 目录服务器：X.500 目录服务器用于&amp;quot;发布&amp;quot;用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；
+基于 SSL(Secure Socket Layer) 的安全 web 服务器：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；
+Web 安全通信平台：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；
+自开发安全应用系统：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:
+认证政策的制定 认证规则 运作制度的制定 所涉及的各方法律关系内容 技术的实现等 证书中心 认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:"><meta property="og:locale" content="en-us"><style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body blockquote{background-color:#f8f8f8;border-left:2px solid;margin:40px;padding:10px 20px}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:85%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.signatures{font-family:permanent marker,Impact,Charcoal,sans-serif;font-size:3rem;margin-top:32px}.signatures a{text-decoration:none}.header-line{width:100%;height:3px;background-color:#000;margin:18px 0}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-date,.posts-title{font-size:1.2rem}.posts-line{margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px;margin-bottom:3px}.site-footer{margin-top:50px;margin-bottom:80px;display:flex;justify-content:flex-end;flex-wrap:wrap;padding:12px 0;border-width:3px;border-color:#000}.site-footer-item{margin-right:12px}@media screen and (max-width:600px){.site-header{display:none}.post-content{padding:0 12px}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}.post-content img{max-width:100%;display:block;margin-left:auto;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2.5rem;font-weight:600}.post-category{display:inline;font-weight:900;margin:0 4px;padding:2px 5px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}</style><style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:initial;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style><link href=https://morven.life/index.xml rel=alternate type=application/rss+xml title="Morven's Life"><link href="https://fonts.googleapis.com/css?family=Arvo|Permanent+Marker|Bree+Serif" rel=stylesheet></head><body><article class="post 简体中文" id=article><div class=row><div class=col-xs-12><header class=post-header><h1 class=post-title>PKI 系统的与 CA 中心</h1><div class="row post-desc"><div class=col-xs-6><time class=post-date datetime="2014-11-12 00:00:00 UTC">12 Nov 2014</time></div><div class=col-xs-6><div class=post-author><a target=_blank href=https://morven.life/>@Morven's Life</a></div></div></div></header><div class="post-content markdown-body"><p>在上一篇文章<a href=https://morven.life/posts/digital-signature-and-digital-certificate/>数字签名与数字证书</a>中介绍了数字签名、数字证书的一些基础知识，但是并没有提到数字证书如何进行管理，比如数字证书的文件格式、数字证书的申请以及轮换等知识，这篇文章将介绍数字证书的管理。</p><p>说到数字证书的管理，不得不提到一个专有名词： PKI(Publick Key Infrastructure) ，翻译过来就是公钥基础设施，是一种遵循既定标准的密钥管理平台，它能够为所有网络应用提供加密和数字签名等密码服务及所必需的密钥和证书管理体系。简单来说，可以理解为利用之前提到过的公私钥非对称加密技术为应用提供加密和数字签名等密码服务以及与之相关的密钥和证书管理体系。</p><blockquote><p>PKI 既不是一个协议，也不是一个软件，它是一个标准，在这个标准之下发展出的为了实现安全基础服务目的的技术统称为 PKI 。</p></blockquote><h2 id=pki的组成>PKI的组成</h2><p>PKI 作为一个实施标准，包含一系列的组件：</p><ol><li><p><strong>CA(Certificate Authority) 中心</strong>：是 PKI 的”核心”，即数字证书的申请及签发机关， CA 必须具备权威性的特征，它负责管理 PKI 结构下的所有用户(包括各种应用程序)的证书的签发，把用户的公钥和用户的其他信息捆绑在一起，在网上验证用户的身份， CA 还要负责用户证书的黑名单登记和黑名单发布；</p></li><li><p><strong>X.509 目录服务器</strong>：X.500 目录服务器用于"发布"用户的证书和黑名单信息，用户可通过标准的 LDAP 协议查询自己或其他人的证书和下载黑名单信息；</p></li><li><p><strong>基于 SSL(Secure Socket Layer) 的安全 web 服务器</strong>：Secure Socket Layer(SSL) 协议最初由 Netscape 企业发展，现已成为网络用来鉴别网站和网页浏览者身份，以及在浏览器使用者及网页服务器之间进行加密通讯的全球化标准；</p></li><li><p><strong>Web 安全通信平台</strong>：Web 有 Web 客户端和 Web 服务端两部分，通过具有高强度密码算法的 SSL 协议保证客户端和服务器端数据的机密性、完整性以及身份验证；</p></li><li><p><strong>自开发安全应用系统</strong>：自开发安全应用系统是指各行业自开发的各种具体应用系统，例如银行、证券的应用系统等。完整的 PKI 包括:</p><ul><li>认证政策的制定</li><li>认证规则</li><li>运作制度的制定</li><li>所涉及的各方法律关系内容</li><li>技术的实现等</li></ul></li></ol><h2 id=证书中心>证书中心</h2><p>认证中心也就是 CA ，是一个负责发放和管理数字证书的权威机构，它作为电子商务交易中受信任的第三方，承担公钥体系中公钥的合法性检验的责任。 CA 为每个使用公开密钥的用户发放一个数字证书，以实现公钥的分发并证明其合法性。作为 PKI 的核心部分， CA 实现了 PKI 中一些很重要的功能:</p><ol><li>接收验证最终用户数字证书的申请；</li><li>确定是否接受最终用户数字证书的申请 - 证书的审批；</li><li>向申请者颁发、拒绝颁发数字证书 - 证书的发放；</li><li>接收、处理最终用户的数字证书更新请求 - 证书的更新；</li><li>接收最终用户数字证书的查询、撤销；</li><li>产生和发布证书废止列表；</li><li>数字证书的归档；</li><li>密钥归档；</li><li>历史数据归档；</li></ol><h2 id=x509-证书标准>X.509 证书标准</h2><p>整个 PKI 体系中有很多格式标准， PKI 的标准规定了 PKI 的设计、实施和运营，规定了 PKI 各种角色的"游戏规则"。如果两个 PKI 应用程序之间要想进行交互，只有相互理解对方的数据含义，交互才能正常进行，标准的作用就是提供了数据语法和语义的共同约定。 PKI 中最重要的标准，它定义了公钥证书的基本结构。</p><p>X.509 是定义了公钥证书结构的基本标准，是目前非常通用的证书格式。X.509 标准在 PKI 中起到了举足轻重的作用，PKI 由小变大，由原来网络封闭环境到分布式开放环境，X.509 起了很大作用，可以说 X.509 标准是 PKI 的雏形。</p><p><a href=https://www.ietf.org/rfc/rfc5280.txt>RFC5280</a> 规定了 x.509 证书的标准格式如下图所示：</p><img src=https://i.loli.net/2021/01/26/x324EYbUFZRyImP.png alt=format-of-X-509-Certificate.png style=width:60%><p>对于符合 X.509 标准的数字证书，必须保证公钥及其所有者(Subject)的姓名是一致的，同时，证书签发者者(Issuer)总是 CA 或由 CA 指定的人。 X.509 数字证书是一些标准字段的集合，这些字段包含有关用户或设备及其相应公钥的信息。 X.509 标准定义了证书中应该包含哪些信息，并描述了这些信息是如何编码的(即数据格式)，所有的 X.509 证书除了包含证书拥有者的公钥，证书拥有者的一些基本信息和数字签名之外，还包含了证书签发者的信息。具体来说包含以下数据：</p><ol><li><strong>版本号(Version)</strong>：指出该证书使用了哪种版本的 X.509 标准（版本1、版本2或是版本3），版本号会影响证书中的一些特定信息，目前的最新的版本为 <code>Version: 3</code> ；</li><li><strong>序列号(Serial Number)</strong>： 标识证书的唯一整数，由证书颁发者分配的本证书的唯一标识符；</li><li><strong>签名算法标识符</strong>： 用于签证书的算法标识，由对象标识符加上相关的参数组成，用于说明本证书所用的数字签名算法。例如， <code>sha256WithRSAEncryption</code> 对象标识符就用来说明该数字签名是利用 RSA 对 sha256 杂凑加密；</li><li><strong>有效期限(Validity)</strong>： 证书起始日期和时间以及终止日期和时间；指明证书在这两个时间内有效；</li><li><strong>主题信息(Subject)</strong>：证书持有人唯一的标识符(或称DN)这个名字在互联网上应该是唯一的；</li><li><strong>公钥信息(Subject Public Key Info)</strong>： 包括证书持有人的公钥、算法(指明密钥属于哪种密码系统)的标识符和其他相关的密钥参数；</li><li><strong>颁发者唯一标识符(Issuer)</strong>：标识符—证书颁发者的唯一标识符，仅在版本2和版本3中有要求，属于可选项；</li><li><strong>认证机构的数字签名</strong>：这是使用证书发布者私钥生成的签名，以确保这个证书在发放之后没有被撰改过；</li><li><strong>认证机构</strong>： 证书颁发者的可识别名（DN, Distinguished Name），是签发该证书的实体唯一的 CA 的 X.509 名字。使用该证书意味着信任签发证书的实体。(注意：在某些情况下，比如根或顶级 CA 证书，发布者自己签发证书)；</li></ol><p>除了以上字段之外，X.509证书还可以包括可选的标准和专用的扩展（仅在版本2和版本3中使用），这里就不一一介绍。</p><p>下面是我使用<code>openssl</code>创建的个人证书信息：</p><div class=highlight><pre tabindex=0 style=background-color:#f8f8f8;-moz-tab-size:2;-o-tab-size:2;tab-size:2><code class=language-bash data-lang=bash><span style=display:flex><span>$ openssl x509 -in certificate.pem -text
+</span></span><span style=display:flex><span>Certificate:
+</span></span><span style=display:flex><span>    Data:
+</span></span><span style=display:flex><span>        Version: <span style=color:#0000cf;font-weight:700>3</span> <span style=color:#ce5c00;font-weight:700>(</span>0x2<span style=color:#ce5c00;font-weight:700>)</span>
+</span></span><span style=display:flex><span>        Serial Number: <span style=color:#0000cf;font-weight:700>4096</span> <span style=color:#ce5c00;font-weight:700>(</span>0x1000<span style=color:#ce5c00;font-weight:700>)</span>
+</span></span><span style=display:flex><span>        Signature Algorithm: sha256WithRSAEncryption
+</span></span><span style=display:flex><span>        Issuer: <span style=color:#000>C</span><span style=color:#ce5c00;font-weight:700>=</span>CN, <span style=color:#000>ST</span><span style=color:#ce5c00;font-weight:700>=</span>Beijing, <span style=color:#000>O</span><span style=color:#ce5c00;font-weight:700>=</span>XXX, <span style=color:#000>OU</span><span style=color:#ce5c00;font-weight:700>=</span>XXX, <span style=color:#000>CN</span><span style=color:#ce5c00;font-weight:700>=</span>XXX/emailAddress<span style=color:#ce5c00;font-weight:700>=</span>test@mail.com
+</span></span><span style=display:flex><span>        Validity
+</span></span><span style=display:flex><span>            Not Before: Mar <span style=color:#0000cf;font-weight:700>23</span> 11:52:23 <span style=color:#0000cf;font-weight:700>2019</span> GMT
+</span></span><span style=display:flex><span>            Not After : Apr  <span style=color:#0000cf;font-weight:700>1</span> 11:52:23 <span style=color:#0000cf;font-weight:700>2020</span> GMT
+</span></span><span style=display:flex><span>        Subject: <span style=color:#000>C</span><span style=color:#ce5c00;font-weight:700>=</span>CN, <span style=color:#000>ST</span><span style=color:#ce5c00;font-weight:700>=</span>Beijing, <span style=color:#000>L</span><span style=color:#ce5c00;font-weight:700>=</span>XXXXX, <span style=color:#000>O</span><span style=color:#ce5c00;font-weight:700>=</span>XXX, <span style=color:#000>OU</span><span style=color:#ce5c00;font-weight:700>=</span>XX, <span style=color:#000>CN</span><span style=color:#ce5c00;font-weight:700>=</span>XXX/emailAddress<span style=color:#ce5c00;font-weight:700>=</span>test@mail.com
+</span></span><span style=display:flex><span>        Subject Public Key Info:
+</span></span><span style=display:flex><span>            Public Key Algorithm: rsaEncryption
+</span></span><span style=display:flex><span>                Public-Key: <span style=color:#ce5c00;font-weight:700>(</span><span style=color:#0000cf;font-weight:700>2048</span> bit<span style=color:#ce5c00;font-weight:700>)</span>
+</span></span><span style=display:flex><span>                Modulus:
+</span></span><span style=display:flex><span>                    00:a4:1a:a9:4b:aa:6e:a9:18:28:e6:35:bc:c3:6f:
+</span></span><span style=display:flex><span>                    ec:4c:7f:81:63:34:ce:57:a0:96:3f:2c:95:c8:01:
+</span></span><span style=display:flex><span>                    02:e9:75:54:f4:a4:22:d2:71:61:0e:8a:7a:bc:25:
+</span></span><span style=display:flex><span>                    d3:4d:cf:f0:9c:16:6f:0f:33:87:0e:f5:88:a4:25:
+</span></span><span style=display:flex><span>                    a8:67:b2:3e:a7:d1:b7:0d:6c:22:90:7a:ee:7a:53:
+</span></span><span style=display:flex><span>                    00:4d:5d:2e:3b:6d:48:5d:8d:a9:79:25:58:ca:0b:
+</span></span><span style=display:flex><span>                    ae:42:f6:ab:9f:a6:e8:e8:c7:06:ca:c3:92:09:ae:
+</span></span><span style=display:flex><span>                    19:a5:2b:68:1c:09:91:20:30:4f:44:5c:f0:49:fe:
+</span></span><span style=display:flex><span>                    26:29:90:7a:7b:4e:5f:93:93:49:da:a1:a1:da:4d:
+</span></span><span style=display:flex><span>                    e1:7c:86:67:05:ea:ce:64:b7:bb:fc:e0:10:f7:2e:
+</span></span><span style=display:flex><span>                    8f:9e:1f:82:4e:b6:d1:97:8d:a7:d2:0b:19:e4:bc:
+</span></span><span style=display:flex><span>                    ad:46:3f:ad:32:47:f9:47:bf:29:88:b4:3f:1d:02:
+</span></span><span style=display:flex><span>                    d4:93:e5:aa:76:13:83:52:7f:5d:33:f4:fa:73:85:
+</span></span><span style=display:flex><span>                    20:d7:7b:b9:a6:a9:35:dd:9f:e4:53:12:d3:db:33:
+</span></span><span style=display:flex><span>                    b0:1f:27:a1:9e:c0:aa:41:4b:ad:b1:74:8e:a3:c9:
+</span></span><span style=display:flex><span>                    e6:19:3d:39:2d:13:a7:e6:dc:e7:c6:88:06:70:60:
+</span></span><span style=display:flex><span>                    4b:5b:8a:cf:d3:45:23:b2:4e:17:c6:fe:06:c5:49:
+</span></span><span style=display:flex><span>                    a9:c9
+</span></span><span style=display:flex><span>                Exponent: <span style=color:#0000cf;font-weight:700>65537</span> <span style=color:#ce5c00;font-weight:700>(</span>0x10001<span style=color:#ce5c00;font-weight:700>)</span>
+</span></span><span style=display:flex><span>        X509v3 extensions:
+</span></span><span style=display:flex><span>            X509v3 Basic Constraints:
+</span></span><span style=display:flex><span>                CA:FALSE
+</span></span><span style=display:flex><span>            Netscape Cert Type:
+</span></span><span style=display:flex><span>                SSL Server
+</span></span><span style=display:flex><span>            Netscape Comment:
+</span></span><span style=display:flex><span>                OpenSSL Generated Server Certificate
+</span></span><span style=display:flex><span>            X509v3 Subject Key Identifier:
+</span></span><span style=display:flex><span>                30:B7:57:E0:1A:07:69:DB:47:8C:B2:BC:21:14:7D:D2:71:A8:96:5D
+</span></span><span style=display:flex><span>            X509v3 Authority Key Identifier:
+</span></span><span style=display:flex><span>                keyid:E8:42:1C:63:92:76:AD:2C:62:2C:C1:71:92:40:24:B5:76:53:9A:1C
+</span></span><span style=display:flex><span>                DirName:/C<span style=color:#ce5c00;font-weight:700>=</span>CN/ST<span style=color:#ce5c00;font-weight:700>=</span>Beijing/L<span style=color:#ce5c00;font-weight:700>=</span>XXXXX/O<span style=color:#ce5c00;font-weight:700>=</span>XXX/OU<span style=color:#ce5c00;font-weight:700>=</span>XXX/CN<span style=color:#ce5c00;font-weight:700>=</span>XXX/emailAddress<span style=color:#ce5c00;font-weight:700>=</span>test@mail.com
+</span></span><span style=display:flex><span>                serial:10:00
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            X509v3 Key Usage: critical
+</span></span><span style=display:flex><span>                Digital Signature, Key Encipherment
+</span></span><span style=display:flex><span>            X509v3 Extended Key Usage:
+</span></span><span style=display:flex><span>                TLS Web Server Authentication
+</span></span><span style=display:flex><span>    Signature Algorithm: sha256WithRSAEncryption
+</span></span><span style=display:flex><span>         98:8e:dd:8b:b7:af:c0:8d:41:76:0e:0a:5c:61:d6:39:a0:60:
+</span></span><span style=display:flex><span>         f4:56:4b:ea:b3:0d:09:c4:54:72:f7:45:b8:ba:f3:c9:f9:7c:
+</span></span><span style=display:flex><span>         7a:2b:81:82:dc:25:fd:b0:2c:b6:c9:d4:ad:c6:85:52:0c:0e:
+</span></span><span style=display:flex><span>         68:a2:fe:14:04:e1:95:a9:a0:b2:7a:8c:8a:25:20:ab:2d:62:
+</span></span><span style=display:flex><span>         a6:d7:e8:20:a2:9a:b4:8d:53:b1:ff:b0:d2:33:0d:ab:c3:fb:
+</span></span><span style=display:flex><span>         9c:03:59:73:cb:4f:dd:3f:bc:66:8c:c3:2b:32:23:a8:96:9e:
+</span></span><span style=display:flex><span>         a5:9d:f3:db:06:0c:a4:10:52:d6:3f:92:f8:ca:88:30:75:b6:
+</span></span><span style=display:flex><span>         d6:16:1a:5b:0f:f9:d6:2d:f2:94:2a:bd:c5:d9:b2:f9:5d:f5:
+</span></span><span style=display:flex><span>         02:01:4a:2a:10:45:a4:48:83:30:c0:a4:27:2f:73:72:73:93:
+</span></span><span style=display:flex><span>         ed:34:8f:66:53:0a:b4:93:05:61:00:22:0c:89:da:b6:46:17:
+</span></span><span style=display:flex><span>         a9:3e:28:37:2f:f3:7e:3f:69:a7:36:62:ff:c5:b2:ed:c2:0c:
+</span></span><span style=display:flex><span>         55:34:d3:c1:a6:71:77:9a:84:3a:b6:1a:9d:46:5c:6f:11:cf:
+</span></span><span style=display:flex><span>         f0:ef:52:f5:c9:ac:8f:dd:40:0f:28:69:44:3b:c9:c1:c7:45:
+</span></span><span style=display:flex><span>         9c:de:fb:48:95:89:90:9e:9e:74:e2:10:3a:52:e8:e0:30:ce:
+</span></span><span style=display:flex><span>         81:80:77:57:d9:32:02:fd:06:bd:72:e8:83:d8:3a:4e:6f:da:
+</span></span><span style=display:flex><span>         a5:07:44:cf:ba:3f:be:f1:79:ed:aa:01:65:a8:ea:f5:f6:ca:
+</span></span><span style=display:flex><span>         f0:dc:04:dd:8e:2e:78:93:75:31:c9:8f:c3:9b:40:19:fe:9b:
+</span></span><span style=display:flex><span>         fb:49:ca:b3:4e:81:39:d6:41:48:d6:80:30:a5:08:77:f6:24:
+</span></span><span style=display:flex><span>         93:d2:d0:67:5b:96:69:6a:12:f5:7c:5a:a3:f0:b2:2a:c1:69:
+</span></span><span style=display:flex><span>         76:f8:7f:b1:6c:d6:6c:a8:a9:62:aa:7a:7b:66:d0:52:bc:44:
+</span></span><span style=display:flex><span>         f5:4d:5d:1e:47:f0:00:ec:66:8a:05:43:a9:8c:23:1b:7c:ad:
+</span></span><span style=display:flex><span>         0d:24:9f:b9:5c:27:ca:e7:42:bb:10:02:e8:bf:1b:35:57:e8:
+</span></span><span style=display:flex><span>         6a:67:97:d5:dc:e0:6e:5e:fc:43:f9:26:d4:f1:32:87:15:86:
+</span></span><span style=display:flex><span>         8a:28:66:00:be:8f:fd:33:a4:50:97:35:56:a1:41:11:a4:92:
+</span></span><span style=display:flex><span>         5c:30:e3:6d:80:42:ef:a7:d7:f8:cb:ba:08:93:2e:61:73:b3:
+</span></span><span style=display:flex><span>         0c:c5:35:2f:9a:c9:9d:38:94:4c:43:15:fb:65:b7:f0:f6:7f:
+</span></span><span style=display:flex><span>         01:4b:6a:5b:a7:7c:f9:c2:a8:5c:dc:d3:30:41:1c:da:0e:e1:
+</span></span><span style=display:flex><span>         36:50:9c:6f:4a:e7:99:23:83:dd:c8:01:26:2d:e0:33:04:2a:
+</span></span><span style=display:flex><span>         0a:34:8b:78:47:bc:09:3b
+</span></span></code></pre></div><h2 id=数字证书格式>数字证书格式</h2><p>数字证书体现为一个或一系列相关经过加密的数据文件，常用的格式有：</p><ul><li>符合 <code>PKI ITU-T X509</code> 标准，传统标准 (<code>.DER .PEM .CER .CRT</code>)</li><li>符合 <code>PKCS#7</code> 加密消息语法标准 (<code>.P7B .P7C .SPC .P7R</code>)</li><li>符合 <code>PKCS#10</code> 证书请求标准 (<code>.p10</code>)</li><li>符合 <code>PKCS#12</code> 个人信息交换标准 (<code>.pfx *.p12</code>)</li></ul><p>当然，这只是常用的几种标准，其中，X509 证书还分两种编码形式：</p><ul><li><code>X.509 DER</code>(Distinguished Encoding Rules) 编码，后缀为：<code>.DER .CER .CRT</code></li><li><code>X.509 BASE64</code> 编码，后缀为：<code>.PEM .CER .CRT</code></li></ul><p>X.509 是数字证书的基本标准，而 P7 和 P12 则是两个实现规范， P7 用于数字信封， P12 则是带有私钥的证书实现规范。采用的标准不同、生成的数字证书包含内容也可能不同。下面就证书包含/可能包含的内容做个汇总，一般证书特性有：</p><ul><li>存储格式：二进制还是 ASCII</li><li>是否包含公钥、私钥</li><li>包含一个还是多个证书</li><li>是否支持密码保护（针对当前证书）</li></ul><p>其中：</p><ul><li><code>DER、CER、CRT</code> 以二进制形式存放证书，只有公钥，不包含私钥；</li><li><code>CSR</code> 证书请求；</li><li><code>PEM</code> 以 Base64 编码形式存放证书，以 <code>—–BEGIN CERTIFICATE—–</code> 和 <code>—–END CERTIFICATE—–</code> 封装，只有公钥；</li><li><code>PFX</code>、 <code>P12</code> 也是以二进制形式存放证书，包含公钥、私钥，包含保护密码。<code>PFX</code> 和 <code>P12</code> 存储格式完全相同只是扩展名不同；</li><li><code>P10</code> 证书请求；</li><li><code>P7R</code> 是 CA 对证书请求回复，一般做数字信封；</li><li><code>P7B/P7C</code> 证书链，可包含一个或多个证书；</li></ul><p>凡是包含私钥的，一律必须添加密码保护， 比如 <code>PFX</code>、 <code>P12</code> 也是以二进制形式存放证书；<code>DER</code> 表示证书且有签名，实际使用中，还有 <code>DER</code> 编码的私钥不用签名，实际上只是个“中间件”；另外，证书签名请求一般采用 <code>CSR</code> 扩展名，但是其格式有可能是 <code>PEM</code> 也可能是 <code>DER</code> 格式，但都代表证书请求，只有经过 CA 签发后才能得到真正的证书。</p></div><div class="row middle-xs"><div class=col-xs-12><div class=post-category><a href=https://morven.life/categories/note/>note</a></div><div class=post-category><a href=https://morven.life/categories/tech/>tech</a></div></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer><div class=site-footer-item><a href=https://morven.life/about/ target=_blank>About Me</a></div></div></div></div></article><script src=https://morven.life/js/lazyload.min.js></script>
+<script>var lazyImage=new LazyLoad({container:document.getElementById("article")})</script><script></script></body></html>
